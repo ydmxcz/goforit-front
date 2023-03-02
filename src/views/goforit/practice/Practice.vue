@@ -9,56 +9,60 @@
                             <Icon type="md-home" />
                         </template>
                         <template #title>
-                            <div style="width: 100%;">
-                                <span>反转链表</span>
-                                <Icon style="float: right;" type="md-add-circle" />
+                            <div style="width: 100%;display: inline;">
+                                <span>{{ data.problem.id }}.{{ data.problem.info.title }}</span>
+                                <Poptip style="float: right;" trigger="hover" content="添加到题单">
+                                    <Icon style="color: #2b85e4;font-size: 22px;" type="md-add-circle" />
+                                </Poptip>
                             </div>
                         </template>
                         <!-- <template #action style="width: 40px;">
                             <Icon type="md-add-circle" />
                         </template> -->
                         <template #content>
-                            <Space direction="vertical" style="width: 100%;">
-                                <Space :size="25">
-                                    <span style="color: #2b85e4;">简单</span>
+                            <Space direction="vertical" style="width: 100%; font-size: 12px;">
+                                <Space :size="20" :wrap="true">
+                                    <!-- <span style="color: #2b85e4;"></span> -->
+                                    <Tag v-if="data.problem.info.difficulty == '简单'" color="green">简单</Tag>
+                                    <Tag v-else-if="data.problem.info.difficulty == '中等'" color="orange">中等</Tag>
+                                    <Tag v-else color="green">困难</Tag>
+
                                     <div>
                                         <Icon type="md-checkmark-circle-outline"
-                                            style="font-size: 16px;margin-right: 5px;" />通过率
+                                            style="font-size: 16px;margin-right: 5px;" />通过率：{{
+                                                (((data.problem.info.acceptCount || 0) / (data.problem.info.submitCount || 1)) *
+                                                    100).toFixed(1) }}%
+                                    </div>
+                                    <span>总提交数:{{ data.problem.info.acceptCount }}</span>
+                                    <span>总通过数:{{ data.problem.info.submitCount }}</span>
+                                </Space>
+                                <Space :size="20" :wrap="true">
+                                    <div>
+                                        <Icon type="md-alert" style="font-size: 16px;margin-right: 3px;" />
+                                        C/C++时空限制:{{ data.problem.info.cTimeLimit / 1000000 }}ms/{{
+                                            data.problem.info.cMemoryLimit >> 20 }}MB
                                     </div>
                                     <div>
-                                        <Icon type="md-time" style="font-size: 16px;margin-right: 5px;" />时间限制：1000 ms
-                                    </div>
-                                    <div>
-                                        <Icon type="md-alert" style="font-size: 16px;margin-right: 5px;" />空间限制:128 M
+                                        <Icon type="md-alert" style="font-size: 16px;margin-right: 3px;" />
+                                        其他语言:{{ data.problem.info.timeLimit / 1000000 }}ms/{{
+                                            data.problem.info.memoryLimit >> 20 }}MB
                                     </div>
                                 </Space>
-                                <Space style="font-size: 12px;">
+                                <Space style="font-size: 12px;" :wrap="true">
                                     <span>知识点:</span>
-                                    <Tag color="blue"> 二分</Tag>
-                                    <Tag color="blue"> 二分</Tag>
-                                    <Tag color="blue"> 二分</Tag>
-                                    <Tag color="blue"> 二分</Tag>
-                                    <Tag color="blue"> 二分</Tag>
+                                    <Tag color="blue" v-for="item in data.problem.tags"> {{ item.tagName }}</Tag>
                                 </Space>
                             </Space>
                         </template>
                     </PageHeader>
                     <div class="btn-line">
-                        <Space :size="15">
-                            <div class="btn-item" v-for="item in data.menuObj">
-                                <Icon :type="item.icon" style="margin-right: 5px;"/>{{ item.name }}
+                        <Space :size="0">
+                            <div ref="btnItemDom" class="btn-item" v-for="item in data.menuObj"
+                                @click="handleClickBtn(item)">
+                                <Icon :type="item.icon" style="margin-right: 5px;" />{{ item.name }}
                             </div>
                         </Space>
                     </div>
-                    <!-- <Menu mode="horizontal" active-name="1" @on-select="handleMenuItemClick">
-                        <MenuItem v-for="item in data.menuObj" :name="item.id">
-                        <Icon :type="item.icon" />{{ item.name }}
-                        </MenuItem>
-                    </Menu> -->
-                    <!-- <Card style="height: 100%;"></Card> -->
-                    <!-- <div style="width: 100%;background-color: blue;height: 70px;">
-                    </div>
-                    Left Pane -->
                     <RouterView></RouterView>
                 </div>
             </template>
@@ -121,13 +125,16 @@
 
         </Split>
     </div>
+    
 </template>
 <script setup name='Practice'>
 import CodeMirror from '../../../components/common/CodeMirror.vue';
 
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { RouterView } from 'vue-router';
+import http from '../../../plugin/axios';
 import router from '../../../router';
+import msg from '../../../common/msg';
 const data = reactive({
     windowWidth: 0,
     windowHeight: 0,
@@ -135,7 +142,7 @@ const data = reactive({
     split2: 0.5,
     consoleText: '打开',
     menuObj: [
-        { id: 0, name: '题目内容', icon: 'ios-paper', path: 'content' },
+        { id: 0, name: '题目内容', icon: 'md-document', path: 'content' },
         { id: 1, name: '提交记录', icon: 'ios-paper', path: 'submited' },
         { id: 2, name: '题解', icon: 'ios-people', path: 'solutions' },
     ],
@@ -173,7 +180,8 @@ func main(){
 }`,
         editorType: 'edit',
         showDrawer: false
-    }
+    },
+   
 });
 
 const handleMenuItemClick = (name) => {
@@ -197,14 +205,12 @@ const handleThemeChange = (e) => {
 
 const openDrawer = () => {
     data.codeMirrorOpt.showDrawer = !data.codeMirrorOpt.showDrawer
-    // data.codeMirrorOpt.height -= 256
     updateCodeMirrorSize()
     data.consoleText = '关闭'
 }
 
 const closeDrawer = () => {
     data.codeMirrorOpt.showDrawer = !data.codeMirrorOpt.showDrawer
-    // data.codeMirrorOpt.height += 256
     updateCodeMirrorSize()
     data.consoleText = '打开'
 }
@@ -241,7 +247,51 @@ const handleTestProblem = () => {
     openDrawer()
 }
 
+const getProblemInfo = async () => {
+    const { data: res } = await http.get('/problem/detial?id=' + data.problem.id)
+    if (res.code != 200) {
+        msg.err(res.msg)
+    }
+    console.log(res);
+    data.problem.info = res.data.info
+    data.problem.tags = res.data.tags
+}
+
+const btnItemDom = ref([]);
+watch(
+    () => router.currentRoute.value.fullPath,
+    (newPath) => {
+        if (newPath == undefined) {
+            return
+        }
+        updateByPath(newPath)
+    },
+    { immediate: false }
+);
+
+const updateByPath = (path) => {
+    let i = 0
+    data.menuObj.forEach((item) => {
+        if (path.includes(item.path)) {
+            btnItemDom.value[i].id = 'active-btn';
+        } else {
+            btnItemDom.value[i].id = '';
+        }
+        i++
+    })
+}
+
+const handleClickBtn = (item) => {
+    // console.log(item);
+    router.push(item.path)
+}
+
+
 onMounted(() => {
+    nextTick(() => {
+        updateByPath(router.currentRoute.value.fullPath)
+    })
+    getProblemInfo()
     updateCodeMirrorSize()
     window.addEventListener('resize', updateCodeMirrorSize)
 })
@@ -258,9 +308,9 @@ onMounted(() => {
         .btn-line {
             background-color: #eee;
             width: 100%;
-            border-top: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-            height: 50px;
+            // border-top: 1px solid #ddd;
+            // border-bottom: 1px solid #ddd;
+            height: 35px;
             display: flex;
             align-items: center;
             padding: 0px 20px;
@@ -268,13 +318,16 @@ onMounted(() => {
             .btn-item {
                 // border: 1px solid #2b85e4;
                 // background-color: #2b85e4;
-                height: 40px;
+                background-color: #eee;
+                height: 35px;
+                font-size: 12px;
                 width: 100px;
-                border-radius: 10px;
+                border-radius: 7px;
                 color: #515a6e;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                cursor: pointer;
             }
         }
     }
@@ -302,4 +355,5 @@ onMounted(() => {
 // .demo-split-pane.no-padding {
 //     height: 200px;
 //     padding: 0;
-// }</style>
+// }
+</style>

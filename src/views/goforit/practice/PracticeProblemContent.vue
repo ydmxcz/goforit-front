@@ -7,6 +7,9 @@
 
 import {ref,reactive,onMounted} from 'vue'
 import { useRouter } from 'vue-router';
+import msg from '../../../common/msg';
+import http from '../../../plugin/axios';
+
 const router = useRouter();
 
 const data = reactive({
@@ -14,8 +17,20 @@ const data = reactive({
     id: router.currentRoute.value.params.id,
 })
 
+
+const selectProblemContent = async () => {
+	const { data: res } = await http.get('/problem/content?id=' + data.id)
+	console.log(res);
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return 
+    }
+	data.content = res.data.content
+}
+
 onMounted(()=>{
     console.log(data.id);
+    selectProblemContent()
 })
 
 </script>

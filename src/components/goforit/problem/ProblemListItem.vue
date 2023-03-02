@@ -96,7 +96,6 @@ const props = defineProps({
 const borderLeftColor = ref(props.isCollection ? '#2d8cf0' : '#9b9b9b')
 
 const toDetial = () => {
-    console.log("hhhhh");
     router.push('/problemlist/' + props.id)
 }
 

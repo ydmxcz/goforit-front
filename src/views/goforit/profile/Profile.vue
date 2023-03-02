@@ -90,11 +90,10 @@ const updateByPath = (path) => {
             i++
         })
     })
-	// leftMenuSideDom.value.forEach((item, i) => {
-	// 	leftMenuSideDom.value[i].id = (item.path == path) ? 'active-item' : '';
-    //     console.log(leftMenuSideDom.value[i].id,item.path);
-	// })
 }
+
+
+
 onMounted(() => {
 	nextTick(() => {
 		updateByPath(router.currentRoute.value.fullPath)

@@ -137,7 +137,7 @@ onMounted(() => {
 
 const handleOpenProblemPage = (id) => {
     let routeUrl = router.resolve({
-        path: "/problem/"+id,
+        path: "/practice/"+id,
         // query: { id: id }
     });
     window.open(routeUrl.href, '_blank');
@@ -196,6 +196,7 @@ const clearProblemSearchCondition = () => {
     }
     conditionSearchProblem()
 }
+
 const handleTagRemove = (_, name) => {
     // 删除array指定元素
     let i = 0, id = 0;
