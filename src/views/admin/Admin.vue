@@ -100,11 +100,18 @@ const menuList = reactive([
     {
         icon: 'ios-stats', name: '3', title: '比赛管理', path: '',
         children: [
-            { icon: '', name: '3-1', title: '竞赛列表', path: '/competition', children: null },
-            { icon: '', name: '3-2', title: '活跃分析', path: '/competition', children: null },
-            { icon: '', name: '3-3', title: '时段分析', path: '/competition', children: null },
-            { icon: '', name: '3-4', title: '用户留存', path: '/competition', children: null },
-            { icon: '', name: '3-5', title: '流失用户', path: '/competition', children: null },
+            { icon: '', name: '3-1', title: '竞赛列表', path: '/contest', children: null },
+            { icon: '', name: '3-2', title: '活跃分析', path: '/contest', children: null },
+            { icon: '', name: '3-3', title: '时段分析', path: '/contest', children: null },
+            { icon: '', name: '3-4', title: '用户留存', path: '/contest', children: null },
+            { icon: '', name: '3-5', title: '流失用户', path: '/contest', children: null },
+        ]
+    },
+    {
+        icon: 'ios-stats', name: '4', title: '小组管理', path: '',
+        children: [
+            { icon: '', name: '4-1', title: '小组列表', path: '/group', children: null },
+          
         ]
     },
     // { icon: 'ios-navigate', name: '1-1', title: 'Option 1', path: '/userlist' },

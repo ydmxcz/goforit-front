@@ -85,7 +85,6 @@ const clickLogin = () => {
 }
 // 登录成功回调函数，清除根节点的样式
 const onSuccessLogin = (flag) => {
-	console.log("AAA", flag);
 	loginDialogShow.value = flag
 	userInfo.value = store.getters.userInfo
 }
@@ -93,7 +92,7 @@ const onSuccessLogin = (flag) => {
 const menuList = ref([
 	{ path: "/home", name: "Home", title: '首页', },
 	{ path: "/problems", name: "Problems", title: '题库', },
-	{ path: "/competition", name: "Competition", title: '竞赛', },
+	{ path: "/contest", name: "Contest", title: '竞赛', },
 	{ path: "/group", name: "Group", title: '小组', },
 	{ path: "/blog", name: "Blog", title: '博客', },
 	{ path: "/courses", name: "Course", title: '课程', },

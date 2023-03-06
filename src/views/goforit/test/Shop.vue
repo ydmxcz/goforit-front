@@ -217,14 +217,14 @@ const handleLv2Change = (name) => {
 // const classifyTagSpace = ref()
 // const difficultTagSpace = ref()
 
-// const handleCommonTagSelectChange = (idx, tagSelectDom, list, tagName) => {
+// const handleCommonTagSelectChange = (idx, tagSelectDom, list, name) => {
 // 	// console.log(idx, difficultTagSpace.value.offsetHeight)
 // 	let name = list[idx]
 // 	tagSelectDom.forEach((item, i) => {
 // 		if (i == idx) {
 // 			// 防止重复点击
-// 			if (name != tagNameSelect[tagName]) {
-// 				tagNameSelect[tagName] = name
+// 			if (name != tagNameSelect[name]) {
+// 				tagNameSelect[name] = name
 // 				item.id = 'active-item'
 // 			}
 // 		} else {

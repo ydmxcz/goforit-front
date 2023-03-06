@@ -1,5 +1,5 @@
 <template>
-    <div class="competition-detail" style="">
+    <div class="contest-detail" style="">
         <div class="header">
             <Row>
                 <Col flex="3">
@@ -82,7 +82,7 @@
     </div>
 </template>
 
-<script setup name="CompetitionDetail">
+<script setup name="ContestDetail">
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { Message } from 'view-ui-plus'
@@ -105,7 +105,7 @@ const mentItemList = ref([
 ])
 
 const pushTo = (path) => {
-    router.push('/competition/detail/' + route.params.id + path)
+    router.push('/contest/detail/' + route.params.id + path)
 }
 
 const handleMenuItemSelect = (name) => {
@@ -193,7 +193,7 @@ $1≤k≤10000$
 </script>
 
 <style scoped lang="less">
-.competition-detail {
+.contest-detail {
     width: 100%;
     min-width: 1000px;
 

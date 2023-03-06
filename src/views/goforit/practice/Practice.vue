@@ -50,7 +50,7 @@
                                 </Space>
                                 <Space style="font-size: 12px;" :wrap="true">
                                     <span>知识点:</span>
-                                    <Tag color="blue" v-for="item in data.problem.tags"> {{ item.tagName }}</Tag>
+                                    <Tag color="blue" v-for="item in data.problem.tags"> {{ item.name }}</Tag>
                                 </Space>
                             </Space>
                         </template>

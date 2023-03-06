@@ -1,9 +1,9 @@
 <template>
     
-    <h1>CompetitionRanking</h1>
+    <h1>ContestRanking</h1>
 </template>
 
-<script setup name="CompetitionRanking">
+<script setup name="ContestRanking">
 // params:{userId:userId.val}}
 // this.$router.params.userId,
 </script>

@@ -51,10 +51,10 @@
                         <h4>最近比赛</h4>
                     </div>
                     <div style="padding: 10px;">
-                        <CompetitionList v-for="item in competitionItem" :name="item.name"
+                        <ContestList v-for="item in competitionItem" :name="item.name"
                             :is-original="item.isOriginal" :is-rated="item.isRated" :sign-up-start="item.signUpStart"
-                            :sign-up-end="item.competitionEnd" :competition-start="item.competitionStart"
-                            :competition-end="item.competitionEnd" :length-time="item.lengthTime"
+                            :sign-up-end="item.competitionEnd" :contest-start="item.competitionStart"
+                            :contest-end="item.competitionEnd" :length-time="item.lengthTime"
                             :sponsor="item.sponsor" :number="item.number" :status="item.status"
                             :max-rating="item.maxRating" />
                     </div>
@@ -146,8 +146,8 @@
 </template>
 <script setup name="Home">
 import { reactive } from 'vue';
-import CompetitionListItem from '../../../components/goforit/competition/CompetitionListItem.vue'
-import CompetitionList from '../../../components/goforit/competition/CompetitionList.vue'
+import ContestListItem from '../../../components/goforit/contest/ContestListItem.vue'
+import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
 
 

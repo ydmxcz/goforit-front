@@ -22,7 +22,7 @@
                 <Space wrap>
                     <div ref="lv2TagSelectDom" class="elem-center tag-item" v-for="(item, idx) in lv2TagSelectList"
                         @click="handleLv2TagSelectChange(idx, lv2TagSelectList)">
-                        {{ item }}
+                        {{ item.name }}
                     </div>
 
                 </Space>
@@ -32,7 +32,6 @@
             </Button>
         </Space>
     </div>
-
 </template>
 
 <script setup name="CascaderTagSelect">
@@ -47,7 +46,9 @@ const props = defineProps({
         type: String
     },
     dataList: {
-        type: Array
+        type: Array,
+        default: [{ name: '全部', checked: false, tags: [{ id: 0, name: '全部' }] }]
+
     },
     stdLineHeight: {
         type: Number,
@@ -96,7 +97,7 @@ const lv1TagSpaceDom = ref()
 const lv2TagSelectDom = ref([])
 const lv2TagSpaceDom = ref()
 
-const lv1TagSelectList = ref(props.dataList)
+const lv1TagSelectList = ref()
 const lv2TagSelectList = ref()
 
 
@@ -116,7 +117,7 @@ const handleLv1TagSelectChange = (idx) => {
                 // 清除其他选中,设置第一个为默认选中
                 emits('onLv1Change', name)
                 handleLv2TagSelectChange(0, lv1TagSelectList.value)
-                if(tagSelectButtonText.titleLv2 == props.closeText) {
+                if (tagSelectButtonText.titleLv2 == props.closeText) {
                     tagSelectButtonText.titleLv2 = props.openText
                 }
                 // 更新list更新后的DOM高度
@@ -137,24 +138,21 @@ const handleLv1TagSelectChange = (idx) => {
 
 
 const handleLv2TagSelectChange = (idx, list) => {
-    let name = list[idx]
-    console.log("mk", name)
+    let subTagItem = list[idx]
+    console.log("mk", subTagItem)
     lv2TagSelectDom.value.forEach((item, i) => {
         if (i == idx) {
             // 防止重复点击
-            if (name != tagNameSelect.titleLv2) {
-                tagNameSelect.titleLv2 = name
+            if (subTagItem.name != tagNameSelect.titleLv2) {
+                tagNameSelect.titleLv2 = subTagItem.name
                 item.id = 'active-item'
-                emits('onLv2Change', name)
+                emits('onLv2Change', subTagItem)
             }
         } else {
             item.id = ''
         }
     })
 }
-
-
-
 
 // 利用弱类型的特点，抽象出重复的基本逻辑
 const handleTagSelectOpenLv1 = () => {
@@ -212,22 +210,26 @@ const eventListener = () => {
 
 // TagSelect----end
 
-
 onMounted(() => {
     // console.log(tagSelectLevelTwoList.value)
     window.addEventListener('resize', eventListener)
-    lv2TagSelectList.value = lv1TagSelectList.value[0].tags
     // console.log(lv2TagSelectList.value)
+    lv1TagSelectList.value = props.dataList
+    lv2TagSelectList.value = lv1TagSelectList.value[0].tags
     nextTick(() => {
-        lv1TagSelectDom.value[0].id = 'active-item'
-        lv2TagSelectDom.value[0].id = 'active-item'
-        tagSelectOriginalHeight.titleLv1 = lv1TagSpaceDom.value.offsetHeight
-        tagSelectOriginalHeight.titleLv2 = lv2TagSpaceDom.value.offsetHeight
-        initTagSpace()
+        try {
+            lv1TagSelectDom.value[0].id = 'active-item'
+            lv2TagSelectDom.value[0].id = 'active-item'
+            tagSelectOriginalHeight.titleLv1 = lv1TagSpaceDom.value.offsetHeight
+            tagSelectOriginalHeight.titleLv2 = lv2TagSpaceDom.value.offsetHeight
+            initTagSpace()
+        } catch (e) {
+            console.log(e);
+        } 
     })
 })
 
-// TagSelect----end
+
 
 
 onUnmounted(() => {

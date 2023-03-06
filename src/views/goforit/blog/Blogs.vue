@@ -208,8 +208,8 @@ const hotTagList = reactive([
 	{ color: 'geekblue', text: 'asc' },
 ])
 
-const searchByTag = (tagName) => {
-	console.log(tagName)
+const searchByTag = (name) => {
+	console.log(name)
 }
 
 const hotTopicList = reactive([
@@ -296,8 +296,8 @@ const allTagList = reactive([
 	}
 ])
 
-const searchInAllTag = (tagFarther, tagName) => {
-	console.log(tagFarther, tagName)
+const searchInAllTag = (tagFarther, name) => {
+	console.log(tagFarther, name)
 }
 
 

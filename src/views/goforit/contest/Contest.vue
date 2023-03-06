@@ -2,13 +2,13 @@
 	<div class="competirion-page">
 		<!-- 页面顶部图片以及标题 -->
 		<Row>
-			<div class="competition-header-title">
+			<div class="contest-header-title">
 				<div class="title-detail">
 					<img src="../../../assets/goforit-white-2-1.png">
 					<span>竞赛</span>
 				</div>
 			</div>
-			<img class="competition-top-pic" src="../../../assets/competition-bg.png">
+			<img class="contest-top-pic" src="../../../assets/contest-bg.png">
 		</Row>
 		<!-- 页面最小宽度为1200px -->
 		<!-- 图片以下，使用圣杯布局 -->
@@ -43,11 +43,14 @@
 						<Space type="flex" direction="vertical">
 							<Input search enter-button placeholder="请输入比赛名称 / 比赛ID进行搜索" />
 							<div style="width: 100%;">
-								<Space direction="vertical">
+								<div v-if="cascaderList.length == 0" style="width: 100%;height: 120px;">
+									<Spin fix ></Spin>
+								</div>
+								<Space v-else direction="vertical">
 									<CascaderTagSelect title-lv1="方向" title-lv2="分类" :data-list="cascaderList"
 										@on-lv2-change="handleLv2Change" @on-lv1-change="handleLv1Change">
 									</CascaderTagSelect>
-									<TagSelectSignle title="状态" :data-list="['全部', '未开始', '已结束', '进阶']"
+									<TagSelectSignle title="状态" :data-list="['全部', '未开始', '已结束']"
 										@on-change="handleMyTagClick">
 									</TagSelectSignle>
 								</Space>
@@ -56,12 +59,12 @@
 							<div style="width: 100%; border-left: 5px solid #25bb9b;padding: 10px;">
 								<span style="font-size: 20px;">全部比赛</span>
 							</div>
-							<CompetitionList v-for="item in competitionItem" :name="item.name"
-								:is-original="item.isOriginal" :is-rated="item.isRated"
-								:sign-up-start="item.signUpStart" :sign-up-end="item.competitionEnd"
-								:competition-start="item.competitionStart" :competition-end="item.competitionEnd"
-								:length-time="item.lengthTime" :sponsor="item.sponsor" :number="item.number"
-								:status="item.status" :max-rating="item.maxRating" @on-sign-up="handleOnSignUp"/>
+							<ContestList v-for="item in competitionItem" :contest-id="item.id" :name="item.name" :is-original="item.isOriginal"
+								:is-rated="item.isRated" :sign-up-start="item.signUpStart"
+								:sign-up-end="item.competitionEnd" :contest-start="item.competitionStart"
+								:contest-end="item.competitionEnd" :length-time="item.lengthTime" :sponsor="item.sponsor"
+								:number="item.number" :status="item.status" :max-rating="item.maxRating"
+								@on-sign-up="handleOnSignUp" />
 							<Space direction="vertical" type="flex" align="center">
 								<Page :total="100" :page-size="10" show-elevator show-sizer show-total />
 							</Space>
@@ -83,46 +86,49 @@
 		</Row>
 	</div>
 	<LoginDialog :flag="loginDialogShow" @on-login="onSuccessLogin"></LoginDialog>
-
 </template>
 
-<script setup name="Competition">
-import { ref, reactive } from 'vue';
-import CompetitionList from '../../../components/goforit/competition/CompetitionList.vue'
+<script setup name="Contest">
+import { ref, reactive, onMounted } from 'vue';
+import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
 import TagSelectSignle from '../../../components/common/TagSelectSignle.vue';
 import CascaderTagSelect from '../../../components/common/CascaderTagSelect.vue';
 import LoginDialog from '../../../components/goforit/login/LoginDialog.vue';
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import {useRouter} from 'vue-router'
+const router = useRouter()
+
 const loginDialogShow = ref(false)
+
 const onSuccessLogin = (flag) => {
 	console.log("AAA");
 	loginDialogShow.value = flag
 }
 
-const handleOnSignUp = () => {
-	loginDialogShow.value = true	
+const handleOnSignUp = (id) => {
+	// loginDialogShow.value = true
+	router.push("/contest/detail/"+id)
 }
 
+const getContestTags = async () => {
+	const { data: res } = await http.get('/contest/tags')
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	cascaderList.value = res.data.tagList
+}
 
-const cascaderList = ref([
-	{
-		"name": "全部", checked: false,
-		"tags": [
-			'算法基础训练', 'ACM提高组', 'ICPC模拟赛', 'OI-普及组', 'OI-提高组', '蓝桥杯模拟赛'
-		]
-	}, {
-		"name": "ACM赛制", checked: false,
-		"tags": [
-			'算法基础训练', 'ACM提高组', 'ICPC模拟赛'
-		]
-	}, {
-		"name": "OI赛制", checked: false,
-		"tags": [
-			'OI-普及组', 'OI-提高组', '蓝桥杯模拟赛'
-		]
-	},
+const cascaderList = ref([])
 
-])
+onMounted(() => {
+	console.log("xixixi");
+	getContestTags()
+})
+
+
 
 const handleMyTagClick = (name) => {
 	console.log("mtTag:", name)
@@ -137,6 +143,7 @@ const handleLv2Change = (name) => {
 }
 
 const competitionItem = reactive([{
+	id:1,
 	name: '2023牛客寒假算法基础集训营1',
 	isOriginal: true,
 	isRated: true,
@@ -150,6 +157,7 @@ const competitionItem = reactive([{
 	status: true,
 	// maxRating:2199,
 }, {
+	id:2,
 	name: '2023牛客寒假算法基础集训营2',
 	isOriginal: true,
 	isRated: true,
@@ -163,6 +171,7 @@ const competitionItem = reactive([{
 	status: true,
 	maxRating: 2199,
 }, {
+	id:3,
 	name: '2023牛客寒假算法基础集训营3',
 	isOriginal: true,
 	isRated: true,
@@ -176,6 +185,7 @@ const competitionItem = reactive([{
 	status: true,
 	maxRating: 2199,
 }, {
+	id:4,
 	name: '2023牛客寒假算法基础集训营4',
 	isOriginal: true,
 	isRated: true,
@@ -189,6 +199,7 @@ const competitionItem = reactive([{
 	status: false,
 	maxRating: 2199,
 }, {
+	id:5,
 	name: '2023牛客寒假算法基础集训营5',
 	isOriginal: true,
 	isRated: false,
@@ -202,6 +213,7 @@ const competitionItem = reactive([{
 	status: false,
 	maxRating: 2199,
 }, {
+	id:6,
 	name: '2023牛客寒假算法基础集训营6',
 	isOriginal: false,
 	isRated: false,
@@ -230,7 +242,7 @@ const competitionItem = reactive([{
 		align-items: center;
 	}
 
-	.competition-header-title {
+	.contest-header-title {
 		height: 0px;
 		width: 100%;
 		min-width: 1200px;
@@ -259,7 +271,7 @@ const competitionItem = reactive([{
 		}
 	}
 
-	.competition-top-pic {
+	.contest-top-pic {
 		width: 100%;
 		height: 300px;
 		min-height: 300px;
@@ -313,6 +325,7 @@ const competitionItem = reactive([{
 		width: 100%;
 		margin-top: 20px;
 		margin-bottom: 20px;
+
 		.cia-left {
 			// height: 200px;
 			width: 900px;

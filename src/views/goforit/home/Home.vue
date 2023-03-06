@@ -44,10 +44,10 @@
                     <Space direction="vertical" style="width: 100%;">
                         <h3 class="ptb-10">最近比赛</h3>
 
-                        <CompetitionList v-for="item in competitionItem" :name="item.name"
+                        <ContestList v-for="item in competitionItem" :name="item.name"
                             :is-original="item.isOriginal" :is-rated="item.isRated" :sign-up-start="item.signUpStart"
-                            :sign-up-end="item.competitionEnd" :competition-start="item.competitionStart"
-                            :competition-end="item.competitionEnd" :length-time="item.lengthTime"
+                            :sign-up-end="item.competitionEnd" :contest-start="item.competitionStart"
+                            :contest-end="item.competitionEnd" :length-time="item.lengthTime"
                             :sponsor="item.sponsor" :number="item.number" :status="item.status"
                             :max-rating="item.maxRating" />
                     </Space>
@@ -118,8 +118,8 @@
 </template>
 <script setup name='Home'>
 import { ref, reactive, onMounted } from 'vue';
-import CompetitionListItem from '../../../components/goforit/competition/CompetitionListItem.vue'
-import CompetitionList from '../../../components/goforit/competition/CompetitionList.vue'
+import ContestListItem from '../../../components/goforit/contest/ContestListItem.vue'
+import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
 import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
 import { useRouter } from 'vue-router';

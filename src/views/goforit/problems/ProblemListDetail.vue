@@ -32,7 +32,7 @@
 							<Col flex="auto">
 							<Space wrap>
 								<Icon type="ios-pricetags" /><span>题目标签：</span>
-								<Tag color="blue" v-for="tagName in problemlistInfo.tags"> {{ tagName }}</Tag>
+								<Tag color="blue" v-for="name in problemlistInfo.tags"> {{ name }}</Tag>
 							</Space>
 							</Col>
 							<Col flex="300px">

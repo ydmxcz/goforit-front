@@ -1,9 +1,9 @@
 <template>
 
-    <div class="competition-item">
+    <div class="contest-item">
         <Row style="min-width: 700px;" :wrap="false">
             <Col class="element-center" flex="100px" style="height: 150px;width: 100px;">
-            <img class="competition-item-pic" :src="props.avatar">
+            <img class="contest-item-pic" :src="props.avatar">
             </Col>
             <Col flex="auto" style="min-width: 470px; ">
             <Space class="middle-space" direction="vertical">
@@ -57,13 +57,15 @@
 
 </template>
 
-<script setup name="CompetitionList">
+<script setup name="ContestList">
 import { ref, onMounted, reactive } from 'vue';
 const emits = defineEmits(['onSignUp']);
 
 const targetTime = ref(new Date().getTime() + ((3600 * 24 * 8) + (3600 * 6) + (1900)) * 1000);
 const props = defineProps({
-    name: {
+    contestId:{
+        type:Number,
+    },name: {
         type: String,
         default: '比赛名称',
     }, isOriginal: {
@@ -107,7 +109,8 @@ const props = defineProps({
 const borderLeftColor = ref(props.status ? '#2d8cf0' : '#9b9b9b')
 
 const handlesignUpClick = () => {
-    emits('onSignUp')
+    console.log(props.contestId);
+    emits('onSignUp',props.contestId)
 }
 
 // onMounted(() => {
@@ -118,14 +121,14 @@ const handlesignUpClick = () => {
 </script>
 
 <style scoped lang="less">
-.competition-item {
+.contest-item {
     border: 1px solid #ddd;
     border-left: 4px solid v-bind(borderLeftColor);
     height: 150px;
     margin-bottom: 10px;
     min-width: 700px;
 
-    .competition-item-pic {
+    .contest-item-pic {
         width: 90px;
         height: 90px;
         min-width: 100px;

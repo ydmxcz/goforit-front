@@ -11,7 +11,7 @@
     </Table>
 </template>
     
-<script setup name="CompetitionProblems">
+<script setup name="ContestProblems">
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 const router = useRouter()

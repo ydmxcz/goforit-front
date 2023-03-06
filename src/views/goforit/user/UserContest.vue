@@ -40,20 +40,20 @@
 			<TagSelectSignle title="比赛状态" :data-list="['全部','未开始', '已结束']" @on-change="handleStatusClick"></TagSelectSignle>	
 		</div>
 		<div style="width: 100%;">
-			<CompetitionList v-for="item in competitionItem" :name="item.name"
+			<ContestList v-for="item in competitionItem" :name="item.name"
 								:is-original="item.isOriginal" :is-rated="item.isRated"
 								:sign-up-start="item.signUpStart" :sign-up-end="item.competitionEnd"
-								:competition-start="item.competitionStart" :competition-end="item.competitionEnd"
+								:contest-start="item.competitionStart" :contest-end="item.competitionEnd"
 								:length-time="item.lengthTime" :sponsor="item.sponsor" :number="item.number"
 								:status="item.status" :max-rating="item.maxRating" />
 		</div>
 	</Space>
 </template>
-<script setup name="UserCompetition">
+<script setup name="UserContest">
 
 import {ref,reactive} from 'vue'
 import TagSelectSignle from '../../../components/common/TagSelectSignle.vue';
-import CompetitionList from '../../../components/goforit/competition/CompetitionList.vue'
+import ContestList from '../../../components/goforit/contest/ContestList.vue'
 
 const handleStatusClick = (name) => {
 	console.log("status:",name)

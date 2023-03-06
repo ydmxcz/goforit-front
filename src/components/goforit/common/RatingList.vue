@@ -3,11 +3,11 @@
         <Row :wrap="false" v-for="row in rratingData" style="width: 100%;height: 50px;">
             <div class="vertical-center" style="width: 50px;height: 100%">
                 <img v-if="row.idx == 1" style="width:30px;height: 30px;"
-                    src="../../../assets/competition/1-persion.png" />
+                    src="../../../assets/contest/1-persion.png" />
                 <img v-else-if="row.idx == 2" style="width:30px;height: 30px;"
-                    src="../../../assets/competition/2-persion.png" />
+                    src="../../../assets/contest/2-persion.png" />
                 <img v-else-if="row.idx == 3" style="width:30px;height: 30px;"
-                    src="../../../assets/competition/3-persion.png" />
+                    src="../../../assets/contest/3-persion.png" />
                 <strong v-else style="text-align: center;width: 30px;">{{ row.idx }}</strong>
             </div>
             <div class="vertical-center" style="text-align: left; width: 100%;height: 100%;">

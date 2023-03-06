@@ -235,7 +235,7 @@ const avatorList = reactive({
 const mentListDom = ref([])
 const menuListData = ref([
     { name: '训练任务', path: '/group/' + groupInfo.id + '/train', icon: 'ios-podium' },
-    { name: '团队比赛', path: '/group/' + groupInfo.id + '/competition', icon: 'md-paper' },
+    { name: '团队比赛', path: '/group/' + groupInfo.id + '/contest', icon: 'md-paper' },
     { name: '团队成员', path: '/group/' + groupInfo.id + '/numbers', icon: 'md-book' },
 ])
 

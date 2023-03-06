@@ -220,7 +220,7 @@ const userInfo = reactive({
 const mentListDom = ref([])
 const menuListData = ref([
 	{ name: '最近通过', path: '/user/' + userInfo.id + '/recentlyPass', icon: 'md-calendar' },
-	{ name: '比赛', path: '/user/' + userInfo.id + '/competition', icon: 'ios-podium' },
+	{ name: '比赛', path: '/user/' + userInfo.id + '/contest', icon: 'ios-podium' },
 	{ name: '题单', path: '/user/' + userInfo.id + '/problemList', icon: 'md-paper' },
 	{ name: '团队', path: '/user/' + userInfo.id + '/group', icon: 'md-contacts' },
 	{ name: '题解', path: '/user/' + userInfo.id + '/solution', icon: 'md-school' },

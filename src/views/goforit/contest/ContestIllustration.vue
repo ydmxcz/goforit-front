@@ -4,7 +4,7 @@
     </Card>
 </template>
 
-<script setup name="CompetitionIllustration">
+<script setup name="ContestIllustration">
 // params:{userId:userId.val}}
 // this.$router.params.userId,
 

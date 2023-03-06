@@ -40,7 +40,7 @@
 
 </template>
 
-<script setup name="CompetitionListItem">
+<script setup name="ContestListItem">
 
 </script>
 

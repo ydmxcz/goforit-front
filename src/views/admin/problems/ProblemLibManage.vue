@@ -405,8 +405,8 @@ const checkCase = () => {
 }
 
 
-const searchInAllTag = (tagName, subitem) => {
-	console.log("SBSBSBS", tagName, subitem);
+const searchInAllTag = (name, subitem) => {
+	console.log("SBSBSBS", name, subitem);
 	if (!problemInfo.value.tags.includes(subitem)) {
 		problemInfo.value.tags.push(subitem)
 	}

@@ -53,7 +53,7 @@
                                 <Space :wrap="true" style="margin-bottom: 16px;">
                                     <Tag v-for="item in data.tagSearchList" color="blue" style="cursor: pointer;"
                                         @click="handleSelectTag(item.name, item)">
-                                        {{ item.tagName }}
+                                        {{ item.name }}
                                     </Tag>
                                 </Space>
                             </Space>
@@ -64,7 +64,7 @@
                                 <Space :wrap="true" style="margin-bottom: 16px;">
                                     <Tag v-for="subitem in item.tags" color="blue"
                                         @click="handleSelectTag(item.name, subitem)" style="cursor: pointer;">{{
-                                            subitem.tagName
+                                            subitem.name
                                         }}
                                     </Tag>
                                 </Space>
@@ -151,10 +151,10 @@ const searchTag = () => {
     }
     data.tagList.forEach((i) => {
         i.tags.forEach((item) => {
-            if (item.tagName.includes(data.tagSearchKey)) {
+            if (item.name.includes(data.tagSearchKey)) {
                 data.tagSearchList.push({
                     id: item.id,
-                    tagName: item.tagName
+                    name: item.name
                 })
             }
         })
@@ -195,7 +195,7 @@ const handleSelectTag = (tagFarther, tag) => {
         data.modalFormInput.selectedTagMap.set(tag.id, 0)
         data.modalFormInput.selectedTagList.push({
             id: tag.id,
-            name: tag.tagName
+            name: tag.name
         })
     }
     // console.log(data.modalFormInput.selectedTagList);

@@ -1,8 +1,8 @@
 <template>
-    <div class="competition-item">
+    <div class="contest-item">
         <Row style="width: 100%;" :wrap="false">
             <Col flex="120px" style="width: 120px;">
-            <img class="competition-item-pic" style="border-radius: 15px;width: 120px;" :src="props.avatar">
+            <img class="contest-item-pic" style="border-radius: 15px;width: 120px;" :src="props.avatar">
             </Col>
             <Col flex="auto">
             <Space class="middle-space" direction="vertical" style="width: 100%;">
@@ -40,7 +40,7 @@
 
                 <Space wrap>
                     <Icon type="ios-pricetags" /><span>题目标签：</span>
-                    <Tag color="blue" v-for="tagName in props.tagList"> {{ tagName }}</Tag>
+                    <Tag color="blue" v-for="name in props.tagList"> {{ name }}</Tag>
                 </Space>
 
             </Space>
@@ -108,7 +108,7 @@ const toDetial = () => {
 </script>
 
 <style scoped lang="less">
-.competition-item {
+.contest-item {
     border: 1px solid #ddd;
     border-left: 4px solid v-bind(borderLeftColor);
     // height: 150px;
@@ -116,7 +116,7 @@ const toDetial = () => {
     padding: 10px 10px 10px 0px;
     // min-width: 700px;
 
-    .competition-item-pic {
+    .contest-item-pic {
         // width: 90px;
         // height: 90px;
         min-width: 100px;

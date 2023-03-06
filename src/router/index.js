@@ -26,19 +26,19 @@ import CourseDetial from '../views/goforit/course/CourseDetial.vue'
 import CourseDetialInstruction from '../views/goforit/course/CourseDetialInstruction.vue'
 import CourseDetialRanking from '../views/goforit/course/CourseDetialRanking.vue'
 import CourseDetialLearn from '../views/goforit/course/CourseDetialLearn.vue'
-import Competition from '../views/goforit/competition/Competition.vue'
-import CompetitionDetail from '../views/goforit/competition/CompetitionDetail.vue'
-import Ranking from '../views/goforit/competition/Ranking.vue'
-import AllCompetition from '../views/goforit/competition/AllCompetition.vue'
-import CompetitionIllustration from '../views/goforit/competition/CompetitionIllustration.vue'
-import CompetitionProblems from '../views/goforit/competition/CompetitionProblems.vue'
-import CompetitionSubmit from '../views/goforit/competition/CompetitionSubmit.vue'
-import CompetitionRanking from '../views/goforit/competition/CompetitionRanking.vue'
+import Contest from '../views/goforit/contest/Contest.vue'
+import ContestDetail from '../views/goforit/contest/ContestDetail.vue'
+import Ranking from '../views/goforit/contest/Ranking.vue'
+import AllContest from '../views/goforit/contest/AllContest.vue'
+import ContestIllustration from '../views/goforit/contest/ContestIllustration.vue'
+import ContestProblems from '../views/goforit/contest/ContestProblems.vue'
+import ContestSubmit from '../views/goforit/contest/ContestSubmit.vue'
+import ContestRanking from '../views/goforit/contest/ContestRanking.vue'
 import MarkDownEditer from '../views/goforit/blog/MarkDownEditer.vue'
 import Login from '../views/goforit/test/Login.vue'
 import User from '../views/goforit/user/User.vue'
 import RecentlyPass from '../views/goforit/user/RecentlyPass.vue'
-import UserCompetition from '../views/goforit/user/UserCompetition.vue'
+import UserContest from '../views/goforit/user/UserContest.vue'
 import UserGroup from '../views/goforit/user/UserGroup.vue'
 import UserSolution from '../views/goforit/user/UserSolution.vue'
 import UserBlog from '../views/goforit/user/UserBlog.vue'
@@ -50,7 +50,7 @@ import MsgLike from '../views/goforit/message/MsgLike.vue'
 import MsgCollection from '../views/goforit/message/MsgCollection.vue'
 import Group from '../views/goforit/group/Group.vue'
 import GroupTrain from '../views/goforit/group/GroupTrain.vue'
-import GroupCompetition from '../views/goforit/group/GroupCompetition.vue'
+import GroupContest from '../views/goforit/group/GroupContest.vue'
 import GroupNumbers from '../views/goforit/group/GroupNumbers.vue'
 import GroupDetail from '../views/goforit/group/GroupDetail.vue'
 import Profile from '../views/goforit/profile/Profile.vue'
@@ -70,7 +70,8 @@ import Admin from '../views/admin/Admin.vue'
 import AdminHome from '../views/admin/home/Home.vue'
 import AdminSubHome from '../views/admin/home/SubHome.vue'
 import UserManage from '../views/admin/user/UserManage.vue'
-import CompetitionManage from '../views/admin/competition/CompetitionManage.vue'
+import GroupManage from '../views/admin/group/GroupManage.vue'
+import ContestManage from '../views/admin/contest/ContestManage.vue'
 import ProblemLibManage from '../views/admin/problems/ProblemLibManage.vue'
 import ProblemSolutionManage from '../views/admin/problems/ProblemSolutionManage.vue'
 import ProblemCaseManage from '../views/admin/problems/ProblemCaseManage.vue'
@@ -112,33 +113,33 @@ const routes = [
 				]
 			},
 			{
-				path: "/competition", name: "Competition", component: Competition, meta: { title: '竞赛' },
+				path: "/contest", name: "Contest", component: Contest, meta: { title: '竞赛' },
 				children: []
 			},
 			{
-				path: "/competition/detail/:id", name: "CompetitionDetail", component: CompetitionDetail,
-				redirect: { name: 'CompetitionIllustration' }, meta: { title: '比赛详情' },
+				path: "/contest/detail/:id", name: "ContestDetail", component: ContestDetail,
+				redirect: { name: 'ContestIllustration' }, meta: { title: '比赛详情' },
 				children: [
 					{
-						path: "illustration", name: "CompetitionIllustration",
-						component: CompetitionIllustration, meta: { title: '比赛说明' },
+						path: "illustration", name: "ContestIllustration",
+						component: ContestIllustration, meta: { title: '比赛说明' },
 					},
 					{
-						path: "problems", name: "CompetitionProblems",
-						component: CompetitionProblems, meta: { title: '题目' },
+						path: "problems", name: "ContestProblems",
+						component: ContestProblems, meta: { title: '题目' },
 					},
 					{
-						path: "submit", name: "CompetitionSubmit",
-						component: CompetitionSubmit, meta: { title: '提交' },
+						path: "submit", name: "ContestSubmit",
+						component: ContestSubmit, meta: { title: '提交' },
 					},
 					{
-						path: "ranking", name: "CompetitionRanking",
-						component: CompetitionRanking, meta: { title: '排名' },
+						path: "ranking", name: "ContestRanking",
+						component: ContestRanking, meta: { title: '排名' },
 					},
 				]
 			},
-			{ path: "/competition/ranking", name: "Ranking", component: Ranking, meta: { title: '排行榜' }, },
-			{ path: "/competition/all", name: "AllCompetition", component: AllCompetition, meta: { title: '所有比赛' }, },
+			{ path: "/contest/ranking", name: "Ranking", component: Ranking, meta: { title: '排行榜' }, },
+			{ path: "/contest/all", name: "AllContest", component: AllContest, meta: { title: '所有比赛' }, },
 			// 题目解答页面
 			{ path: "/problem/:id", name: "Problem", component: Problem, meta: { title: '题目' } },
 			// markdown编辑页面
@@ -159,7 +160,7 @@ const routes = [
 				path: "/group/:id", name: "GroupDetail", component: GroupDetail, meta: { title: '团队详情' }, redirect: { name: 'GroupTrain' },
 				children: [
 					{ path: "train", name: "GroupTrain", component: GroupTrain, meta: { title: '训练' } },
-					{ path: "competition", name: "GroupCompetition", component: GroupCompetition, meta: { title: '比赛' } },
+					{ path: "contest", name: "GroupContest", component: GroupContest, meta: { title: '比赛' } },
 					{ path: "numbers", name: "GroupNumbers", component: GroupNumbers, meta: { title: '成员' } },
 
 				]
@@ -168,7 +169,7 @@ const routes = [
 				path: "/user/:id", name: "User", component: User, meta: { title: '用户信息' }, redirect: { name: 'RecentlyPass' },
 				children: [
 					{ path: "recentlyPass", name: "RecentlyPass", component: RecentlyPass, meta: { title: '最近通过' } },
-					{ path: "competition", name: "UserCompetition", component: UserCompetition, meta: { title: '比赛' } },
+					{ path: "contest", name: "UserContest", component: UserContest, meta: { title: '比赛' } },
 					{ path: "problemList", name: "MyProblemList", component: MyProblemList, meta: { title: '题单' } },
 					{ path: "group", name: "UserGroup", component: UserGroup, meta: { title: '我加入的' } },
 					{ path: "solution", name: "UserSolution", component: UserSolution, meta: { title: '题解' } },
@@ -209,10 +210,11 @@ const routes = [
 					{ path: "subhome", name: "AdminSubHome", component: AdminSubHome, },
 				]
 			},
-			{ path: "user", name: "UserManage", component: UserManage, meta: { title: '用户列表' } },
+			{ path: "user", name: "UserManage", component: UserManage, meta: { title: '用户管理' } },
+			{ path: "group", name: "GroupManage", component: GroupManage, meta: { title: '小组管理' } },
 			{ path: "problem", name: "ProblemLibManage", component: ProblemLibManage, meta: { title: '题目列表' } },
 			{ path: "problemSolution", name: "ProblemSolutionManage", component: ProblemSolutionManage, meta: { title: '题解管理' } },
-			{ path: "competition", name: "CompetitionManage", component: CompetitionManage, meta: { title: '竞赛列表' } },
+			{ path: "contest", name: "ContestManage", component: ContestManage, meta: { title: '竞赛列表' } },
 			{ path: "problemCase", name: "ProblemCaseManage", component: ProblemCaseManage, meta: { title: '题目样例' } },
 		]
 	},

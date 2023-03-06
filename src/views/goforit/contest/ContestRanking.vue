@@ -77,7 +77,7 @@
 
 </template>
 
-<script setup name="CompetitionRanking">
+<script setup name="ContestRanking">
 // 排名规则：经典ACM规则
 // AC（通过题目）越多，排名越靠前。
 // AC相同，总用时越少，排名越靠前。

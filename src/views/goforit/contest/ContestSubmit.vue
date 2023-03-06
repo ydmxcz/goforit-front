@@ -31,7 +31,7 @@
     </Table>
 </template>
 
-<script setup name="CompetitionSubmit">
+<script setup name="ContestSubmit">
 import { reactive, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 const router = useRouter()
