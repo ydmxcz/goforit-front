@@ -5,29 +5,38 @@
 				<Input search enter-button="搜索" placeholder="输入比赛名称...." />
 				<Button type="primary" icon="md-add" @click="showAddUserInfoModal">创建比赛</Button>
 			</Space>
-			<Table stripe :columns="columns" :data="userList">
+			<Table stripe :columns="columns" :data="contestList">
 				<template #status="{ row }">
-					<Select v-model="row.status" style="width:100px">
-						<Option v-for="item in statusSlelectList" :value="item.value" :key="item.value">{{ item.label }}
-						</Option>
-					</Select>
-					<!-- <strong v-if="row.status == 1" style="color: greenyellow;">正常</strong>
-					<strong v-else style="color: red;">封禁</strong> -->
+					<Tag color="blue" v-if="row.startTime > new Date().getTime()">未开始</Tag>
+					<Tag color="blue"
+						v-else-if="row.startTime > new Date().getTime() && row.endTime < new Date().getTime()">进行中</Tag>
+					<Tag color="blue" v-else-if="row.endTime < new Date().getTime()">已结束</Tag>
+					<Tag color="red" v-else>状态错误</Tag>
+
+				</template>
+				<template #contestType="{ row }">
+					<Tag color="blue" v-if="row.contestType == 1">ACM</Tag>
+					<Tag color="green" v-else-if="row.contestType == 2">OI</Tag>
+					<!-- <Time :time="(row.createTime / 1000) / 1000" type="datetime" /> -->
 				</template>
 				<template #createTime="{ row }">
 					<Time :time="(row.createTime / 1000) / 1000" type="datetime" />
+				</template>
+				<template #startTime="{ row }">
+					<span> {{ time.formatDate(new Date(1678291200000)) }}</span>
+					<!-- <Time :time="(row.startTime / 1000) / 1000" type="datetime" /> -->
 				</template>
 				<template #operation="{ row }">
 					<Poptip trigger="hover" content="查看详细信息">
 						<Button type="primary" style="margin-right: 10px;" @click="showEditContestInfoModal(row)"
 							icon="ios-paper" shape="circle"></Button>
 					</Poptip>
-					<Poptip trigger="hover" content="编辑">
-						<Button type="primary" style="margin-right: 10px;" @click="showEditContestInfoModal(row)"
+					<Poptip trigger="hover" content="编辑比赛信息">
+						<Button type="warning" style="margin-right: 10px;" @click="showEditContestInfoModal(row)"
 							icon="ios-create" shape="circle">
 						</Button>
 					</Poptip>
-					<Poptip trigger="hover" content="删除">
+					<Poptip trigger="hover" content="删除比赛">
 						<Button type="error" @click="handleDeleteUser(row)" icon="md-trash" shape="circle"></Button>
 					</Poptip>
 				</template>
@@ -250,6 +259,57 @@
 					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input>
 			</FormItem>
 		</Form>
+		<div>
+			<Row :wrap="false" style="width: 100%;height: 50px;margin-bottom: 10px;">
+				<Col class="elem-center" flex="100px" style="padding: 0px 20px;">
+				<span>题号</span>
+				</Col>
+				<Col flex="auto" style="display: flex;align-items: center;justify-content: center;">
+				<span>题目</span>
+				</Col>
+			</Row>
+			<Row :wrap="false">
+				<Col flex="100px" style="padding: 0px 20px;">
+				<div v-for="i in dragData.dataList.length" class="dragdata-list-item elem-center">{{
+					String.fromCodePoint(64 + i) }}</div>
+				</Col>
+				<Col flex="auto">
+				<div @dragover="dragover($event)" style="width: 100%;">
+					<transition-group>
+						<div v-for="(item, idx) in dragData.dataList" :key='item.id' :draggable="true"
+							class="sort-move dragdata-list-item" @dragstart="dragstart(item)"
+							@dragenter="dragenter(item, $event)" @dragend="dragend(item, $event)"
+							@dragover="dragover($event)" style="background-color: #eee;">
+							<span style="height: 50px;display: flex;align-items: center;float: left;">
+								{{ item.label }}
+							</span>
+							<div style="font-size: 20px;height: 50px;display: flex;align-items: center; float: right;"
+								@click="removeProblem(idx)">
+								<Icon type="md-trash" />
+							</div>
+						</div>
+					</transition-group>
+				</div>
+				</Col>
+			</Row>
+			<!-- <Button type="primary" @click="printList">打印列表信息</Button> -->
+			<!-- <Button >添加题目</Button> -->
+			<Button type="primary" @click="showSearchAndAddProblemModal = true">搜索并添加题目</Button>
+			<Modal v-model="showSearchAndAddProblemModal" scrollable width="600px" :mask-closable="false" :closable="false"
+				style="top: 30px;">
+				<Input search enter-button placeholder="输入题目ID进行搜索" v-model="problemData.input"
+					@on-search="handleGetProblemContent" />
+				<v-md-preview :text="problemData.content"></v-md-preview>
+				<template #footer>
+					<div style="width: 100%;height: 40px;">
+						<Space style="float: right;">
+							<Button @click="searchAndAddProblemModalCancel">取消</Button>
+							<Button type="primary" @click="addProblem">添加题目</Button>
+						</Space>
+					</div>
+				</template>
+			</Modal>
+		</div>
 		<template #footer>
 			<div style="width: 100%;height: 40px;">
 				<Space style="float: right;">
@@ -264,6 +324,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg'
+import time from '../../../common/time'
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 const store = useStore()
@@ -291,16 +352,17 @@ const statusSlelectList = ref([
 ]);
 
 const columns = ref([
-	{ title: 'ID', key: 'id', width: '200px' },
-	{ title: '比赛标题', key: 'title' },
-	{ title: '举办方ID', key: 'sponsorId' },
-	{ title: '比赛类型', key: 'contestType' },
-	{ title: '比赛状态', slot: 'status', width: '150px' },
-	{ title: '创建时间', key: 'createTime', slot: 'createTime' },
-	{ title: '操作', slot: 'operation', width: '250px' },
+	{ title: 'ID', key: 'id', width: '70px', align: 'center' },
+	{ title: '比赛标题', key: 'title', align: 'center' },
+	{ title: '举办方ID', key: 'sponsorId', align: 'center' },
+	{ title: '比赛类型', slot: 'contestType', width: '100px', align: 'center' },
+	{ title: '比赛状态', slot: 'status', width: '150px', align: 'center' },
+	{ title: '创建时间', key: 'createTime', slot: 'createTime', align: 'center' },
+	{ title: '开始时间', slot: 'startTime', align: 'center' },
+	{ title: '操作', slot: 'operation', width: '250px', align: 'center' },
 ]);
 
-const userList = ref([]);
+const contestList = ref([]);
 const formItem = ref({
 	id: '',
 	sponsorId: '',
@@ -422,7 +484,7 @@ const editUserInfoOk = async () => {
 		return
 	}
 	msg.ok({ background: true, content: '修改成功' });
-	getUserList()
+	getcontestList()
 	clearFormItem()
 	showEditUserInfo.value = false
 }
@@ -463,6 +525,7 @@ const handleContestTimeSelectOK = () => {
 
 
 
+const showSearchAndAddProblemModal = ref(false)
 
 const showCreateContestInfo = ref(false)
 const showAddUserInfoModal = () => {
@@ -489,7 +552,8 @@ const createContestOK = async () => {
 		contestType: Number(formItem.value.contestType) || 1,
 		contestTagId: Number(formItem.value.contestTagId) || 0,
 		contestTagName: formItem.value.contestTagName || '',
-		creator: BigNumber(userInfo.value.id) || 0
+		creator: BigNumber(userInfo.value.id) || 0,
+		problemIds: []
 	}
 	try {
 		d.sponsorId = BigNumber(formItem.value.sponsorId)
@@ -514,6 +578,13 @@ const createContestOK = async () => {
 	if (!d.public) {
 		d.pwd = ''
 	}
+	if (dragData.dataList.length == 0) {
+		msg.err('请添加至少一道题目！')
+		return
+	}
+	dragData.dataList.forEach((item) => {
+		d.problemIds.push(item.id)
+	})
 	console.log(d, formItem.value);
 	const { data } = await http.post('/contest/create', d)
 	console.log(data);
@@ -522,7 +593,7 @@ const createContestOK = async () => {
 		return
 	}
 	msg.ok('添加成功');
-	getUserList()
+	getcontestList()
 	showEditUserInfo.value = false
 	clearFormItem()
 }
@@ -542,17 +613,21 @@ const handleDeleteUser = async (row) => {
 	}
 	msg.ok({ background: true, content: '删除成功' });
 	console.log(data);
-	getUserList()
+	getcontestList()
 }
 
 
-const getUserList = async () => {
-	const { data } = await http.get('/user/list?currPage=' + pageInfo.curr + '&pageSize=' + pageInfo.pageSize)
+const getcontestList = async () => {
+	const { data } = await http.post('/contest/all', {
+		currPage: pageInfo.curr,
+		pageSize: pageInfo.pageSize
+	})
 	if (data.code != 200) {
 		msg.err({ background: true, content: data.msg });
+		return
 	}
-	// console.log(data);
-	userList.value = data.data.userlist
+	console.log(data);
+	contestList.value = data.data.infos
 	pageInfo.total = data.data.total
 }
 
@@ -568,12 +643,130 @@ const getContestTags = async () => {
 const contestTagList = ref([])
 
 onMounted(() => {
+	// console.log();
 	console.log("userId", userInfo.value.id);
-	getUserList();
+	getcontestList();
 	getContestTags()
 })
+
+
+const dragData = reactive({
+	oldData: null, // 开始排序时按住的旧数据
+	newData: null, // 拖拽过程的数据
+	// 列表数据
+	dataList: [],
+	idSet: new Set()
+})
+
+
+const dragstart = (value) => {
+	dragData.oldData = value
+}
+
+// 记录移动过程中信息
+const dragenter = (value, e) => {
+	dragData.newData = value
+	e.preventDefault()
+}
+
+// 拖拽最终操作
+const dragend = (value, e) => {
+	if (dragData.oldData !== dragData.newData) {
+		let oldIndex = dragData.dataList.indexOf(dragData.oldData)
+		let newIndex = dragData.dataList.indexOf(dragData.newData)
+		let newItems = [...dragData.dataList]
+		// 删除老的节点
+		newItems.splice(oldIndex, 1)
+		// 在列表中目标位置增加新的节点
+		newItems.splice(newIndex, 0, dragData.oldData)
+		dragData.dataList = [...newItems]
+	}
+}
+
+// 拖动事件（主要是为了拖动时鼠标光标不变为禁止）
+const dragover = (e) => {
+	e.preventDefault()
+}
+
+
+const printList = () => {
+	console.log(dragData.dataList);
+}
+
+const problemData = reactive({
+	id: 0,
+	input: '',
+	content: '',
+})
+
+const handleGetProblemContent = async () => {
+	const { data: res } = await http.get('/problem/content?id=' + problemData.input)
+	console.log(res);
+	if (res.code != 200) {
+		msg.err('题目搜索失败')
+		msg.err(res.msg)
+		return
+	}
+	problemData.content = res.data.content
+	problemData.id = Number(problemData.input)
+}
+
+
+const printItem = (item) => {
+	console.log(item);
+}
+
+const searchAndAddProblemModalCancel = () => {
+	showSearchAndAddProblemModal.value = false
+}
+
+
+const addProblem = () => {
+	let id = problemData.id
+	if (dragData.idSet.has(id)) {
+		msg.err('题目已存在请勿重复添加')
+		return
+	}
+	dragData.idSet.add(id)
+	// let i = dragData.dataList.length
+	dragData.dataList.push({ id: id, label: 'ID:' + (id) })
+	showSearchAndAddProblemModal.value = false
+	problemData.id = 0
+	problemData.input = ''
+	problemData.content = ''
+}
+
+const removeProblem = (idx) => {
+	let id = dragData.dataList[idx].id
+	dragData.dataList.splice(idx, 1)
+	dragData.idSet.delete(id)
+	console.log(idx, "ok");
+}
+
 
 </script>
 
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.sort-move {
+	transition: transform 0.3s;
+}
+
+.dragdata-list-item {
+	width: 100%;
+	height: 50px;
+	margin-bottom: 10px;
+	border-radius: 10px;
+	padding: 0px 20px;
+}
+
+.elem-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+:deep(div.vuepress-markdown-body) {
+	padding: 10px;
+}
+</style>
