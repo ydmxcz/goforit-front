@@ -72,9 +72,9 @@
                 <!-- <Icon v-else="row.status" type="md-checkmark" /> -->
             </template>
             <template #difficulty="{ row }">
-                <Tag v-if="row.difficulty === '简单'" color="green">{{ row.difficulty }}</Tag>
-                <Tag v-else-if="row.difficulty === '中等'" color="orange">{{ row.difficulty }}</Tag>
-                <Tag v-else color="red">{{ row.difficulty }}</Tag>
+                <Tag v-if="row.difficulty === 1" color="green">简单</Tag>
+                <Tag v-else-if="row.difficulty === 2" color="orange">中等</Tag>
+                <Tag v-else color="red">困难</Tag>
             </template>
             <template #rate="{ row }">
                 <span>{{ (((row.acceptCount || 0) / (row.submitCount || 1)) * 100).toFixed(1) }}%</span>

@@ -5,66 +5,153 @@
 				<Input search enter-button="搜索" placeholder="Enter something..." />
 				<Button type="primary" icon="md-add" @click="showAddUserInfoModal">添加题目</Button>
 			</Space>
-			<Table stripe :columns="columns" :data="userList">
+			<Table stripe :columns="columns" :data="problemList">
 				<template #status="{ row }">
 					<Select v-model="row.status" style="width:100px">
 						<Option v-for="item in statusSlelectList" :value="item.value" :key="item.value">{{ item.label }}
 						</Option>
 					</Select>
-					<!-- <strong v-if="row.status == 1" style="color: greenyellow;">正常</strong>
-																																																																																		<strong v-else style="color: red;">封禁</strong> -->
+				</template>
+				<template #public="{ row }">
+					<Tag color="blue" v-if="row.public == 1">公开</Tag>
+					<Tag color="red" v-else>私有</Tag>
+				</template>
+				<template #difficulty="{ row }">
+					<Tag color="green" v-if="row.difficulty == 1">简单</Tag>
+					<Tag color="orange" v-else-if="row.difficulty == 2">中等</Tag>
+					<Tag color="red" v-else>困难</Tag>
 				</template>
 				<template #createTime="{ row }">
 					<Time :time="(row.createTime / 1000) / 1000" type="datetime" />
 				</template>
 				<template #operation="{ row }">
-					<Button type="primary" style="margin-right: 10px;" @click="showEditUserInfoModal(row)">
-						<Icon type="ios-create-outline" style="margin-right: 5px;" />编辑
-					</Button>
-					<Button type="error" @click="handleDeleteUser(row)">
-						<Icon type="md-trash" style="margin-right: 5px;" />删除
-					</Button>
+					<Poptip trigger="hover" content="查看详细信息">
+						<Button type="primary" style="margin-right: 10px;" @click="showCheckUserInfoModal(row)"
+							icon="ios-paper" shape="circle"></Button>
+					</Poptip>
+					<Poptip trigger="hover" content="编辑比赛信息">
+						<Button type="warning" style="margin-right: 10px;" @click="showEditProblemInfoModal(row)"
+							icon="ios-create" shape="circle">
+						</Button>
+					</Poptip>
+					<Poptip trigger="hover" content="删除比赛">
+						<Button type="error" @click="handleDeleteProblem(row)" icon="md-trash" shape="circle"></Button>
+					</Poptip>
 				</template>
 			</Table>
 			<Space direction="vertical" type="flex" align="center">
 				<Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
-					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.curr" @on-change="changePage"
+					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
 					@on-page-size-change="changePageSize" />
 			</Space>
 		</Space>
 	</Card>
-	<Modal v-model="showEditProblemModal" title="编辑题目信息" @on-ok="editProblemInfoOk" @on-cancel="editProblemInfoCancel" scrollable>
+	<Modal v-model="showCheckProblemModal" :title="'查看题目信息'" width="1200" style="top:20px;margin-bottom: 50px;"
+		:mask-closable="false" :before-close="clearFormItem" scrollable>
+
+		<Form :model="problemInfo" :label-width="80" :rules="ruleValidate">
+			<FormItem label="题目名称：" prop="title" :label-width="180">
+				<span>{{ problemInfo.title }}</span>
+			</FormItem>
+			<Space :size="40" style="width: 100%;" :wrap="false">
+				<FormItem label="C/C++时间限制(ns)：" prop="timeLimit" :label-width="180">
+					<span>{{ problemInfo.cTimeLimit }}</span>
+				</FormItem>
+				<FormItem label="C/C++内存限制(b)：" prop="timeLimit" :label-width="180">
+					<span>{{ problemInfo.cMemoryLimit }}</span>
+				</FormItem>
+			</Space>
+			<Space :size="40" style="width: 100%;" :wrap="false">
+				<FormItem label="其他语言时间限制(ns)：" prop="email" :label-width="180">
+					<span>{{ problemInfo.timeLimit }}</span>
+				</FormItem>
+				<FormItem label="其他语言内存限制(b)：" prop="email" :label-width="180">
+					<span>{{ problemInfo.memoryLimit }}</span>
+				</FormItem>
+			</Space>
+			<Space :size="30" style="width: 100%;" :wrap="false">
+				<FormItem label="题目难度：" :label-width="180">
+					<Tag color="green" v-if="problemInfo.difficulty == 1">简单</Tag>
+					<Tag color="orange" v-else-if="problemInfo.difficulty == 2">中等</Tag>
+					<Tag color="red" v-else>困难</Tag>
+				</FormItem>
+				<FormItem label="是否公开：" :label-width="180">
+					<Tag color="blue" v-if="problemInfo.public == 1">公开</Tag>
+					<Tag color="red" v-else>私有</Tag>
+				</FormItem>
+			</Space>
+			<Space :size="30" style="width: 100%;" :wrap="false">
+				<FormItem label="样例输入" :label-width="180">
+					<Input v-model="problemInfo.caseIn" type="textarea" :autosize="{ minRows: 2 }" placeholder="输入样例..."
+						style="width: 250px;" />
+				</FormItem>
+				<FormItem label="样例输出" :label-width="180">
+					<Input v-model="problemInfo.caseOut" type="textarea" :autosize="{ minRows: 2 }" placeholder="输出样例..."
+						style="width: 250px;" />
+				</FormItem>
+			</Space>
+			<FormItem label="算法标签">
+				<Tag v-for="item in problemInfo.tags" color="blue" style="margin: 5px;cursor: pointer;">
+					{{ item.name }}
+				</Tag>
+			</FormItem>
+			<FormItem label="题目内容">
+				<v-md-editor class="md-editor" v-model="problemInfo.content" height="300px" mode="edit"
+					placeholder="输入题目信息，点击编辑器右上角可以全屏显示编辑器"
+					left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
+			</FormItem>
+		</Form>
+		<template #footer>
+			<div style="width: 100%;height: 40px;">
+				<Space style="float: right;">
+					<Button @click="showCheckProblemModal = false">关闭</Button>
+				</Space>
+			</div>
+		</template>
+	</Modal>
+	<Modal v-model="showEditProblemModal" :title="'编辑题目信息'" width="1200" style="top:20px;margin-bottom: 50px;"
+		:mask-closable="false" :before-close="handleBeforeClose" scrollable>
 
 		<Form :model="problemInfo" :label-width="80" :rules="ruleValidate">
 			<FormItem label="题目名称：" prop="title" :label-width="180">
 				<Input v-model="problemInfo.title"></Input>
 			</FormItem>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="C/C++时间限制(ms)：" prop="timeLimit" :label-width="180">
+				<FormItem label="C/C++时间限制(ns)：" prop="timeLimit" :label-width="180">
 					<Input v-model="problemInfo.cTimeLimit"></Input>
 				</FormItem>
-				<FormItem label="C/C++内存限制(mb)：" prop="timeLimit" :label-width="180">
+				<FormItem label="C/C++内存限制(b)：" prop="timeLimit" :label-width="180">
 					<Input v-model="problemInfo.cMemoryLimit"></Input>
 				</FormItem>
 			</Space>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="其他语言时间限制(ms)：" prop="email" :label-width="180">
+				<FormItem label="其他语言时间限制(ns)：" prop="email" :label-width="180">
 					<Input v-model="problemInfo.timeLimit"></Input>
 				</FormItem>
-				<FormItem label="其他语言内存限制(mb)：" prop="email" :label-width="180">
+				<FormItem label="其他语言内存限制(b)：" prop="email" :label-width="180">
 					<Input v-model="problemInfo.memoryLimit"></Input>
 				</FormItem>
 			</Space>
 			<Space :size="30" style="width: 100%;" :wrap="false">
 				<FormItem label="题目难度：" :label-width="180">
-					<Select v-model="problemInfo.difficult" style="width:200px">
-						<Option v-for="item in ['简单', '中等', '困难']" :value="item" :key="item">{{ item }}</Option>
+					<Select v-model="problemInfo.difficulty" style="width:200px">
+						<Option v-for="item in difficultyOpts" :value="item.key" :key="item.key">{{ item.label }}</Option>
 					</Select>
 				</FormItem>
 				<FormItem label="是否公开：" :label-width="180">
 					<Select v-model="problemInfo.public" style="width:200px">
-						<Option v-for="item in ['公开', '私有', '付费']" :value="item" :key="item">{{ item }}</Option>
+						<Option v-for="item in publicOpts" :value="item.key" :key="item.key">{{ item.label }}</Option>
 					</Select>
+				</FormItem>
+			</Space>
+			<Space :size="30" style="width: 100%;" :wrap="false">
+				<FormItem label="样例输入" :label-width="180">
+					<Input v-model="problemInfo.caseIn" type="textarea" :autosize="{ minRows: 2 }" placeholder="输入样例..."
+						style="width: 250px;" />
+				</FormItem>
+				<FormItem label="样例输出" :label-width="180">
+					<Input v-model="problemInfo.caseOut" type="textarea" :autosize="{ minRows: 2 }" placeholder="输出样例..."
+						style="width: 250px;" />
 				</FormItem>
 			</Space>
 			<FormItem label="算法标签">
@@ -79,10 +166,10 @@
 							<Space style="width: 100%;" direction="vertical" align="start">
 								<div class="all-tag-item" v-for="item in tagSelect">
 									<div class="vertical-center item-title"
-										:style="{ borderLeft: '3px solid ' + item.color, background: item.colorBg }">
+										style=" border-left: 3px solid #fff; background-color: #fff ;">
 										{{ item.name }}</div>
 									<Row :wrap="true">
-										<Tag v-for="subitem in item.children" :color="subitem.color"
+										<Tag v-for="subitem in item.tags" color="blue"
 											@click="searchInAllTag(item.name, subitem)"
 											style="margin: 5px;cursor: pointer;">
 											{{ subitem.name }}
@@ -100,6 +187,14 @@
 					left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
 			</FormItem>
 		</Form>
+		<template #footer>
+			<div style="width: 100%;height: 40px;">
+				<Space style="float: right;">
+					<Button @click="editProblemInfoCancel">取消</Button>
+					<Button type="primary" @click="addProblemInfoOk">确定</Button>
+				</Space>
+			</div>
+		</template>
 	</Modal>
 	<Modal v-model="showAddUserInfo" :title="'创建新题目'" width="1200" style="top:20px;margin-bottom: 50px;"
 		:mask-closable="false" :before-close="handleBeforeClose" scrollable>
@@ -109,31 +204,41 @@
 				<Input v-model="problemInfo.title"></Input>
 			</FormItem>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="C/C++时间限制(ms)：" prop="timeLimit" :label-width="180">
+				<FormItem label="C/C++时间限制(ns)：" prop="timeLimit" :label-width="180">
 					<Input v-model="problemInfo.cTimeLimit"></Input>
 				</FormItem>
-				<FormItem label="C/C++内存限制(mb)：" prop="timeLimit" :label-width="180">
+				<FormItem label="C/C++内存限制(b)：" prop="timeLimit" :label-width="180">
 					<Input v-model="problemInfo.cMemoryLimit"></Input>
 				</FormItem>
 			</Space>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="其他语言时间限制(ms)：" prop="email" :label-width="180">
+				<FormItem label="其他语言时间限制(ns)：" prop="email" :label-width="180">
 					<Input v-model="problemInfo.timeLimit"></Input>
 				</FormItem>
-				<FormItem label="其他语言内存限制(mb)：" prop="email" :label-width="180">
+				<FormItem label="其他语言内存限制(b)：" prop="email" :label-width="180">
 					<Input v-model="problemInfo.memoryLimit"></Input>
 				</FormItem>
 			</Space>
 			<Space :size="30" style="width: 100%;" :wrap="false">
 				<FormItem label="题目难度：" :label-width="180">
-					<Select v-model="problemInfo.difficult" style="width:200px">
-						<Option v-for="item in ['简单', '中等', '困难']" :value="item" :key="item">{{ item }}</Option>
+					<Select v-model="problemInfo.difficulty" style="width:200px">
+						<Option v-for="item in difficultyOpts" :value="item.key" :key="item.key">{{ item.label }}</Option>
 					</Select>
 				</FormItem>
 				<FormItem label="是否公开：" :label-width="180">
 					<Select v-model="problemInfo.public" style="width:200px">
-						<Option v-for="item in ['公开', '私有', '付费']" :value="item" :key="item">{{ item }}</Option>
+						<Option v-for="item in publicOpts" :value="item.key" :key="item.key">{{ item.label }}</Option>
 					</Select>
+				</FormItem>
+			</Space>
+			<Space :size="30" style="width: 100%;" :wrap="false">
+				<FormItem label="样例输入" :label-width="180">
+					<Input v-model="problemInfo.caseIn" type="textarea" :autosize="{ minRows: 2 }" placeholder="输入样例..."
+						style="width: 250px;" />
+				</FormItem>
+				<FormItem label="样例输出" :label-width="180">
+					<Input v-model="problemInfo.caseOut" type="textarea" :autosize="{ minRows: 2 }" placeholder="输出样例..."
+						style="width: 250px;" />
 				</FormItem>
 			</Space>
 			<FormItem label="算法标签">
@@ -148,10 +253,10 @@
 							<Space style="width: 100%;" direction="vertical" align="start">
 								<div class="all-tag-item" v-for="item in tagSelect">
 									<div class="vertical-center item-title"
-										:style="{ borderLeft: '3px solid ' + item.color, background: item.colorBg }">
+										style=" border-left: 3px solid #fff; background-color: #fff ;">
 										{{ item.name }}</div>
 									<Row :wrap="true">
-										<Tag v-for="subitem in item.children" :color="subitem.color"
+										<Tag v-for="subitem in item.tags" color="blue"
 											@click="searchInAllTag(item.name, subitem)"
 											style="margin: 5px;cursor: pointer;">
 											{{ subitem.name }}
@@ -169,7 +274,7 @@
 					left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
 			</FormItem>
 			<FormItem label="上传评测样例文件">
-				<Upload multiple type="drag" :action="fileServer.fileServerAddress" :on-success="onUploadSuccess"
+				<Upload multiple type="drag" :action="fileServer.uploadUrl" :on-success="onUploadSuccess"
 					:before-upload="handleUpload" :show-upload-list="false">
 					<div style="padding: 20px 0">
 						<Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
@@ -178,21 +283,20 @@
 					</div>
 				</Upload>
 				<Space style="margin-top: 10px;">
-					<Tag type="border" closable color="primary" v-for="item, idx in testMap.uploadFileList"
+					<Tag type="border" closable color="primary" v-for="item, idx in uploadInfoMap.uploadFileList"
 						@on-close="onRemoveUploadedFile(item, idx)">{{ item.name }}</Tag>
-
 				</Space>
 			</FormItem>
 		</Form>
 		<template #footer>
 			<div style="width: 100%;height: 40px;">
 				<Space style="float: right;">
-					<Button @click="addUserInfoCancel">取消</Button>
+					<Button @click="addProblemInfoCancel">取消</Button>
 					<Button type="primary" @click="addProblemInfoOk">确定</Button>
 				</Space>
 			</div>
 		</template>
-</Modal>
+	</Modal>
 </template>
 <script setup name="ProblemLibManage">
 import { ref, reactive, onMounted } from 'vue'
@@ -203,20 +307,32 @@ import fileServer from '../../../common/fierserver'
 import msg from '../../../common/msg.js'
 
 const pageInfo = reactive({
-	curr: 1,
+	currPage: 1,
 	pageSize: 15,
 	total: 100
 })
 
 const store = useStore()
 
+const difficultyOpts = ref([
+	{ label: '简单', key: 1 },
+	{ label: '中等', key: 2 },
+	{ label: '困难', key: 3 },
+]);
+
+const publicOpts = ref([
+	{ label: '公开', key: 1 },
+	{ label: '私有', key: 2 },
+]);
+
 const changePage = (page) => {
-	console.log(page);
-	pageInfo.curr = page
+	pageInfo.currPage = page
+	getProblemList()
 }
 
 const changePageSize = (psize) => {
-	console.log(psize);
+	pageInfo.pageSize = psize
+	getProblemList()
 }
 
 const statusSlelectList = ref([
@@ -225,27 +341,38 @@ const statusSlelectList = ref([
 ]);
 
 const columns = ref([
-	{ title: 'ID', key: 'id', width: '200px' },
-	{ title: '用户名', key: 'userName' },
-	{ title: '邮箱', key: 'email' },
-	{ title: '用户状态', key: 'status', slot: 'status', width: '150px' },
-	{ title: '注册时间', key: 'createTime', slot: 'createTime' },
-	{ title: '操作', slot: 'operation', width: '250px' },
+	{ title: 'ID', key: 'id', width: '100px', align: 'center' },
+	{ title: '标题', key: 'title', align: 'center' },
+	{ title: '作者ID', key: 'author', align: 'center' },
+	{ title: '作者名称', key: 'userName', align: 'center' },
+	{ title: '是否公开', slot: 'public', align: 'center', width: '100px' },
+	{ title: '难度', slot: 'difficulty', align: 'center', width: '100px' },
+	{ title: '创建时间', key: 'createTime', slot: 'createTime', align: 'center' },
+	{ title: '操作', slot: 'operation', width: '250px', align: 'center' },
 ]);
 
-const userList = ref([]);
 const problemInfo = ref({
 	title: '',
-	timeLimit: 0,
-	cTimeLimit: 0,
-	memoryLimit: 0,
-	cMemoryLimit: 0,
-	public: '公开',
-	difficult: '简单',
+	timeLimit: 2000,
+	cTimeLimit: 1000,
+	memoryLimit: 128,
+	cMemoryLimit: 64,
+	public: 1,
+	difficulty: 1,
 	tags: [],
-	content: '# SB!',
-	caseFileList: []
+	content: '# 输入题目内容',
+	caseFileList: [],
+	caseIn: '',
+	caseOut: ''
 })
+
+const uploadInfoMap = reactive({
+	map: new Map(),
+	closeable: true,
+	uploadFileList: []
+})
+
+
 const clearFormItem = () => {
 	problemInfo.value = {
 		title: '',
@@ -253,23 +380,20 @@ const clearFormItem = () => {
 		cTimeLimit: 1000,
 		memoryLimit: 128,
 		cMemoryLimit: 64,
-		public: '公开',
-		difficult: '简单',
+		public: 1,
+		difficulty: 1,
 		tags: [],
-		content: '# hi SB!',
-		caseFileList: []
+		content: '# 输入题目内容',
+		caseFileList: [],
+		caseIn: '',
+		caseOut: ''
 	}
-	testMap.map.clear()
-	testMap.closeable = true
+	uploadInfoMap.map.clear()
+	uploadInfoMap.closeable = true
 	// 用来保存tag list需要的已上传的图片信息
-	testMap.uploadFileList = []
+	uploadInfoMap.uploadFileList = []
 }
 
-const testMap = reactive({
-	map: new Map(),
-	closeable: true,
-	uploadFileList: []
-})
 
 const handleUpload = (file) => {
 	let idx = file.name.lastIndexOf(".");
@@ -290,8 +414,8 @@ const handleUpload = (file) => {
 		return false
 	}
 	// 如果map中有
-	if (testMap.map.has(caseIdx)) {
-		let t = testMap.map.get(caseIdx)
+	if (uploadInfoMap.map.has(caseIdx)) {
+		let t = uploadInfoMap.map.get(caseIdx)
 		if (ext == '.in' && t.in != '-') {
 			msg.err(file.name + "文件重复")
 			return false
@@ -305,21 +429,19 @@ const handleUpload = (file) => {
 
 
 const onUploadSuccess = (response, file, fileList) => {
-	console.log(response);
-	console.log(file);
 	let idx = file.name.lastIndexOf(".");
 	let ext = file.name.substring(idx)
 	let caseIdx = Number(file.name.substring(0, idx))
-	if (!testMap.map.has(caseIdx)) {
-		testMap.map.set(caseIdx, {
+	if (!uploadInfoMap.map.has(caseIdx)) {
+		uploadInfoMap.map.set(caseIdx, {
 			idx: caseIdx,
-			inSize:0,
-			outSize:0,
+			inSize: 0,
+			outSize: 0,
 			in: '-',
 			out: '-',
 		})
 	}
-	let pair =testMap.map.get(caseIdx)
+	let pair = uploadInfoMap.map.get(caseIdx)
 	if (ext == '.in') {
 		pair.in = response.data
 		pair.inSize = file.size
@@ -327,7 +449,7 @@ const onUploadSuccess = (response, file, fileList) => {
 		pair.out = response.data
 		pair.outSize = file.size
 	}
-	testMap.uploadFileList.push({
+	uploadInfoMap.uploadFileList.push({
 		name: file.name,
 		addr: response.data
 	})
@@ -338,7 +460,7 @@ const onRemoveUploadedFile = async (file, idx) => {
 	let symIdx = file.name.lastIndexOf(".");
 	let ext = file.name.substring(symIdx)
 	let caseIdx = Number(file.name.substring(0, symIdx))
-	let t = testMap.map.get(caseIdx);
+	let t = uploadInfoMap.map.get(caseIdx);
 	let addr = ''
 	try {
 		if (ext == '.in') {
@@ -358,28 +480,35 @@ const onRemoveUploadedFile = async (file, idx) => {
 				return
 			}
 			t.out = '-'
-			t.outSize=0
+			t.outSize = 0
 		} else {
 			msg.err('无效文件类型')
 		}
 	} catch (e) {
 		msg.err(e)
 	}
-	testMap.uploadFileList.splice(idx, 1)
+	uploadInfoMap.uploadFileList.splice(idx, 1)
 	if (t.in == '-' && t.out == '-') {
-		testMap.map.delete(caseIdx)
+		uploadInfoMap.map.delete(caseIdx)
 	}
 	msg.ok("删除成功")
 }
 
 
 const checkCase = () => {
-	if (testMap.map.size == 0) {
+	if(!problemInfo.value.title) {
+		msg.err("请输入题目标题")
+		return false
+	}
+	if (problemInfo.value.tags.length == 0) {
+		msg.err("请选择至少一个选择题目标签")
+		return false
+	}
+	if (uploadInfoMap.map.size == 0) {
 		msg.err('请上传评测文件')
 		return false
 	}
-	for (let val of testMap.map.values()) {
-		console.log("sss:", val);
+	for (let val of uploadInfoMap.map.values()) {
 		if (val.in == '-') {
 			msg.err(val.idx + '号测试样例缺少输入(.in)文件')
 			return false
@@ -390,7 +519,6 @@ const checkCase = () => {
 		}
 		problemInfo.value.caseFileList.push(val)
 	}
-	// console.log();
 	problemInfo.value.caseFileList.sort((o1, o2) => {
 		return o1.idx - o2.idx
 	})
@@ -417,10 +545,33 @@ const handleCloseTag = (item) => {
 	problemInfo.value.tags.splice(i, 1)
 }
 
+const getProblemDetial = async (id) => {
+	const { data: res } = await http.get('/problem/detial?id=' + id)
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	problemInfo.value = res.data.info
+	problemInfo.value.tags = res.data.tags
+	const { data: res1 } = await http.get('/problem/content?id=' + id)
+	if (res1.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	problemInfo.value.content = res1.data.content
+}
+
+const showCheckProblemModal = ref(false)
+// 打开查看题目信息对话框
+const showCheckUserInfoModal = async (row) => {
+	getProblemDetial(row.id)
+	showCheckProblemModal.value = true
+}
+
 const showEditProblemModal = ref(false)
-const showEditUserInfoModal = (row) => {
+const showEditProblemInfoModal = async (row) => {
+	getProblemDetial(row.id)
 	showEditProblemModal.value = true
-	problemInfo.value = row
 }
 
 const editProblemInfoOk = async () => {
@@ -447,13 +598,9 @@ const editProblemInfoOk = async () => {
 	// 	return
 	// }
 	Message.success({ background: true, content: '修改成功' });
-	getUserList()
+	getProblemList()
 	clearFormItem()
 	showEditProblemModal.value = false
-}
-
-const editProblemInfoCancel = () => {
-	clearFormItem()
 }
 
 
@@ -461,14 +608,13 @@ const editProblemInfoCancel = () => {
 
 const showAddUserInfo = ref(false)
 const showAddUserInfoModal = () => {
-	console.log(testMap.uploadFileList);
+	console.log(uploadInfoMap.uploadFileList);
 	showAddUserInfo.value = true
 	clearFormItem()
 }
 
 const handleBeforeClose = async () => {
-	console.log('取消上传');
-	for (let val of testMap.map.values()) {
+	for (let val of uploadInfoMap.map.values()) {
 		if (val.in != '-') {
 			await http.post('/goforit/remove', { addr: val.in })
 		}
@@ -478,19 +624,6 @@ const handleBeforeClose = async () => {
 		// problemInfo.value.caseFileList.push(val)
 	}
 	clearFormItem()
-	// let s = false;
-	// return new Promise(function (resolve, reject) {
-	// 	//resolve,reject都是一个函数
-	// 	//resolve是讲pending转为resolved
-	// 	//reject是讲pending转为rejected
-	// 	if (s) {
-	// 		msg.ok('可以关闭')
-	// 		resolve("true");
-	// 	} else {
-	// 		msg.err('禁止关闭')
-	// 		reject("false");
-	// 	}
-	// })
 }
 
 
@@ -500,139 +633,97 @@ const addProblemInfoOk = async () => {
 		problemInfo.value.caseFileList.length = 0
 		return
 	}
-	msg.ok('样例检查通过');
 	console.log(problemInfo.value.caseFileList);
-	// const { data } = await http.post('/user/add', {
-	// 	userInfo: d,
-	// 	password: formItem.password || ''
-	// })
-	// if (data.code != 200) {
-	// 	Message.error({ background: true, content: data.msg });
-	// 	return
-	// }
-	msg.ok('添加成功')
-	// getUserList()
-	showAddUserInfo.value = false
-	// clearFormItem()
-	handleBeforeClose()
-}
-const addUserInfoCancel = () => {
-	handleBeforeClose()
-	showAddUserInfo.value = false
-	// clearFormItem()
-}
-
-
-const handleDeleteUser = async (row) => {
-	// return
-	// const { data } = await http.post('/user/delete', {
-	// 	UserId: row.id || 0,
-	// })
-	// if (data.code != 200) {
-	// 	Message.error({ background: true, content: data.msg });
-	// }
-	msg.err('删除成功')
-	console.log(data);
-	getUserList()
-}
-
-
-const getUserList = async () => {
-	const { data } = await http.get('/user/list?currPage=' + pageInfo.curr + '&pageSize=' + pageInfo.pageSize)
-	if (data.code != 200) {
-		Message.error({ background: true, content: data.msg });
+	let postData = {
+		info: {
+			title: problemInfo.value.title,// '',
+			timeLimit: problemInfo.value.timeLimit,// 2000,
+			cTimeLimit: problemInfo.value.cTimeLimit,// 1000,
+			memoryLimit: problemInfo.value.memoryLimit,// 128,
+			cMemoryLimit: problemInfo.value.cMemoryLimit,// 64,
+			public: problemInfo.value.public,// 1,
+			difficulty: problemInfo.value.difficulty,// 1,
+			content: problemInfo.value.content,// '# 输入题目内容',
+			caseIn: problemInfo.value.caseIn,// '',
+			caseOut: problemInfo.value.caseOut,// ''
+		},
+		tags: problemInfo.value.tags,
+		caseFileList: problemInfo.value.caseFileList
 	}
-	// console.log(data);
-	userList.value = data.data.userlist
+	console.log(postData)
+	msg.ok('正在提交');
+	const { data } = await http.post('/problem/add', postData)
+	if (data.code != 200) {
+		msg.err(data.msg)
+		return
+	}
+	msg.ok('题目添加成功')
+	showAddUserInfo.value = false
+
+	handleBeforeClose()
+}
+const addProblemInfoCancel = () => {
+	handleBeforeClose()
+
+	showAddUserInfo.value = false
+}
+
+const editProblemInfoCancel = () => {
+	clearFormItem()
+	showEditProblemModal.value = false
+}
+
+
+const handleDeleteProblem = async (row) => {
+	const { data } = await http.post('/problem/delete', {
+		problemId: row.id || 0,
+		userId: userInfo.value.id
+	})
+	// console.log(data)
+	if (data.code != 200) {
+		msg.err(data.msg)
+		return
+	}
+	msg.ok('删除成功')
+	getProblemList()
+}
+
+const problemList = ref([]);
+
+const getProblemList = async () => {
+	const { data } = await http.get('/problem/infos?currPage=' + pageInfo.currPage + '&pageSize=' + pageInfo.pageSize)
+	if (data.code != 200) {
+		msg.err(data.msg)
+		return
+	}
+	console.log(data);
+	problemList.value = data.data.problemlist
 	pageInfo.total = data.data.total
 }
 
 
 const userInfo = ref({ userName: '' });
 
-const tagSelect = reactive([
-	{
-		name: '算法', id: '1', colorBg: '#9dcbfb', color: '#2d8cf0', children: [
-			{ name: '分布式系统', id: '1', color: 'blue' },
-			{ name: 'Go', id: '1', color: 'blue' },
-			{ name: 'Java', id: '1', color: 'blue' },
-			{ name: 'MySQL', id: '1', color: 'blue' },
-			{ name: 'Redis', id: '1', color: 'blue' },
-			{ name: 'Kafka', id: '1', color: 'blue' },
-			{ name: 'ElasticSearch', id: '1', color: 'blue' },
-			{ name: 'Spring', id: '1', color: 'blue' },
-			{ name: 'SpringCloud', id: '1', color: 'blue' },
-			{ name: 'Linux', id: '1', color: 'blue' },
-			{ name: '计算机网络', id: '1', color: 'blue' },
-			{ name: '算法', id: '1', color: 'blue' },
-			{ name: '面试', id: '1', color: 'blue' },
-			{ name: '架构', id: '1', color: 'blue' },
-			{ name: '数据库', id: '1', color: 'blue' },
-			{ name: 'Kubernetes', id: '1', color: 'blue' },
-			{ name: 'Docker', id: '1', color: 'blue' },
-			{ name: '源码阅读', id: '1', color: 'blue' },
-		]
-	}, {
-		name: '后端', id: '1', colorBg: '#9dcbfb', color: '#2d8cf0', children: [
-			{ name: '分布式系统', id: '1', color: 'blue' },
-			{ name: 'Go', id: '1', color: 'blue' },
-			{ name: 'Java', id: '1', color: 'blue' },
-			{ name: 'MySQL', id: '1', color: 'blue' },
-			{ name: 'Redis', id: '1', color: 'blue' },
-			{ name: 'Kafka', id: '1', color: 'blue' },
-			{ name: 'ElasticSearch', id: '1', color: 'blue' },
-			{ name: 'Spring', id: '1', color: 'blue' },
-			{ name: 'SpringCloud', id: '1', color: 'blue' },
-			{ name: 'Linux', id: '1', color: 'blue' },
-			{ name: '计算机网络', id: '1', color: 'blue' },
-			{ name: '算法', id: '1', color: 'blue' },
-			{ name: '面试', id: '1', color: 'blue' },
-			{ name: '架构', id: '1', color: 'blue' },
-			{ name: '数据库', id: '1', color: 'blue' },
-			{ name: 'Kubernetes', id: '1', color: 'blue' },
-			{ name: 'Docker', id: '1', color: 'blue' },
-			{ name: '源码阅读', id: '1', color: 'blue' },
-		]
-	}, {
-		name: '前端', id: '1', colorBg: '#a6ecc9', color: '#19be6b', children: [
-			{ name: 'Html', id: '1', color: 'green' },
-			{ name: 'JavaScript', id: '1', color: 'green' },
-			{ name: 'TypeScript', id: '1', color: 'green' },
-			{ name: 'CSS', id: '1', color: 'green' },
-			{ name: 'Vue', id: '1', color: 'green' },
-			{ name: 'Node.js', id: '1', color: 'green' },
-			{ name: 'Next.js', id: '1', color: 'green' },
-			{ name: 'React', id: '1', color: 'green' },
-			{ name: 'Webpack', id: '1', color: 'green' },
-			{ name: 'Flutter', id: '1', color: 'green' },
-		]
-	}, {
-		name: 'Android', id: '1', colorBg: '#fcd69d', color: '#ff9900', children: [
-			{ name: 'Java', id: '1', color: 'orange' },
-			{ name: 'Go', id: '1', color: 'orange' },
-			{ name: 'MySQL', id: '1', color: 'orange' },
-			{ name: 'Redis', id: '1', color: 'orange' },
-			{ name: 'Kafka', id: '1', color: 'orange' },
-			{ name: 'ElasticSearch', id: '1', color: 'orange' },
-			{ name: 'Spring', id: '1', color: 'orange' },
-			{ name: 'SpringCloud', id: '1', color: 'orange' },
-			{ name: 'Linux', id: '1', color: 'orange' },
-			{ name: '计算机网络', id: '1', color: 'orange' },
-			{ name: '算法', id: '1', color: 'orange' },
-			{ name: '面试', id: '1', color: 'orange' },
-			{ name: '架构', id: '1', color: 'orange' },
-			{ name: '数据库', id: '1', color: 'orange' },
-		]
-	}
-])
 
+
+const tagSelect = ref({})
+
+const getTagList = async () => {
+	const { data: res } = await http.get('/problem/tags')
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	tagSelect.value = res.data.tagList
+}
 
 
 
 onMounted(() => {
 	userInfo.value = store.getters.userInfo
-	getUserList()
-	console.log(new Date(1676400795548));
+	getTagList()
+	getProblemList()
+	// console.log(new Date(1676400795548));
 
 })
 
@@ -679,6 +770,25 @@ const ruleValidate = reactive({
 		}
 	}
 }
+
+.sort-move {
+	transition: transform 0.3s;
+}
+
+.dragdata-list-item {
+	width: 100%;
+	height: 50px;
+	margin-bottom: 10px;
+	border-radius: 10px;
+	padding: 0px 20px;
+}
+
+.elem-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 
 .vertical-center {
 	display: flex;

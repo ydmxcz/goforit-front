@@ -72,6 +72,7 @@ import DynamicBreadcrumb from '../../components/common/DynamicBreadcrumb.vue';
 import { useStore } from 'vuex';
 import { Message } from 'view-ui-plus'
 import http from '../../plugin/axios'
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 const store = useStore()
 const router = useRouter();
 const isCollapsed = ref(false)
@@ -178,7 +179,7 @@ const processUserNameOverflow = (value) => {
 const userInfo = ref({})
 
 const logout = async () => {
-    const { data: res } = await http.post('/user/logout', { userId: userInfo.value.id })
+    const { data: res } = await http.post('/user/logout', { userId: BigNumber(userInfo.value.id) })
     if (res.code != 200) {
         Message.error({ background: true, content: res.msg });
     } else {

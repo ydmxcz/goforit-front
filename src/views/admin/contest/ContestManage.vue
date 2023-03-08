@@ -5,7 +5,7 @@
 				<Input search enter-button="搜索" placeholder="输入比赛名称...." />
 				<Button type="primary" icon="md-add" @click="showAddUserInfoModal">创建比赛</Button>
 			</Space>
-			<Table stripe :columns="columns" :data="contestList">
+			<Table stripe :columns="tableColumns" :data="contestList">
 				<template #status="{ row }">
 					<Tag color="blue" v-if="row.startTime > new Date().getTime()">未开始</Tag>
 					<Tag color="blue"
@@ -23,12 +23,16 @@
 					<Time :time="(row.createTime / 1000) / 1000" type="datetime" />
 				</template>
 				<template #startTime="{ row }">
-					<span> {{ time.formatDate(new Date(1678291200000)) }}</span>
+					<span> {{ time.formatDate(new Date(row.startTime)) }}</span>
+					<!-- <Time :time="(row.startTime / 1000) / 1000" type="datetime" /> -->
+				</template>
+				<template #timeLength="{ row }">
+					<span> {{ new Date(row.startTime - row.endTime).getHours() }}h</span>
 					<!-- <Time :time="(row.startTime / 1000) / 1000" type="datetime" /> -->
 				</template>
 				<template #operation="{ row }">
 					<Poptip trigger="hover" content="查看详细信息">
-						<Button type="primary" style="margin-right: 10px;" @click="showEditContestInfoModal(row)"
+						<Button type="primary" style="margin-right: 10px;" @click="showContestDetialInfoModal(row)"
 							icon="ios-paper" shape="circle"></Button>
 					</Poptip>
 					<Poptip trigger="hover" content="编辑比赛信息">
@@ -43,21 +47,109 @@
 			</Table>
 			<Space direction="vertical" type="flex" align="center">
 				<Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
-					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.curr" @on-change="changePage"
+					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
 					@on-page-size-change="changePageSize" />
 			</Space>
 		</Space>
 	</Card>
-	<Modal v-model="showEditUserInfo" title="编辑比赛信息" scrollable width="600px" :mask-closable="false" :closable="false"
+	<Modal v-model="showContestDetialInfo" title="查看比赛详细信息" scrollable width="600px" :mask-closable="false"
+		:closable="false" style="top: 30px;">
+
+		<Form :model="formItem" :label-width="120">
+			<FormItem label="比赛标题">
+				<span> {{ formItem.title }}</span>
+			</FormItem>
+			<FormItem label="比赛类型">
+				<Row>
+					<Col span="6">
+
+					<Tag color="blue" v-if="formItem.contestType == 1">ACM</Tag>
+					<Tag color="green" v-else-if="formItem.contestType == 2">OI</Tag>
+					</Col>
+					<Col span="4" style="text-align: center">比赛分类</Col>
+					<Col span="10">
+					<Tag color="primary">{{ getContestNameById(formItem.contestType) }}</Tag>
+					</Col>
+				</Row>
+
+			</FormItem>
+			<FormItem label="举办方类型">
+				<Tag color="primary" v-if="formItem.sponsorType">个人</Tag>
+				<Tag color="primary" v-else>小组</Tag>
+			</FormItem>
+			<FormItem label="举办方ID">
+				<span>{{ formItem.sponsorId }}</span>
+			</FormItem>
+			<FormItem label="是否公开">
+				<Row>
+					<Col span="4">
+
+					<Tag color="primary" v-if="formItem.public">公开</Tag>
+					<Tag color="warning" v-else>私有</Tag>
+					</Col>
+					<Col span="4" style="text-align: center" v-if="!formItem.public">比赛密码</Col>
+					<Col span="15" v-if="!formItem.public">
+					<span>{{ formItem.pwd }}</span>
+					</Col>
+				</Row>
+			</FormItem>
+			<FormItem label="报名起止时间">
+				<span> {{ time.formatDate(new Date(formItem.signUpStartTime)) }} - {{ time.formatDate(new
+					Date(formItem.signUpEndTime)) }}</span>
+			</FormItem>
+			<FormItem label="比赛起止时间">
+				<span> {{ time.formatDate(new Date(formItem.startTime)) }} - {{ time.formatDate(new Date(formItem.endTime))
+				}}</span>
+			</FormItem>
+			<FormItem label="是否开启封榜">
+				<Row>
+					<Col span="4">
+					<Tag color="primary" v-if="formItem.sealRank">开启</Tag>
+					<Tag color="primary" v-else>关闭</Tag>
+					</Col>
+					<Col span="5" style="text-align: center" v-if="formItem.sealRank">在比赛结束前</Col>
+					<Col span="11" v-if="formItem.sealRank">
+					<span>{{ formItem.sealRankTime / 60 }}分钟封榜</span>
+
+					</Col>
+				</Row>
+			</FormItem>
+			<FormItem label="比赛结束后是否开放榜单">
+				<Tag color="primary" v-if="formItem.openRank">开启</Tag>
+				<Tag color="primary" v-else>关闭</Tag>
+
+			</FormItem>
+			<FormItem label="不计Rating范围:">
+				<span>Rating > </span>
+				<Tag color="blue">{{ formItem.ratingTop }}</Tag>
+
+			</FormItem>
+			<FormItem label="比赛介绍">
+				<span>{{ formItem.description }}</span>
+
+			</FormItem>
+		</Form>
+		<template #footer>
+			<div style="width: 100%;height: 40px;">
+				<Space style="float: right;">
+					<Button @click="closeContestDetial">关闭</Button>
+				</Space>
+			</div>
+		</template>
+	</Modal>
+	<Modal v-model="showEditContestInfo" title="编辑比赛信息" scrollable width="600px" :mask-closable="false" :closable="false"
 		style="top: 30px;">
 
 		<Form :model="formItem" :label-width="120">
 			<FormItem label="比赛标题">
 				<Input v-model="formItem.title"></Input>
+
 			</FormItem>
 			<FormItem label="比赛类型">
 				<Row>
 					<Col span="6">
+
+
 					<Select v-model="formItem.contestSelectValue" @on-change="handleSelectContestType">
 						<Option v-for="item in contestTagList" :value="item.name" :key="item.id">{{ item.name }}</Option>
 					</Select>
@@ -142,7 +234,6 @@
 			<FormItem label="不计Rating范围:">
 				<span>Rating > </span>
 				<InputNumber :min="1500" :step="1" v-model="formItem.ratingTop" />
-				<!-- <Input v-model="formItem.ratingTop"></Input> -->
 			</FormItem>
 			<FormItem label="比赛介绍">
 				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
@@ -152,8 +243,8 @@
 		<template #footer>
 			<div style="width: 100%;height: 40px;">
 				<Space style="float: right;">
-					<Button @click="createContestCancel">取消</Button>
-					<Button type="primary" @click="createContestOK">确定</Button>
+					<Button @click="editContestCancel">取消</Button>
+					<Button type="primary" @click="editContestInfoOk">确定</Button>
 				</Space>
 			</div>
 		</template>
@@ -327,10 +418,11 @@ import msg from '../../../common/msg'
 import time from '../../../common/time'
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+
 const store = useStore()
 
 const pageInfo = reactive({
-	curr: 1,
+	currPage: 1,
 	pageSize: 15,
 	total: 100
 })
@@ -338,20 +430,17 @@ const pageInfo = reactive({
 const userInfo = ref(store.getters.userInfo)
 
 const changePage = (page) => {
-	console.log(page);
-	pageInfo.curr = page
+	pageInfo.currPage = page
+	getcontestList()
 }
 
 const changePageSize = (psize) => {
-	console.log(psize);
+	pageInfo.pageSize = psize
+	getcontestList()
 }
 
-const statusSlelectList = ref([
-	{ label: '正常', value: 1 },
-	{ label: '封禁', value: 0 },
-]);
 
-const columns = ref([
+const tableColumns = ref([
 	{ title: 'ID', key: 'id', width: '70px', align: 'center' },
 	{ title: '比赛标题', key: 'title', align: 'center' },
 	{ title: '举办方ID', key: 'sponsorId', align: 'center' },
@@ -359,6 +448,7 @@ const columns = ref([
 	{ title: '比赛状态', slot: 'status', width: '150px', align: 'center' },
 	{ title: '创建时间', key: 'createTime', slot: 'createTime', align: 'center' },
 	{ title: '开始时间', slot: 'startTime', align: 'center' },
+	{ title: '比赛时长', slot: 'timeLength', align: 'center' },
 	{ title: '操作', slot: 'operation', width: '250px', align: 'center' },
 ]);
 
@@ -429,16 +519,16 @@ const clearFormItem = () => {
 }
 
 const handleSelectContestType = (name) => {
-	console.log(name);
+	// console.log(name);
 	formItem.value.contestSelectValue = name
 	contestTagList.value.forEach(item => {
-		console.log(item);
+		// console.log(item);
 		if (item.name == name) {
 			formItem.value.subTagList = item.tags
 			formItem.value.contestType = item.id
 		}
 	})
-	console.log(formItem.value.subTagList);
+	// console.log(formItem.value.subTagList);
 }
 
 const handleSelectContestTag = (name) => {
@@ -452,89 +542,20 @@ const handleSelectContestTag = (name) => {
 	})
 }
 
-
-
-const showEditUserInfo = ref(false)
-const showEditContestInfoModal = (row) => {
-	showEditUserInfo.value = true
+const showContestDetialInfo = ref(false)
+const showContestDetialInfoModal = (row) => {
+	showContestDetialInfo.value = true
 	formItem.value = row
 }
 
-const editUserInfoOk = async () => {
-	let d = {
-		age: Number(formItem.value.age || 0),
-		id: formItem.value.id || 0,
-		status: Number(formItem.value.status || 0),
-		grade: Number(formItem.value.grade || 0),
-		stuNumber: Number(formItem.value.stuNumber || 0),
-		createTime: formItem.value.createTime || 0,
-		gender: formItem.value.gender || '',
-		userName: formItem.value.contestName || '',
-		avatar: formItem.value.avatar || '',
-		real_name: formItem.value.real_name || '',
-		school: formItem.value.school || '',
-		major: formItem.value.major || '',
-		instruction: formItem.value.instruction || '',
-		email: formItem.value.email || ''
-	}
-	console.log(d);
-	const { data } = await http.post('/user/updateinfo', d)
-	if (data.code != 200) {
-		msg.err({ background: true, content: data.msg });
-		return
-	}
-	msg.ok({ background: true, content: '修改成功' });
-	getcontestList()
-	clearFormItem()
-	showEditUserInfo.value = false
+const showEditContestInfo = ref(false)
+const showEditContestInfoModal = (row) => {
+	showEditContestInfo.value = true
+	formItem.value = row
 }
 
-const editUserInfoCancel = () => {
-	clearFormItem()
-}
-
-const handleSignUpTimeSelectOK = () => {
-	let s = Date.parse(formItem.value.signUpTime[0])
-	let e = Date.parse(formItem.value.signUpTime[1])
-	if (s == e) {
-
-	} else {
-		formItem.value.signUpStartTime = s
-		formItem.value.signUpEndTime = e
-	}
-	console.log(formItem.value.signUpStartTime);
-	console.log(formItem.value.signUpEndTime);
-}
-
-const handleContestTimeSelectOK = () => {
-	formItem.value.startTime = Date.parse(formItem.value.contestTime[0])
-	formItem.value.endTime = Date.parse(formItem.value.contestTime[1])
-	console.log(formItem.value.startTime);
-	console.log(formItem.value.endTime);
-	console.log(formItem.value.startTime < formItem.value.signUpEndTime);
-	if (formItem.value.startTime < formItem.value.signUpEndTime) {
-		msg.err("比赛开始时间要晚于报名截止时间")
-		formItem.value.startTime = 0
-		formItem.value.endTime = 0
-		formItem.value.contestTime = []
-		return
-	}
-	// console.log("xxxx",Date.parse(formItem.value.contestTime[0]));
-	// console.log("xxxx",Date.parse(formItem.value.contestTime[1]));
-}
-
-
-
-const showSearchAndAddProblemModal = ref(false)
-
-const showCreateContestInfo = ref(false)
-const showAddUserInfoModal = () => {
-	showCreateContestInfo.value = true
-	clearFormItem()
-}
-
-const createContestOK = async () => {
-	let d = {
+const editContestInfoOk = async () => {
+	let contestInfo = {
 		sponsorId: 0,
 		sponsorType: true,
 		title: formItem.value.title || '',
@@ -553,52 +574,183 @@ const createContestOK = async () => {
 		contestTagId: Number(formItem.value.contestTagId) || 0,
 		contestTagName: formItem.value.contestTagName || '',
 		creator: BigNumber(userInfo.value.id) || 0,
-		problemIds: []
 	}
 	try {
-		d.sponsorId = BigNumber(formItem.value.sponsorId)
+		contestInfo.sponsorId = BigNumber(formItem.value.sponsorId)
 	} catch (e) {
 		msg.err("举办方ID输入错误")
 		return
 	}
-	if (d.sponsorId == 0) {
+	if (contestInfo.sponsorId == 0) {
 		msg.err("检查举办方ID")
 	}
-	if (d.startTime < d.signUpEndTime) {
+	if (contestInfo.startTime < contestInfo.signUpEndTime) {
 		msg.err("比赛开始时间要晚于报名截止时间")
 		return
 	}
-	if (d.sealRankTime > 30 || d.sealRankTime < 0) {
+	if (contestInfo.sealRankTime > 30 || contestInfo.sealRankTime < 0) {
 		msg.err("封榜时间应大于0分钟且小于30分钟")
 		return
 	} else {
 		// 转换成秒
-		d.sealRankTime *= 60
+		contestInfo.sealRankTime *= 60
 	}
-	if (!d.public) {
-		d.pwd = ''
+	if (!contestInfo.public) {
+		contestInfo.pwd = ''
 	}
 	if (dragData.dataList.length == 0) {
 		msg.err('请添加至少一道题目！')
 		return
 	}
+
+	// console.log(contestInfo, formItem.value);
+	const { data } = await http.post('/contest/update', contestInfo)
+	// console.log(data);
+	if (data.code != 200) {
+		msg.err(data.msg);
+		return
+	}
+	msg.ok('更新比赛信息成功');
+	getcontestList()
+	showEditContestInfo.value = false
+	clearFormItem()
+}
+
+const handleSignUpTimeSelectOK = () => {
+	let s = Date.parse(formItem.value.signUpTime[0])
+	let e = Date.parse(formItem.value.signUpTime[1])
+	if (s == e) {
+
+	} else {
+		formItem.value.signUpStartTime = s
+		formItem.value.signUpEndTime = e
+	}
+}
+
+const handleContestTimeSelectOK = () => {
+	formItem.value.startTime = Date.parse(formItem.value.contestTime[0])
+	formItem.value.endTime = Date.parse(formItem.value.contestTime[1])
+	if (formItem.value.startTime < formItem.value.signUpEndTime) {
+		msg.err("比赛开始时间要晚于报名截止时间")
+		formItem.value.startTime = 0
+		formItem.value.endTime = 0
+		formItem.value.contestTime = []
+		return
+	}
+}
+
+
+
+const showSearchAndAddProblemModal = ref(false)
+
+const showCreateContestInfo = ref(false)
+const showAddUserInfoModal = () => {
+	showCreateContestInfo.value = true
+	clearFormItem()
+}
+
+const getAndCheckFormItem = () => {
+	let contestInfo = {
+		sponsorId: 0,
+		sponsorType: true,
+		title: formItem.value.title || '',
+		description: formItem.value.description || '',
+		public: formItem.value.public || true,
+		pwd: formItem.value.pwd || '',
+		startTime: Number(formItem.value.startTime) || 0,
+		endTime: Number(formItem.value.endTime) || 0,
+		signUpStartTime: Number(formItem.value.signUpStartTime) || 0,
+		signUpEndTime: Number(formItem.value.signUpEndTime) || 0,
+		sealRank: formItem.value.sealRank,
+		sealRankTime: Number(formItem.value.sealRankTime) || 20,
+		openRank: formItem.value.openRank || true,
+		ratingTop: Number(formItem.value.ratingTop) || 2199,
+		contestType: Number(formItem.value.contestType) || 1,
+		contestTagId: Number(formItem.value.contestTagId) || 0,
+		contestTagName: formItem.value.contestTagName || '',
+		creator: BigNumber(userInfo.value.id) || 0,
+	}
+	if(contestInfo.title == '') {
+		msg.err("请输入比赛标题")
+		return 
+	}
+	try {
+		contestInfo.sponsorId = BigNumber(formItem.value.sponsorId)
+	} catch (e) {
+		msg.err("举办方ID输入错误")
+		return
+	}
+	if (contestInfo.sponsorId == 0) {
+		msg.err("检查举办方ID")
+		return
+	}
+	let now = new Date().getTime()
+	if (contestInfo.signUpStartTime <= now || contestInfo.signUpEndTime <= now) {
+		msg.err("报名时间不能早于现在")
+		return
+	}
+	if (contestInfo.startTime <= now || contestInfo.endTime <= now) {
+		msg.err("比赛时间不能早于现在")
+		return
+	}
+	if (contestInfo.startTime < contestInfo.signUpEndTime) {
+		msg.err("比赛开始时间要晚于报名截止时间")
+		return
+	}
+	if (contestInfo.sealRankTime > 30 || contestInfo.sealRankTime < 0) {
+		msg.err("封榜时间应大于0分钟且小于30分钟")
+		return
+	} else {
+		// 转换成秒
+		contestInfo.sealRankTime *= 60
+	}
+	if (!contestInfo.public) {
+		contestInfo.pwd = ''
+	}
+	if (dragData.dataList.length == 0) {
+		msg.err('请添加至少一道题目！')
+		return
+	}
+	let problemIds = []
 	dragData.dataList.forEach((item) => {
-		d.problemIds.push(item.id)
+		problemIds.push(item.id)
 	})
-	console.log(d, formItem.value);
-	const { data } = await http.post('/contest/create', d)
-	console.log(data);
+	return {
+		info: contestInfo,
+		problemIds: problemIds
+	}
+}
+
+
+const createContestOK = async () => {
+	let createData = getAndCheckFormItem()
+	if (!createData) {
+		return
+	}
+	console.log(createData);
+	const { data } = await http.post('/contest/create', createData)
+	// console.log(data);
 	if (data.code != 200) {
 		msg.err(data.msg);
 		return
 	}
 	msg.ok('添加成功');
 	getcontestList()
-	showEditUserInfo.value = false
+	showCreateContestInfo.value = false
 	clearFormItem()
 }
 const createContestCancel = () => {
 	showCreateContestInfo.value = false
+	clearFormItem()
+}
+
+const editContestCancel = () => {
+	showEditContestInfo.value = false
+	clearFormItem()
+}
+
+const closeContestDetial = () => {
+	showContestDetialInfo.value = false
 	clearFormItem()
 }
 
@@ -612,21 +764,21 @@ const handleDeleteUser = async (row) => {
 		msg.err({ background: true, content: data.msg });
 	}
 	msg.ok({ background: true, content: '删除成功' });
-	console.log(data);
+	// console.log(data);
 	getcontestList()
 }
 
 
 const getcontestList = async () => {
 	const { data } = await http.post('/contest/all', {
-		currPage: pageInfo.curr,
+		currPage: pageInfo.currPage,
 		pageSize: pageInfo.pageSize
 	})
 	if (data.code != 200) {
 		msg.err({ background: true, content: data.msg });
 		return
 	}
-	console.log(data);
+	// console.log(data);
 	contestList.value = data.data.infos
 	pageInfo.total = data.data.total
 }
@@ -638,6 +790,21 @@ const getContestTags = async () => {
 		return
 	}
 	contestTagList.value = res.data.tagList
+}
+
+const getContestNameById = (id) => {
+	// console.log("aaa",contestTagList.value.length);
+	for (let i = 0; i < contestTagList.value.length; i++) {
+		let e = contestTagList.value[i];
+		// console.log(e);
+		for (let j = 0; j < e.tags.length; j++) {
+			if (e.tags[j].id == id) {
+				return e.tags[j].name
+			}
+			// console.log(e.tags[j]);
+		}
+	}
+	return '算法基础'
 }
 
 const contestTagList = ref([])
@@ -722,7 +889,12 @@ const searchAndAddProblemModalCancel = () => {
 
 
 const addProblem = () => {
+
 	let id = problemData.id
+	if (id == 0) {
+		msg.err("请选择添加的题目")
+		return
+	}
 	if (dragData.idSet.has(id)) {
 		msg.err('题目已存在请勿重复添加')
 		return
