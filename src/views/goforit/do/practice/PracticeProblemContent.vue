@@ -7,8 +7,8 @@
 
 import {ref,reactive,onMounted} from 'vue'
 import { useRouter } from 'vue-router';
-import msg from '../../../common/msg';
-import http from '../../../plugin/axios';
+import msg from '../../../../common/msg';
+import http from '../../../../plugin/axios';
 
 const router = useRouter();
 

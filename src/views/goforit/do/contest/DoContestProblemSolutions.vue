@@ -58,9 +58,9 @@
         </template>
     </Modal>
 </template>
-<script setup name='PracticeProblemSolutions'>
+<script setup name='DoContestProblemSolutions'>
 import { ref, reactive, onMounted } from 'vue'
-import http from '../../../plugin/axios';
+import http from '../../../../plugin/axios';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 

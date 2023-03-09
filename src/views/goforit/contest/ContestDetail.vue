@@ -9,8 +9,8 @@
                     <Row>
                         <Col flex="auto" class="elem-vertical-center" style="color: #fff;height: 100px;">
                         <Space>
-                            <span style="font-size: 30px;">2023 SFGO寒假算法基础集训营6</span>
-                            <Tag checkable color="success">原创</Tag>
+                            <span style="font-size: 30px;">{{ data.info.title }}</span>
+                            <Tag color="success">原创</Tag>
                             <span class="tag-rating" data-title="Rating赛奖品更加丰厚"
                                 data-tips-index="1"><i>¥</i>&nbsp;<span>Rated</span></span>
                             <span class="match-status  match-signup">报名中</span>
@@ -18,20 +18,26 @@
 
                         </Space>
                         </Col>
-                        <Col flex="100px"><span class="elem-vertical-center"
-                            style="color: #fff;height: 100px;">分享比赛</span></Col>
+                        <Col flex="100px"><span class="elem-vertical-center" style="color: #fff;height: 100px;">分享比赛</span>
+                        </Col>
                     </Row>
                     <span style="color: #fff;font-size: 14px;">
-                        2023-02-03 13:00:00 至 2023-02-03 18:00:00
+                        主办方：{{ data.info.sponsorName }} ( id: {{ data.info.sponsorId }} )
                     </span>
                     <span style="color: #fff;font-size: 14px;">
-                        时长: 5小时
+                        报名时间：{{ time.formatDate(new Date(data.info.signUpStartTime)) }} 至 {{ time.formatDate(new
+                            Date(data.info.signUpEndTime)) }}
                     </span>
                     <span style="color: #fff;font-size: 14px;">
-                        不计Rating的范围：Rating＞2199
+                        比赛时间：{{ time.formatDate(new Date(data.info.startTime)) }} 至 {{ time.formatDate(new
+                            Date(data.info.endTime)) }} &nbsp;&nbsp;时长: {{ (data.info.endTime - data.info.startTime) / 3600000
+    }}小时
                     </span>
                     <span style="color: #fff;font-size: 14px;">
-                        已有6354人报名
+                        不计Rating的范围：Rating＞{{ data.info.ratingTop }}
+                    </span>
+                    <span style="color: #fff;font-size: 14px;">
+                        已有{{ data.info.signUpNum || 0 }}人报名
                     </span>
                 </Space>
                 </Col>
@@ -44,32 +50,32 @@
             </Col>
             <Col flex="14" style="min-width: 1000px;">
             <Space direction="vertical" style="width: 100%;margin-bottom: 20px;">
-                <Menu  mode="horizontal" active-name="比赛说明" @on-select="handleMenuItemSelect">
+                <Menu v-if="data.status == 1" mode="horizontal" active-name="比赛说明" @on-select="handleMenuItemSelect">
                     <MenuItem v-for="item in mentItemList" :name="item.name"> {{ item.name }} </MenuItem>
                 </Menu>
-                <div  v-if="competitionInfo.status != 0" class="count-down">
+                <!-- v-if="data.status != 0" -->
+                <div class="count-down" v-else-if="data.status == 0">
                     <Space align="center" direction="vertical" type="flex">
                         <span>距离比赛开始还有</span>
                         <Space :wrap="false">
                             <div class="count-down-card">
-                                <span class="count-down-card-number elem-center">05</span>
+                                <span class="count-down-card-number elem-center">{{ tow(dateInfo.day) }}</span>
                                 <span class="count-down-card-unit elem-center">天</span>
                             </div>
                             <div class="count-down-card">
-                                <span class="count-down-card-number elem-center">05</span>
-                                <span class="count-down-card-unit elem-center">天</span>
+                                <span class="count-down-card-number elem-center">{{ tow(dateInfo.hour) }}</span>
+                                <span class="count-down-card-unit elem-center">小时</span>
                             </div>
                             <div class="count-down-card">
-                                <span class="count-down-card-number elem-center">05</span>
-                                <span class="count-down-card-unit elem-center">天</span>
+                                <span class="count-down-card-number elem-center">{{ tow(dateInfo.minute) }}</span>
+                                <span class="count-down-card-unit elem-center">分钟</span>
                             </div>
                             <div class="count-down-card">
-                                <span class="count-down-card-number elem-center">05</span>
-                                <span class="count-down-card-unit elem-center">天</span>
+                                <span class="count-down-card-number elem-center">{{ tow(dateInfo.second) }}</span>
+                                <span class="count-down-card-unit elem-center">秒</span>
                             </div>
                         </Space>
-                        <Button type="success" class="sign-up-btn"
-                            @click="competitionInfo.status = !competitionInfo.status">点此报名</Button>
+                        <Button type="success" class="sign-up-btn">点此报名</Button>
                     </Space>
                 </div>
                 <RouterView />
@@ -84,17 +90,20 @@
 
 <script setup name="ContestDetail">
 import { ref, reactive, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { Message } from 'view-ui-plus'
-
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import time from '../../../common/time';
 
 const router = useRouter()
-const route = useRoute()
+// const route = useRoute()
 
-const competitionInfo = reactive({
+const data = reactive({
     // 0代表比赛未开始，1代表比赛正在进行，2代表比赛已结束
     status: 0,
-    id: route.params.id,
+    id: router.currentRoute.value.params.id,
+    info: {}
 })
 
 const mentItemList = ref([
@@ -105,11 +114,11 @@ const mentItemList = ref([
 ])
 
 const pushTo = (path) => {
-    router.push('/contest/detail/' + route.params.id + path)
+    router.push('/contest/detail/' + data.id + path)
 }
 
 const handleMenuItemSelect = (name) => {
-    if (name != mentItemList.value[0].name && competitionInfo.status == 0) {
+    if (name != mentItemList.value[0].name && data.status == 0) {
         Message.error({
             background: true,
             content: '请等待比赛开始'
@@ -123,73 +132,63 @@ const handleMenuItemSelect = (name) => {
     })
 }
 
+const getContestDetialAndCheckRouter = async () => {
+    const { data: res } = await http.post('/contest/detial', { id: Number(data.id) })
+    console.log(res);
+    if (res.code != 200) {
+        msg.err('比赛信息请求失败')
+        return
+    }
+    data.info = res.data.contest
+    dateInfo.tarTime = new Date(res.data.contest.startTime).getTime()
+    if (dateInfo.tarTime - (new Date().getTime()) > 0) {
+        data.status = 0
+        if (!router.currentRoute.value.fullPath.includes('illustration')) {
+            msg.err("比赛还未开始,不能访问其他页面")
+            router.push('/contest/detail/' + data.id + '/illustration')
+        }
+        setInterval(() => { computeTime() }, 1000)
+    } else {
+        data.status = 1
+    }
+    // console.log();
+}
+
+const dateInfo = reactive({
+    tarTime: 0,
+    day: 0,
+    hour: 0,
+    minute: 0,
+    second: 0,
+})
+
+function tow(n) {
+    return n >= 0 && n < 10 ? '0' + n : '' + n;
+}
+
+const computeTime = () => {
+    var oldTime = new Date().getTime();
+    var newTime = dateInfo.tarTime;
+    dateInfo.second = Math.floor((newTime - oldTime) / 1000);
+    dateInfo.day = Math.floor(dateInfo.second / 86400);
+    dateInfo.second = dateInfo.second % 86400;
+    dateInfo.hour = Math.floor(dateInfo.second / 3600);
+    dateInfo.second %= 3600;
+    dateInfo.minute = Math.floor(dateInfo.second / 60);
+    dateInfo.second %= 60;
+}
 
 
 onMounted(() => {
-    console.log("xixixi", competitionInfo.id)
+    // printTime()
+    getContestDetialAndCheckRouter()
     // after init data
-    if (competitionInfo.status) {
-        pushTo(mentItemList.value[0].path)
-    }
+    // if (data.status) {
+    //     pushTo(mentItemList.value[0].path)
+    // }
 })
 
-const competitionIllustrationText = ref(`
-# 这是比赛说明
-### Acwing789.数的范围
 
-给定一个按照升序排列的长度为 n 的整数数组，以及 q 个查询。
-
-对于每个查询，返回一个元素 k 的起始位置和终止位置（位置从 0 开始计数）。problemMdTextproblemMdTextproblemMdTextproblemMdText
-
-如果数组中不存在该元素，则返回 \`-1\`。
-
-#### 输入格式
-
-第一行包含整数 n 和 q，表示数组长度和询问个数。
-
-第二行包含 n 个整数（均在 1∼10000 范围内），表示完整数组。
-
-接下来 q 行，每行包含一个整数 k，表示一个询问元素。
-
-#### 输出格式
-
-共 q 行，每行包含两个整数，表示所求元素的起始位置和终止位置。
-
-如果数组中不存在该元素，则返回 \`-1\`。
-
-#### 数据范围
-
-$1≤n≤100000$
-$1≤q≤10000$
-$1≤k≤10000$
-
-#### 输入样例：
-
-第二行包含 n 个整数（均在 1∼10000 范围内），表示完整数组。
-
-接下来 q 行，每行包含一个整数 k，表示一个询问元素。
-
-#### 输出格式
-
-共 q 行，每行包含两个整数，表示所求元素的起始位置和终止位置。
-
-如果数组中不存在该元素，则返回 \`-1\`。
-
-#### 数据范围
-
-$1≤n≤100000$
-$1≤q≤10000$
-$1≤k≤10000$
-
-#### 输入样例：
-#### 数据范围
-
-$1≤n≤100000$
-$1≤q≤10000$
-$1≤k≤10000$
-
-#### 输入样例：
-`)
 </script>
 
 <style scoped lang="less">

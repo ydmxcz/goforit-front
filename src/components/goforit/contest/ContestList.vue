@@ -9,7 +9,7 @@
             <Space class="middle-space" direction="vertical">
                 <Space>
                     <span style="font: 16px bolder;">{{ props.name }}</span>
-                    <Tag checkable color="success" v-if="props.isOriginal">原创</Tag>
+                    <Tag color="success" v-if="props.isOriginal">原创</Tag>
                     <span v-if="props.isRated" class="tag-rating" data-title="Rating赛奖品更加丰厚"
                         data-tips-index="1"><i>¥</i>&nbsp;<span>Rated</span></span>
                     <span v-if="props.status" class="match-status  match-signup">报名中</span>
@@ -19,7 +19,7 @@
                     <Icon type="md-time" /> 报名时间： {{ props.signUpStart }} 至 {{ props.signUpEnd }}
                 </span>
                 <span>
-                    <Icon type="ios-alarm" /> 比赛时间： {{ props.competitionStart }} 至 {{ props.competitionEnd }} (时长:
+                    <Icon type="ios-alarm" /> 比赛时间： {{ props.contestStart }} 至 {{ props.contestEnd }} (时长:
                     {{ props.lengthTime }} 小时)
                 </span>
                 <Space>
@@ -42,7 +42,7 @@
                 <!-- 动态倒计时 -->
                 <div class="platform-countdown ">
                     距比赛<br>
-                    <CountDown :target="targetTime" v-font="14" />
+                    <CountDown :target="props.contestStart" v-font="14" />
                     <!-- 8天22:29:25 -->
                 </div>
             </Space>
@@ -61,7 +61,7 @@
 import { ref, onMounted, reactive } from 'vue';
 const emits = defineEmits(['onSignUp']);
 
-const targetTime = ref(new Date().getTime() + ((3600 * 24 * 8) + (3600 * 6) + (1900)) * 1000);
+// const targetTime = ref(new Date().getTime() + ((3600 * 24 * 8) + (3600 * 6) + (1900)) * 1000);
 const props = defineProps({
     contestId:{
         type:Number,
@@ -83,10 +83,10 @@ const props = defineProps({
     }, lengthTime: {
         type: Number,
         default: 0,
-    }, competitionStart: {
+    }, contestStart: {
         type: String,
         default: '--',
-    }, competitionEnd: {
+    }, contestEnd: {
         type: String,
         default: '--',
     }, sponsor: {

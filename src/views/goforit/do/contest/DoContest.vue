@@ -125,16 +125,17 @@
 
         </Split>
     </div>
-    
 </template>
-<script setup name='Practice'>
-import CodeMirror from '../../../components/common/CodeMirror.vue';
+<script setup name='DoContest'>
+import CodeMirror from '../../../../components/common/CodeMirror.vue';
 
 import { ref, reactive, onMounted, watch, nextTick } from 'vue'
-import { RouterView } from 'vue-router';
-import http from '../../../plugin/axios';
-import router from '../../../router';
-import msg from '../../../common/msg';
+import { RouterView, useRouter } from 'vue-router';
+import http from '../../../../plugin/axios';
+// import router from 'vue-router';
+import msg from '../../../../common/msg';
+
+const router = useRouter()
 const data = reactive({
     windowWidth: 0,
     windowHeight: 0,
@@ -181,7 +182,7 @@ func main(){
         editorType: 'edit',
         showDrawer: false
     },
-   
+
 });
 
 const handleMenuItemClick = (name) => {
@@ -282,12 +283,12 @@ const updateByPath = (path) => {
 }
 
 const handleClickBtn = (item) => {
-    // console.log(item);
     router.push(item.path)
 }
 
 
 onMounted(() => {
+    console.log(data.problem.id)
     nextTick(() => {
         updateByPath(router.currentRoute.value.fullPath)
     })

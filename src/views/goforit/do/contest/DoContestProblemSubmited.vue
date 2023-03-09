@@ -22,13 +22,13 @@
             @on-page-size-change="handlePageOrPageSizeChange" />
     </Space>
 </template>
-<script setup name='PracticeProblemSubmited'>
+<script setup name='DoContestProblemSubmited'>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import msg from '../../../common/msg';
-import time from '../../../common/time';
-import http from '../../../plugin/axios';
+import msg from '../../../../common/msg';
+import time from '../../../../common/time';
+import http from '../../../../plugin/axios';
 
 const store = useStore()
 const router = useRouter()

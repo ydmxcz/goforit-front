@@ -28,7 +28,7 @@
 			</Table>
 			<Space direction="vertical" type="flex" align="center">
 				<Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
-					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.curr" @on-change="changePage"
+					:page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
 					@on-page-size-change="changePageSize" />
 			</Space>
 		</Space>
@@ -63,7 +63,7 @@
 				</Row>
 			</FormItem>
 			<FormItem label="真实姓名">
-				<Input v-model="formItem.real_name"></Input>
+				<Input v-model="formItem.realName"></Input>
 			</FormItem>
 			<FormItem label="学号">
 				<Input v-model="formItem.stuNumber"></Input>
@@ -118,7 +118,7 @@
 				</Row>
 			</FormItem>
 			<FormItem label="真实姓名">
-				<Input v-model="formItem.real_name"></Input>
+				<Input v-model="formItem.realName"></Input>
 			</FormItem>
 			<FormItem label="学号">
 				<Input v-model="formItem.stuNumber"></Input>
@@ -143,25 +143,25 @@
 			</FormItem>
 		</Form>
 	</Modal>
-
 </template>
 <script setup name="UserManage">
 import { ref, reactive, onMounted } from 'vue'
 import http from '../../../plugin/axios';
 import { Message } from 'view-ui-plus';
 const pageInfo = reactive({
-	curr: 1,
+	currPage: 1,
 	pageSize: 15,
 	total: 100
 })
 
 const changePage = (page) => {
-	console.log(page);
-	pageInfo.curr = page
+	pageInfo.currPage = page
+	getUserList()
 }
 
 const changePageSize = (psize) => {
-	console.log(psize);
+	pageInfo.pageSize = psize
+	getUserList()
 }
 
 const statusSlelectList = ref([
@@ -189,7 +189,7 @@ const formItem = ref({
 	grade: '',
 	userName: '',
 	avatar: '',
-	real_name: '',
+	realName: '',
 	school: '',
 	major: '',
 	instruction: '',
@@ -200,6 +200,7 @@ const formItem = ref({
 const showEditUserInfo = ref(false)
 const showEditUserInfoModal = (row) => {
 	showEditUserInfo.value = true
+	console.log(row);
 	formItem.value = row
 }
 
@@ -214,7 +215,7 @@ const editUserInfoOk = async () => {
 		gender: formItem.value.gender || '',
 		userName: formItem.value.userName || '',
 		avatar: formItem.value.avatar || '',
-		real_name: formItem.value.real_name || '',
+		realName: formItem.value.realName || '',
 		school: formItem.value.school || '',
 		major: formItem.value.major || '',
 		instruction: formItem.value.instruction || '',
@@ -224,7 +225,7 @@ const editUserInfoOk = async () => {
 	const { data } = await http.post('/user/updateinfo', d)
 	if (data.code != 200) {
 		Message.error({ background: true, content: data.msg });
-		return 
+		return
 	}
 	Message.success({ background: true, content: '修改成功' });
 	getUserList()
@@ -247,7 +248,7 @@ const clearFormItem = () => {
 		grade: '',
 		userName: '',
 		avatar: '',
-		real_name: '',
+		realName: '',
 		school: '',
 		major: '',
 		instruction: '',
@@ -273,7 +274,7 @@ const addUserInfoOk = async () => {
 		gender: formItem.value.gender || '',
 		userName: formItem.value.userName || '',
 		avatar: formItem.value.avatar || '',
-		real_name: formItem.value.real_name || '',
+		realName: formItem.value.realName || '',
 		school: formItem.value.school || '',
 		major: formItem.value.major || '',
 		instruction: formItem.value.instruction || '',
@@ -286,7 +287,7 @@ const addUserInfoOk = async () => {
 	})
 	if (data.code != 200) {
 		Message.error({ background: true, content: data.msg });
-		return 
+		return
 	}
 	Message.success({ background: true, content: '添加成功' });
 	getUserList()
@@ -312,7 +313,7 @@ const handleDeleteUser = async (row) => {
 
 
 const getUserList = async () => {
-	const { data } = await http.get('/user/list?currPage=' + pageInfo.curr + '&pageSize=' + pageInfo.pageSize)
+	const { data } = await http.get('/user/list?currPage=' + pageInfo.currPage + '&pageSize=' + pageInfo.pageSize)
 	if (data.code != 200) {
 		Message.error({ background: true, content: data.msg });
 	}
@@ -349,6 +350,4 @@ const ruleValidate = reactive({
 </script>
 
 
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

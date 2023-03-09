@@ -41,7 +41,7 @@
 						</Button>
 					</Poptip>
 					<Poptip trigger="hover" content="删除比赛">
-						<Button type="error" @click="handleDeleteUser(row)" icon="md-trash" shape="circle"></Button>
+						<Button type="error" @click="handleDeleteContest(row)" icon="md-trash" shape="circle"></Button>
 					</Poptip>
 				</template>
 			</Table>
@@ -73,10 +73,6 @@
 				</Row>
 
 			</FormItem>
-			<FormItem label="举办方类型">
-				<Tag color="primary" v-if="formItem.sponsorType">个人</Tag>
-				<Tag color="primary" v-else>小组</Tag>
-			</FormItem>
 			<FormItem label="举办方ID">
 				<span>{{ formItem.sponsorId }}</span>
 			</FormItem>
@@ -105,7 +101,7 @@
 				<Row>
 					<Col span="4">
 					<Tag color="primary" v-if="formItem.sealRank">开启</Tag>
-					<Tag color="primary" v-else>关闭</Tag>
+					<Tag color="error" v-else>关闭</Tag>
 					</Col>
 					<Col span="5" style="text-align: center" v-if="formItem.sealRank">在比赛结束前</Col>
 					<Col span="11" v-if="formItem.sealRank">
@@ -116,10 +112,15 @@
 			</FormItem>
 			<FormItem label="比赛结束后是否开放榜单">
 				<Tag color="primary" v-if="formItem.openRank">开启</Tag>
-				<Tag color="primary" v-else>关闭</Tag>
+				<Tag color="error" v-else>关闭</Tag>
 
 			</FormItem>
-			<FormItem label="不计Rating范围:">
+			<FormItem label="比赛结果是否计入Rating:">
+				<Tag color="primary" v-if="formItem.isRating">计入</Tag>
+				<Tag color="error" v-else>不计</Tag>
+
+			</FormItem>
+			<FormItem label="不计Rating范围:" v-if="formItem.isRating">
 				<span>Rating > </span>
 				<Tag color="blue">{{ formItem.ratingTop }}</Tag>
 
@@ -140,7 +141,7 @@
 	<Modal v-model="showEditContestInfo" title="编辑比赛信息" scrollable width="600px" :mask-closable="false" :closable="false"
 		style="top: 30px;">
 
-		<Form :model="formItem" :label-width="120">
+		<Form :label-width="120">
 			<FormItem label="比赛标题">
 				<Input v-model="formItem.title"></Input>
 
@@ -163,16 +164,6 @@
 					</Col>
 				</Row>
 
-			</FormItem>
-			<FormItem label="举办方类型">
-				<Switch size="large" v-model="formItem.sponsorType">
-					<template #open>
-						<span>个人</span>
-					</template>
-					<template #close>
-						<span>小组</span>
-					</template>
-				</Switch>
 			</FormItem>
 			<FormItem label="举办方ID">
 				<Input v-model="formItem.sponsorId"></Input>
@@ -231,9 +222,27 @@
 					</template>
 				</Switch>
 			</FormItem>
-			<FormItem label="不计Rating范围:">
-				<span>Rating > </span>
-				<InputNumber :min="1500" :step="1" v-model="formItem.ratingTop" />
+			<FormItem label="比赛结果是否计入Rating">
+				<Row>
+					<Col span="4">
+					<Switch size="large" v-model="formItem.isRating">
+						<template #open>
+							<span>计入</span>
+						</template>
+						<template #close>
+							<span>不计</span>
+						</template>
+					</Switch>
+					</Col>
+					<Col span="4" style="text-align: center">
+					</Col>
+					<Col span="15">
+					<span v-if="formItem.isRating">
+						不计Rating范围：Rating >
+						<InputNumber :step="1" v-model="formItem.ratingTop" />
+					</span>
+					</Col>
+				</Row>
 			</FormItem>
 			<FormItem label="比赛介绍">
 				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
@@ -273,16 +282,6 @@
 				</Row>
 
 			</FormItem>
-			<FormItem label="举办方类型">
-				<Switch size="large" v-model="formItem.sponsorType">
-					<template #open>
-						<span>个人</span>
-					</template>
-					<template #close>
-						<span>小组</span>
-					</template>
-				</Switch>
-			</FormItem>
 			<FormItem label="举办方ID">
 				<Input v-model="formItem.sponsorId"></Input>
 			</FormItem>
@@ -340,10 +339,27 @@
 					</template>
 				</Switch>
 			</FormItem>
-			<FormItem label="不计Rating范围:">
-				<span>Rating > </span>
-				<InputNumber :min="1500" :step="1" v-model="formItem.ratingTop" />
-				<!-- <Input v-model="formItem.ratingTop"></Input> -->
+			<FormItem label="比赛结果是否计入Rating">
+				<Row>
+					<Col span="4">
+					<Switch size="large" v-model="formItem.isRating">
+						<template #open>
+							<span>计入</span>
+						</template>
+						<template #close>
+							<span>不计</span>
+						</template>
+					</Switch>
+					</Col>
+					<Col span="4" style="text-align: center">
+					</Col>
+					<Col span="15">
+					<span v-if="formItem.isRating">
+						不计Rating范围：Rating >
+						<InputNumber :max="10000" :min="1500" :step="1" v-model="formItem.ratingTop" />
+					</span>
+					</Col>
+				</Row>
 			</FormItem>
 			<FormItem label="比赛介绍">
 				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
@@ -456,7 +472,6 @@ const contestList = ref([]);
 const formItem = ref({
 	id: '',
 	sponsorId: '',
-	sponsorType: true,
 	title: '',
 	contestType: 1,
 	contestTagId: 0,
@@ -476,6 +491,7 @@ const formItem = ref({
 	ratingTop: 2199,
 	createTime: '',
 	lastUpdateTime: '',
+	isRating: true,
 	mender: '',
 	signUpTime: [],
 	contestTime: [],
@@ -489,7 +505,6 @@ const clearFormItem = () => {
 	formItem.value = {
 		id: '',
 		sponsorId: '',
-		sponsorType: true,
 		title: '',
 		contestType: 1,
 		contestTagId: 0,
@@ -506,6 +521,7 @@ const clearFormItem = () => {
 		sealRank: false,
 		sealRankTime: 20,
 		openRank: true,
+		isRating: true,
 		ratingTop: 2199,
 		createTime: '',
 		lastUpdateTime: '',
@@ -519,16 +535,13 @@ const clearFormItem = () => {
 }
 
 const handleSelectContestType = (name) => {
-	// console.log(name);
 	formItem.value.contestSelectValue = name
 	contestTagList.value.forEach(item => {
-		// console.log(item);
 		if (item.name == name) {
 			formItem.value.subTagList = item.tags
 			formItem.value.contestType = item.id
 		}
 	})
-	// console.log(formItem.value.subTagList);
 }
 
 const handleSelectContestTag = (name) => {
@@ -537,7 +550,6 @@ const handleSelectContestTag = (name) => {
 		if (item.name == name) {
 			formItem.value.contestTagId = item.id
 			formItem.value.contestTagName = item.name
-			// console.log(formItem.value.contestTagName,formItem.value.contestTagId);
 		}
 	})
 }
@@ -551,16 +563,58 @@ const showContestDetialInfoModal = (row) => {
 const showEditContestInfo = ref(false)
 const showEditContestInfoModal = (row) => {
 	showEditContestInfo.value = true
-	formItem.value = row
+	formItem.value = {
+		id: Number(row.id),
+		sponsorId: String(row.sponsorId) || 0,
+		title: row.title || '',
+		contestType: row.contestType || 1,
+		contestTagId: row.contestTagId || 0,
+		contestTagName: row.contestTagName || '',
+		description: row.description || '',
+		problemNum: row.problemNum || '',
+		source: row.source || '',
+		public: row.public || true,
+		pwd: row.pwd || '',
+		startTime: row.startTime || 0,
+		endTime: row.endTime || 0,
+		signUpStartTime: row.signUpStartTime || 0,
+		signUpEndTime: row.signUpEndTime || 0,
+		sealRank: row.sealRank || false,
+		sealRankTime: (row.sealRankTime / 60) || 20,
+		openRank: row.openRank || true,
+		ratingTop: row.ratingTop || 2199,
+		createTime: row.createTime || '',
+		lastUpdateTime: row.lastUpdateTime || '',
+		isRating: row.isRating,
+		mender: row.mender || '',
+		signUpTime: [row.signUpStartTime, row.signUpEndTime],
+		contestTime: [row.startTime, row.endTime],
+		contestSelectValue: row.contestSelectValue || 0,
+		contestSelectSubValue: row.contestSelectSubValue || 0,
+		subTagList: []
+	}
+	for (let i = 0; i < contestTagList.value.length; i++) {
+		let e = contestTagList.value[i];
+		for (let j = 0; j < e.tags.length; j++) {
+			if (e.tags[j].id == formItem.value.contestTagId) {
+				formItem.value.contestSelectValue = e.name
+				formItem.value.contestSelectSubValue = e.tags[j].name
+				formItem.value.subTagList = e.tags
+			}
+		}
+	}
+	console.log(formItem.value);
+	// console.log(row);
 }
 
 const editContestInfoOk = async () => {
 	let contestInfo = {
-		sponsorId: 0,
-		sponsorType: true,
+		id: formItem.value.id,
+		sponsorId: formItem.value.sponsorId,
 		title: formItem.value.title || '',
 		description: formItem.value.description || '',
 		public: formItem.value.public || true,
+		isRating: formItem.value.isRating,
 		pwd: formItem.value.pwd || '',
 		startTime: Number(formItem.value.startTime) || 0,
 		endTime: Number(formItem.value.endTime) || 0,
@@ -581,6 +635,7 @@ const editContestInfoOk = async () => {
 		msg.err("举办方ID输入错误")
 		return
 	}
+	console.log(contestInfo);
 	if (contestInfo.sponsorId == 0) {
 		msg.err("检查举办方ID")
 	}
@@ -588,21 +643,18 @@ const editContestInfoOk = async () => {
 		msg.err("比赛开始时间要晚于报名截止时间")
 		return
 	}
-	if (contestInfo.sealRankTime > 30 || contestInfo.sealRankTime < 0) {
-		msg.err("封榜时间应大于0分钟且小于30分钟")
-		return
-	} else {
-		// 转换成秒
-		contestInfo.sealRankTime *= 60
+	if (contestInfo.sealRank) {
+		if (contestInfo.sealRankTime > 30 || contestInfo.sealRankTime < 0) {
+			msg.err("封榜时间应大于0分钟且小于30分钟")
+			return
+		} else {
+			// 转换成秒
+			contestInfo.sealRankTime *= 60
+		}
 	}
 	if (!contestInfo.public) {
 		contestInfo.pwd = ''
 	}
-	if (dragData.dataList.length == 0) {
-		msg.err('请添加至少一道题目！')
-		return
-	}
-
 	// console.log(contestInfo, formItem.value);
 	const { data } = await http.post('/contest/update', contestInfo)
 	// console.log(data);
@@ -611,9 +663,9 @@ const editContestInfoOk = async () => {
 		return
 	}
 	msg.ok('更新比赛信息成功');
+	clearFormItem()
 	getcontestList()
 	showEditContestInfo.value = false
-	clearFormItem()
 }
 
 const handleSignUpTimeSelectOK = () => {
@@ -652,10 +704,10 @@ const showAddUserInfoModal = () => {
 const getAndCheckFormItem = () => {
 	let contestInfo = {
 		sponsorId: 0,
-		sponsorType: true,
 		title: formItem.value.title || '',
 		description: formItem.value.description || '',
 		public: formItem.value.public || true,
+		isRating: formItem.value.isRating || true,
 		pwd: formItem.value.pwd || '',
 		startTime: Number(formItem.value.startTime) || 0,
 		endTime: Number(formItem.value.endTime) || 0,
@@ -670,9 +722,9 @@ const getAndCheckFormItem = () => {
 		contestTagName: formItem.value.contestTagName || '',
 		creator: BigNumber(userInfo.value.id) || 0,
 	}
-	if(contestInfo.title == '') {
+	if (contestInfo.title == '') {
 		msg.err("请输入比赛标题")
-		return 
+		return
 	}
 	try {
 		contestInfo.sponsorId = BigNumber(formItem.value.sponsorId)
@@ -755,16 +807,17 @@ const closeContestDetial = () => {
 }
 
 
-const handleDeleteUser = async (row) => {
+const handleDeleteContest = async (row) => {
 	// return
-	const { data } = await http.post('/user/delete', {
-		UserId: row.id || 0,
+	const { data } = await http.post('/contest/delete', {
+		mender: BigNumber(userInfo.value.id),
+		contestId: row.id
 	})
+	console.log(data);
 	if (data.code != 200) {
-		msg.err({ background: true, content: data.msg });
+		msg.err(data.msg);
 	}
-	msg.ok({ background: true, content: '删除成功' });
-	// console.log(data);
+	msg.ok('删除成功');
 	getcontestList()
 }
 
@@ -804,7 +857,7 @@ const getContestNameById = (id) => {
 			// console.log(e.tags[j]);
 		}
 	}
-	return '算法基础'
+	return ''
 }
 
 const contestTagList = ref([])

@@ -170,8 +170,7 @@
 										{{ item.name }}</div>
 									<Row :wrap="true">
 										<Tag v-for="subitem in item.tags" color="blue"
-											@click="searchInAllTag(item.name, subitem)"
-											style="margin: 5px;cursor: pointer;">
+											@click="addTagToList(item.name, subitem)" style="margin: 5px;cursor: pointer;">
 											{{ subitem.name }}
 										</Tag>
 									</Row>
@@ -191,7 +190,7 @@
 			<div style="width: 100%;height: 40px;">
 				<Space style="float: right;">
 					<Button @click="editProblemInfoCancel">取消</Button>
-					<Button type="primary" @click="addProblemInfoOk">确定</Button>
+					<Button type="primary" @click="editProblemInfoOk">确定</Button>
 				</Space>
 			</div>
 		</template>
@@ -257,8 +256,7 @@
 										{{ item.name }}</div>
 									<Row :wrap="true">
 										<Tag v-for="subitem in item.tags" color="blue"
-											@click="searchInAllTag(item.name, subitem)"
-											style="margin: 5px;cursor: pointer;">
+											@click="addTagToList(item.name, subitem)" style="margin: 5px;cursor: pointer;">
 											{{ subitem.name }}
 										</Tag>
 									</Row>
@@ -305,6 +303,7 @@ import { Message } from 'view-ui-plus';
 import { useStore } from 'vuex';
 import fileServer from '../../../common/fierserver'
 import msg from '../../../common/msg.js'
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 const pageInfo = reactive({
 	currPage: 1,
@@ -353,10 +352,10 @@ const columns = ref([
 
 const problemInfo = ref({
 	title: '',
-	timeLimit: 2000,
-	cTimeLimit: 1000,
-	memoryLimit: 128,
-	cMemoryLimit: 64,
+	timeLimit: 2000000000,
+	cTimeLimit: 1000000000,
+	memoryLimit: 134217728,
+	cMemoryLimit: 67108864,
 	public: 1,
 	difficulty: 1,
 	tags: [],
@@ -376,10 +375,10 @@ const uploadInfoMap = reactive({
 const clearFormItem = () => {
 	problemInfo.value = {
 		title: '',
-		timeLimit: 2000,
-		cTimeLimit: 1000,
-		memoryLimit: 128,
-		cMemoryLimit: 64,
+		timeLimit: 2000000000,
+		cTimeLimit: 1000000000,
+		memoryLimit: 134217728,
+		cMemoryLimit: 67108864,
 		public: 1,
 		difficulty: 1,
 		tags: [],
@@ -496,7 +495,7 @@ const onRemoveUploadedFile = async (file, idx) => {
 
 
 const checkCase = () => {
-	if(!problemInfo.value.title) {
+	if (!problemInfo.value.title) {
 		msg.err("请输入题目标题")
 		return false
 	}
@@ -504,36 +503,34 @@ const checkCase = () => {
 		msg.err("请选择至少一个选择题目标签")
 		return false
 	}
-	if (uploadInfoMap.map.size == 0) {
-		msg.err('请上传评测文件')
-		return false
-	}
-	for (let val of uploadInfoMap.map.values()) {
-		if (val.in == '-') {
-			msg.err(val.idx + '号测试样例缺少输入(.in)文件')
-			return false
+	if (uploadInfoMap.map.size != 0) {
+		for (let val of uploadInfoMap.map.values()) {
+			if (val.in == '-') {
+				msg.err(val.idx + '号测试样例缺少输入(.in)文件')
+				return false
+			}
+			if (val.out == '-') {
+				msg.err(val.idx + '号测试样例缺少输入(.in)文件')
+				return false
+			}
+			problemInfo.value.caseFileList.push(val)
 		}
-		if (val.out == '-') {
-			msg.err(val.idx + '号测试样例缺少输入(.in)文件')
-			return false
-		}
-		problemInfo.value.caseFileList.push(val)
-	}
-	problemInfo.value.caseFileList.sort((o1, o2) => {
-		return o1.idx - o2.idx
-	})
-	console.log(problemInfo.value.caseFileList);
-	for (let i = 0; i < problemInfo.value.caseFileList.length - 1; i++) {
-		if (problemInfo.value.caseFileList[i].idx + 1 != problemInfo.value.caseFileList[i + 1].idx) {
-			msg.err('测试样例号码不连续，缺少' + (problemInfo.value.caseFileList[i].idx + 1) + '号样例')
-			return false
+		problemInfo.value.caseFileList.sort((o1, o2) => {
+			return o1.idx - o2.idx
+		})
+		console.log(problemInfo.value.caseFileList);
+		for (let i = 0; i < problemInfo.value.caseFileList.length - 1; i++) {
+			if (problemInfo.value.caseFileList[i].idx + 1 != problemInfo.value.caseFileList[i + 1].idx) {
+				msg.err('测试样例号码不连续，缺少' + (problemInfo.value.caseFileList[i].idx + 1) + '号样例')
+				return false
+			}
 		}
 	}
 	return true
 }
 
 
-const searchInAllTag = (name, subitem) => {
+const addTagToList = (name, subitem) => {
 	console.log("SBSBSBS", name, subitem);
 	if (!problemInfo.value.tags.includes(subitem)) {
 		problemInfo.value.tags.push(subitem)
@@ -547,6 +544,7 @@ const handleCloseTag = (item) => {
 
 const getProblemDetial = async (id) => {
 	const { data: res } = await http.get('/problem/detial?id=' + id)
+	// console.log(res);
 	if (res.code != 200) {
 		msg.err(res.msg)
 		return
@@ -559,6 +557,7 @@ const getProblemDetial = async (id) => {
 		return
 	}
 	problemInfo.value.content = res1.data.content
+	// console.log("aaaa", problemInfo.value);
 }
 
 const showCheckProblemModal = ref(false)
@@ -570,41 +569,34 @@ const showCheckUserInfoModal = async (row) => {
 
 const showEditProblemModal = ref(false)
 const showEditProblemInfoModal = async (row) => {
-	getProblemDetial(row.id)
-	showEditProblemModal.value = true
-}
-
-const editProblemInfoOk = async () => {
-	let d = {
-		age: Number(problemInfo.value.age || 0),
-		id: problemInfo.value.id || 0,
-		status: Number(problemInfo.value.status || 0),
-		grade: Number(problemInfo.value.grade || 0),
-		stuNumber: Number(problemInfo.value.stuNumber || 0),
-		createTime: problemInfo.value.createTime || 0,
-		gender: problemInfo.value.gender || '',
-		userName: problemInfo.value.title || '',
-		avatar: problemInfo.value.avatar || '',
-		real_name: problemInfo.value.real_name || '',
-		school: problemInfo.value.school || '',
-		major: problemInfo.value.major || '',
-		instruction: problemInfo.value.instruction || '',
-		email: problemInfo.value.email || ''
+	const { data: res } = await http.get('/problem/detial?id=' + row.id)
+	// console.log(res);
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
 	}
-	console.log(d);
-	// const { data } = await http.post('/user/updateinfo', d)
-	// if (data.code != 200) {
-	// 	Message.error({ background: true, content: data.msg });
-	// 	return
-	// }
-	Message.success({ background: true, content: '修改成功' });
-	getProblemList()
-	clearFormItem()
-	showEditProblemModal.value = false
+	problemInfo.value = res.data.info
+	problemInfo.value.tags = res.data.tags
+	const { data: res1 } = await http.get('/problem/content?id=' + row.id)
+	console.log(res1);
+	if (res1.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	problemInfo.value.content = res1.data.content
+	problembank.content = res1.data.content
+	showEditProblemModal.value = true
+	problembank.tagSet = new Set()
+	problemInfo.value.tags.forEach((item) => {
+		problembank.tagSet.add(item.id)
+	})
+	console.log("ssss", problemInfo.value, problembank.tagSet);
 }
 
-
-
+const problembank = reactive({
+	tagSet: null,
+	content: ''
+})
 
 const showAddUserInfo = ref(false)
 const showAddUserInfoModal = () => {
@@ -626,6 +618,81 @@ const handleBeforeClose = async () => {
 	clearFormItem()
 }
 
+const editProblemInfoOk = async () => {
+	if (!checkCase()) {
+		msg.err('样例检查不通过，禁止提交');
+		problemInfo.value.caseFileList.length = 0
+		return
+	}
+	let postData = {
+		info: {
+			id: problemInfo.value.id,
+			author: BigNumber(userInfo.value.id),
+			title: problemInfo.value.title,// '',
+			timeLimit: problemInfo.value.timeLimit,// 2000,
+			cTimeLimit: problemInfo.value.cTimeLimit,// 1000,
+			memoryLimit: problemInfo.value.memoryLimit,// 128,
+			cMemoryLimit: problemInfo.value.cMemoryLimit,// 64,
+			public: problemInfo.value.public,// 1,
+			difficulty: problemInfo.value.difficulty,// 1,
+			content: problemInfo.value.content,// '# 输入题目内容',
+			caseIn: problemInfo.value.caseIn,// '',
+			caseOut: problemInfo.value.caseOut,// ''
+		}
+	}
+	// console.log(postData)
+	msg.ok('正在提交');
+	const { data } = await http.post('/problem/update', postData)
+	if (data.code != 200) {
+		msg.err(data.msg)
+		return
+	}
+	msg.ok('修改题目信息成功')
+	let ut = false
+	if (problemInfo.value.tags.length != problembank.tagSet.size) {
+		ut = true
+	} else {
+		for (let i = 0; i < problemInfo.value.tags.length; i++) {
+			const item = problemInfo.value.tags[i];
+			if (!problembank.tagSet.has(item.id)) {
+				ut = true
+				break
+			}
+		}
+	}
+	if (ut) {
+		let tags = []
+		problemInfo.value.tags.forEach((item) => {
+			tags.push(item.id)
+		})
+		console.log(tags, problemInfo.value.id);
+		const { data } = await http.post('/problem/update/tag', {
+			problemId: problemInfo.value.id,
+			tagIds: tags
+		})
+		if (data.code != 200) {
+			msg.err(data.msg)
+			return
+		}
+		msg.ok('修改题目标签成功')
+	}
+	if (problembank.content !== problemInfo.value.content) {
+
+		const { data } = await http.post('/problem/update/content', {
+			problemId: problemInfo.value.id,
+			content: problemInfo.value.content
+		})
+		if (data.code != 200) {
+			msg.err(data.msg)
+			return
+		}
+		msg.ok('修改题目内容成功')
+	}
+	clearFormItem()
+	getProblemList()
+	showEditProblemModal.value = false
+}
+
 
 const addProblemInfoOk = async () => {
 	if (!checkCase()) {
@@ -636,6 +703,7 @@ const addProblemInfoOk = async () => {
 	console.log(problemInfo.value.caseFileList);
 	let postData = {
 		info: {
+			author: BigNumber(userInfo.value.id),
 			title: problemInfo.value.title,// '',
 			timeLimit: problemInfo.value.timeLimit,// 2000,
 			cTimeLimit: problemInfo.value.cTimeLimit,// 1000,
@@ -647,9 +715,12 @@ const addProblemInfoOk = async () => {
 			caseIn: problemInfo.value.caseIn,// '',
 			caseOut: problemInfo.value.caseOut,// ''
 		},
-		tags: problemInfo.value.tags,
+		tags: [],
 		caseFileList: problemInfo.value.caseFileList
 	}
+	problemInfo.value.tags.forEach((item) => {
+		postData.tags.push({ problemId: 0, tagId: item.id })
+	})
 	console.log(postData)
 	msg.ok('正在提交');
 	const { data } = await http.post('/problem/add', postData)
@@ -658,13 +729,13 @@ const addProblemInfoOk = async () => {
 		return
 	}
 	msg.ok('题目添加成功')
+	clearFormItem()
+	getProblemList()
 	showAddUserInfo.value = false
-
-	handleBeforeClose()
 }
+
 const addProblemInfoCancel = () => {
 	handleBeforeClose()
-
 	showAddUserInfo.value = false
 }
 
@@ -676,8 +747,8 @@ const editProblemInfoCancel = () => {
 
 const handleDeleteProblem = async (row) => {
 	const { data } = await http.post('/problem/delete', {
-		problemId: row.id || 0,
-		userId: userInfo.value.id
+		problemId: BigNumber(row.id) || 0,
+		userId: BigNumber(userInfo.value.id)
 	})
 	// console.log(data)
 	if (data.code != 200) {
@@ -697,8 +768,13 @@ const getProblemList = async () => {
 		return
 	}
 	console.log(data);
-	problemList.value = data.data.problemlist
-	pageInfo.total = data.data.total
+	try {
+		problemList.value = data.data.problemlist
+		pageInfo.total = data.data.total
+	} catch (e) {
+		problemList.value = []
+		pageInfo.total = 0
+	}
 }
 
 
