@@ -26,7 +26,7 @@
                 <!-- 右侧Header -->
                 <Header :style="{ padding: 0 }" class="layout-header-bar">
                     <div v-if="userInfo.id == -1" style="display: flex;align-items: center;
-                            				float: right;width: 230px;min-width: 230px;height: 64px;">
+                                				float: right;width: 230px;min-width: 230px;height: 64px;">
                         <Button @click="clickLogin" type="primary" style="float: left;">登录/注册</Button>
                     </div>
                     <!-- <div style="display: flex;"> -->
@@ -63,7 +63,7 @@
                 </Content>
             </Layout>
         </Layout>
-</div>
+    </div>
 </template>
 <script setup name="Admin">
 import { ref, computed, reactive, onMounted } from 'vue';
@@ -73,6 +73,7 @@ import { useStore } from 'vuex';
 import { Message } from 'view-ui-plus'
 import http from '../../plugin/axios'
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import msg from '../../common/msg';
 const store = useStore()
 const router = useRouter();
 const isCollapsed = ref(false)
@@ -112,7 +113,7 @@ const menuList = reactive([
         icon: 'ios-stats', name: '4', title: '小组管理', path: '',
         children: [
             { icon: '', name: '4-1', title: '小组列表', path: '/group', children: null },
-          
+
         ]
     },
     // { icon: 'ios-navigate', name: '1-1', title: 'Option 1', path: '/userlist' },
@@ -193,7 +194,10 @@ const logout = async () => {
 // 设置第一个menuitem为默认激活的
 onMounted(() => {
     userInfo.value = store.getters.userInfo
-    console.log(userInfo.value);
+    if (userInfo.value.id == -1 || userInfo.value.roleId == -1) {
+        // msg.err("无效用户信息或用户非管理员")
+        logout()
+    }
 });
 </script>
 <style scoped lang="less">

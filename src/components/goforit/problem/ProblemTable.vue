@@ -9,8 +9,8 @@
                 <span>题目筛选：</span>
                 <Select v-model="data.problemSearchCondition.difficulty" :placeholder="data.problemPlaceholder.difficulty"
                     style="width:80px" @on-change="handleDifficultyChange">
-                    <Option v-for="item in data.difficultList" :value="item" :key="item">
-                        {{ item }}
+                    <Option v-for="item in data.difficultList" :value="item.key" :key="item.key">
+                        {{ item.lable }}
                     </Option>
                 </Select>
                 <Select v-model="data.problemSearchCondition.status" :placeholder="data.problemPlaceholder.status"
@@ -98,6 +98,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 import msg from '../../../common/msg';
 import http from '../../../plugin/axios';
@@ -111,10 +112,14 @@ const data = reactive({
     },
     problemList: [],
     statusList: ['已通过', '未通过'],
-    difficultList: ['简单', '中等', '困难'],
+    difficultList: [
+        { lable: '简单', key: 1 },
+        { lable: '中等', key: 2 },
+        { lable: '困难', key: 3 },
+    ],
     problemSearchCondition: {
         status: '',
-        difficulty: '',
+        difficulty: 0,
         selectedTagList: [],
         searchKey: '',
         selectedTagMap: new Map()
@@ -137,7 +142,7 @@ onMounted(() => {
 
 const handleOpenProblemPage = (id) => {
     let routeUrl = router.resolve({
-        path: "/practice/"+id,
+        path: "/practice/" + id,
         // query: { id: id }
     });
     window.open(routeUrl.href, '_blank');
@@ -239,13 +244,17 @@ const conditionSearchProblem = async () => {
         tags.push(item.id)
     })
     const { data: res } = await http.post('/problem/search', {
-        userId: '1188889026082373823',//data.userInfo.id,
+        userId: BigNumber(data.userInfo.id),
         currPage: data.pageInfo.currPage,
         pageSize: data.pageInfo.pageSize,
         status: data.problemSearchCondition.status || '',
-        difficulty: data.problemSearchCondition.difficulty || '',
+        difficulty: data.problemSearchCondition.difficulty ,
         tagIds: tags,
     })
+    if (res.code != 200) {
+        msg.err("题库查询失败" + res.msg)
+        return
+    }
     data.problemList = res.data.searchResult
     data.pageInfo.total = res.data.total
     console.log(res.data.searchResult);

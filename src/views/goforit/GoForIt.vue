@@ -13,7 +13,7 @@
 				</div>
 			</div>
 			<div v-if="userInfo.id == -1" style="display: flex;align-items: center;
-				float: right;width: 230px;min-width: 230px;height: 50px;">
+					float: right;width: 230px;min-width: 230px;height: 50px;">
 				<Button @click="clickLogin" type="primary" style="float: left;">登录/注册</Button>
 			</div>
 
@@ -65,7 +65,7 @@
 		<GlobalFooter :links="globalFooterLinks" :copyright="globalFooterCopyright" />
 		<!-- 登录对话框 -->
 		<LoginDialog :flag="loginDialogShow" @on-login="onSuccessLogin"></LoginDialog>
-</div>
+	</div>
 </template>
 <script setup name="GoForIt">
 import { ref, reactive, onMounted, watch } from 'vue'
@@ -74,6 +74,7 @@ import http from '../../plugin/axios.js'
 import { useStore } from 'vuex';
 import LoginDialog from '../../components/goforit/login/LoginDialog.vue';
 import { Message } from 'view-ui-plus'
+import msg from '../../common/msg';
 
 // TODO:增加登录验证和用户信息处理功能
 const store = useStore()
@@ -84,8 +85,16 @@ const clickLogin = () => {
 	loginDialogShow.value = !loginDialogShow.value
 }
 // 登录成功回调函数，清除根节点的样式
-const onSuccessLogin = (flag) => {
-	loginDialogShow.value = flag
+const onSuccessLogin = async (loginData) => {
+	const { data: res } = await http.post('/user/login', loginData)
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	} else {
+		msg.ok("登录成功，欢迎！")
+	}
+	store.commit('userLoginSuccess', res.data)
+	loginDialogShow.value = false
 	userInfo.value = store.getters.userInfo
 }
 
@@ -130,7 +139,7 @@ const topMenuMinWidth = ref('min-width: ' + (menuList.value.length * 100) + 'px;
 
 
 
-// 检查当前用户是否登录
+// 检查当前用户是否需要登录，若是则弹出登录对话框
 const checkLogin = (path) => {
 	if (userInfo.id != -1) {
 		return
@@ -150,12 +159,6 @@ const checkLogin = (path) => {
 	}
 }
 
-const hello = async () => {
-	userInfo.value = store.getters.userInfo
-	// const { data } = await http.get('/user/hello')
-	// console.log('aaa', userInfo.value)
-}
-
 const logout = async () => {
 	const { data } = await http.post('/user/logout', { userId: userInfo.value.id })
 	console.log(data);
@@ -172,7 +175,7 @@ const logout = async () => {
 
 // 设置第一个menuitem为默认激活的
 onMounted(() => {
-	hello()
+	userInfo.value = store.getters.userInfo
 	checkLogin($router.currentRoute.value.path)
 	updateMenuActive($router.currentRoute.value.path)
 });
