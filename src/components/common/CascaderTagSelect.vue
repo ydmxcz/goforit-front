@@ -139,7 +139,7 @@ const handleLv1TagSelectChange = (idx) => {
 
 const handleLv2TagSelectChange = (idx, list) => {
     let subTagItem = list[idx]
-    console.log("mk", subTagItem)
+    // console.log("mk", subTagItem)
     lv2TagSelectDom.value.forEach((item, i) => {
         if (i == idx) {
             // 防止重复点击

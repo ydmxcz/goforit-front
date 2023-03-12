@@ -7,7 +7,7 @@
             <Space wrap>
                 <div ref="tagSelectDom" class="elem-center tag-item" v-for="(item, idx) in tagSelectList"
                     @click="handleTagSelectChange(idx, tagSelectDom)">
-                    {{ item }}
+                    {{ item.label }}
                 </div>
             </Space>
         </div>
@@ -60,14 +60,14 @@ const tagSelectList = ref(props.dataList)
 
 const handleTagSelectChange = (idx, tagSelectDom) => {
     // console.log(idx, TagSpace.value.offsetHeight)
-    let name = tagSelectList.value[idx]
+    let clickedTag = tagSelectList.value[idx]
     tagSelectDom.forEach((item, i) => {
         if (i == idx) {
             // 防止重复点击
-            if (name != lastSelect) {
-                lastSelect.value = name
+            if (clickedTag.value != lastSelect.value) {
+                lastSelect.value = clickedTag.name
                 item.id = 'active-item'
-                emits('onChange', name)
+                emits('onChange', clickedTag.value)
             }
         } else {
             item.id = ''

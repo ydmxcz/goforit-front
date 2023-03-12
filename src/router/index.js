@@ -139,7 +139,7 @@ const routes = [
 				]
 			},
 			{ path: "/contest/ranking", name: "Ranking", component: Ranking, meta: { title: '排行榜' }, },
-			{ path: "/contest/all", name: "AllContest", component: AllContest, meta: { title: '所有比赛' }, },
+			{ path: "/contest/:status/list", name: "AllContest", component: AllContest, meta: { title: '所有比赛' }, },
 			// 题目解答页面
 			{ path: "/problem/:id", name: "Problem", component: Problem, meta: { title: '题目' } },
 			// markdown编辑页面

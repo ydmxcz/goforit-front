@@ -6,11 +6,11 @@
             </Col>
             <Col flex="auto">
             <Space class="middle-space" direction="vertical" style="width: 100%;">
-                <div style="font: 16px bolder;" >
+                <div style="font: 16px bolder;">
                     <span @click="toDetial" style="cursor: pointer;">{{ props.name }}</span>
                     <span style="font-size: 12px;margin-left: 10px; margin-right: 5px;">
                         <Icon type="md-information-circle" style="margin-right: 10px;" size="16" color="#2d8cf0" />
-                        ID：{{ props.id }}
+                        ID：{{ props.problemListId }}
                     </span>
                 </div>
                 <Space>
@@ -36,11 +36,12 @@
                     </span>
                 </Space>
 
-                <Ellipsis :text="props.instruction" :lines="2" tooltip />
+                <Ellipsis :text="props.instruction" v-if="props.instruction != ''" :lines="2" tooltip />
+                <Ellipsis text="创建题单的同学很懒，没写介绍..." v-else :lines="2" tooltip />
 
-                <Space wrap>
+                <Space wrap v-if="props.tagList.length > 0">
                     <Icon type="ios-pricetags" /><span>题目标签：</span>
-                    <Tag color="blue" v-for="name in props.tagList"> {{ name }}</Tag>
+                    <Tag color="blue" v-for="item in props.tagList"> {{ item.name }}</Tag>
                 </Space>
 
             </Space>
@@ -54,15 +55,16 @@
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 const router = useRouter()
-const targetTime = ref(new Date().getTime() + ((3600 * 24 * 8) + (3600 * 6) + (1900)) * 1000);
+// const targetTime = ref(new Date().getTime() + ((3600 * 24 * 8) + (3600 * 6) + (1900)) * 1000);
 const props = defineProps({
     name: {
         type: String,
         default: 'GoForIt热题 HOT 100',
-    }, id: {
-        type: String,
-        default: '12345678912341',
+    }, problemListId: {
+        type: Number,
+        default: Object,
     }, creator: {
         type: String,
         default: 'edmund',
@@ -80,8 +82,9 @@ const props = defineProps({
         default: true,
     }, tagList: {
         type: Array,
-        default: ['二分查找', '排序', '高精度', '前缀和', '位运算',
-            '离散化', '区间合并', '单链表', '双链表', '单调栈'],
+        default: []
+        // default: [{ name: '二分查找' }, { name: '排序' }, { name: '高精度' }, { name: '前缀和' }, { name: '位运算' },
+        // { name: '离散化' }, { name: '区间合并' }, { name: '单链表' }, { name: '双链表' }, { name: '单调栈' }],
     }, avatar: {
         type: String,
         default: 'https://dev-file.iviewui.com/userinfoPDvn9gKWYihR24SpgC319vXY8qniCqj4/avatar',
@@ -96,7 +99,7 @@ const props = defineProps({
 const borderLeftColor = ref(props.isCollection ? '#2d8cf0' : '#9b9b9b')
 
 const toDetial = () => {
-    router.push('/problemlist/' + props.id)
+    router.push('/problemlist/' + props.problemListId)
 }
 
 

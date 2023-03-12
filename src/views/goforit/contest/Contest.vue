@@ -50,29 +50,58 @@
 									<CascaderTagSelect title-lv1="方向" title-lv2="分类" :data-list="cascaderList"
 										@on-lv2-change="handleLv2Change" @on-lv1-change="handleLv1Change">
 									</CascaderTagSelect>
-									<TagSelectSignle title="状态" :data-list="['全部', '未开始', '已结束']"
+									<TagSelectSignle title="状态" :data-list="contestStatusTagList"
 										@on-change="handleMyTagClick">
 									</TagSelectSignle>
 								</Space>
 							</div>
 
-							<div style="width: 100%; border-left: 5px solid #25bb9b;padding: 10px;">
-								<span style="font-size: 20px;">全部比赛</span>
+							<div style="width: 100%; border-left: 5px solid #ed4014;padding-left: 10px;"
+								v-if="contestListInProcess.length > 0">
+								<span style="font-size: 16px;">正在进行</span>
 							</div>
-							<ContestList v-for="item in contestList" :contest-id="item.id" :name="item.title"
-								:is-original="true" :is-rated="item.ratingTop != -1"
-								:sign-up-start="time.formatDate(new Date(item.signUpStartTime))"
-								:sign-up-end="time.formatDate(new Date(item.signUpEndTime))"
-								:contest-start="time.formatDate(new Date(item.startTime))"
-								:contest-end="time.formatDate(new Date(item.endTime))"
-								:length-time="(item.endTime - item.startTime) / 3600000" :sponsor="item.sponsorName"
-								:number="item.signUpNum||0" :status="true"
-								:max-rating="item.ratingTop" @on-sign-up="handleOnSignUp" />
-							<Space direction="vertical" type="flex" align="center">
-								<Page :total="100" :page-size="10" show-elevator show-sizer show-total />
-							</Space>
+							<ContestList v-for="item in contestListInProcess" :contest-id="item.id" :name="item.title"
+								:is-original="true" :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime"
+								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
+								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
+								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+							<div style="width: 100%;height: 50px;" v-if="contestListInProcess.length > 10">
+								<Button type="text" style="float: right;">查看所有正在进行的比赛</Button>
+							</div>
+							<div style="width: 100%; border-left: 5px solid #4ea3fa;padding-left: 10px;"
+								v-if="contestListNotStrated.length > 0">
+								<span style="font-size: 16px;">等你来战</span>
+							</div>
+							<ContestList v-for="item in contestListNotStrated" :contest-id="item.id" :name="item.title"
+								:is-original="true" :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime"
+								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
+								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
+								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+
+							<div style="width: 100%;height: 50px;" v-if="contestListNotStrated.length > 0">
+								<Button type="text" style="float: right;">查看所有正在报名的比赛</Button>
+							</div>
+							<div style="width: 100%; border-left: 5px solid #9b9b9b;padding-left: 10px;"
+								v-if="contestListFinished.length > 0">
+								<span style="font-size: 16px;">已结束</span>
+							</div>
+							<ContestList v-for="item in contestListFinished" :contest-id="item.id" :name="item.title"
+								:is-original="true" :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime"
+								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
+								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
+								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+							<div style="width: 100%;height: 50px;" v-if="contestListFinished.length > 10">
+								<Button style="background-color: #9b9b9b;float: right;" type="text">查看所有已结束的比赛</Button>
+							</div>
+							<!-- <Button type="primary" style="float: right;">查看全部比赛</Button> -->
 						</Space>
 					</Card>
+					<div style="width: 100%;height: 100px;display: flex;align-items: center;justify-content: center;">
+						<Button type="success" size="large" @click="router.push('/contest/all/list')">查看全部比赛>></Button>
+					</div>
 				</div>
 				<!-- 25% ---1/4---右侧 -->
 				<div class="cia-right">
@@ -88,7 +117,7 @@
 			</Col>
 		</Row>
 	</div>
-	<LoginDialog :flag="loginDialogShow" @on-login="onSuccessLogin"></LoginDialog>
+	<!-- <LoginDialog :flag="loginDialogShow" @on-login="onSuccessLogin"></LoginDialog> -->
 </template>
 
 <script setup name="Contest">
@@ -97,19 +126,18 @@ import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
 import TagSelectSignle from '../../../components/common/TagSelectSignle.vue';
 import CascaderTagSelect from '../../../components/common/CascaderTagSelect.vue';
-import LoginDialog from '../../../components/goforit/login/LoginDialog.vue';
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useRouter } from 'vue-router'
-import time from '../../../common/time';
 const router = useRouter()
 
-const loginDialogShow = ref(false)
+const contestStatusTagList = ref([
+	{ label: '全部', value: 0 },
+	{ label: '未开始', value: 1 },
+	{ label: '已结束', value: 2 },
+	{ label: '正在进行', value: 3 }
+]);
 
-const onSuccessLogin = (flag) => {
-	console.log("AAA");
-	loginDialogShow.value = flag
-}
 
 const handleOnSignUp = (id) => {
 	// loginDialogShow.value = true
@@ -122,14 +150,24 @@ const getContestTags = async () => {
 		msg.err(res.msg)
 		return
 	}
-	cascaderList.value = res.data.tagList
+	cascaderList.value = [{
+		id: 0, name: '全部', tags: [{ id: 0, name: '全部' }]
+	}]
+	res.data.tagList.forEach((item) => {
+		item.tags.forEach((subItem) => {
+			cascaderList.value[0].tags.push(subItem)
+		})
+		cascaderList.value.push(item)
+	})
 }
 
 const cascaderList = ref([])
-const contestList = ref([])
+const contestListFinished = ref([])
+const contestListNotStrated = ref([])
+const contestListInProcess = ref([])
 
 const getContestList = async () => {
-	const { data: res } = await http.post('/contest/all', {
+	const { data: res } = await http.post('/contest/with/status', {
 		currPage: 1,
 		pageSize: 15
 	})
@@ -137,13 +175,23 @@ const getContestList = async () => {
 		msg.err(res.msg)
 		return
 	}
-	console.log(res);
-	contestList.value = res.data.infos
+	// console.log(res);
+	contestListFinished.value = res.data.finished
+	contestListNotStrated.value = res.data.notStarted
+	let now = (new Date().getTime())
+	for (let i = 0; i < contestListFinished.value.length; i++) {
+		const element = contestListFinished.value[i];
+		console.log('hhhhh');
+		if (element.startTime < now && element.endTime > now) {
+			contestListInProcess.value.push(element)
+			contestListFinished.value.splice(i, 1)
+		}
+	}
+
 }
 
 
 onMounted(() => {
-	console.log("xixixi");
 	getContestList()
 	getContestTags()
 })

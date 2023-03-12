@@ -51,6 +51,9 @@
                 placeholder="Enter something..."></Input>
         </FormItem>
     </Form>
+    <div style="width: 100%;">
+        <Button type="primary" style="float: right;" @click="updateMySelfInfo">提交更改</Button>
+    </div>
 </template>
 <script setup name='ProfileInfo'>
 import { ref, reactive, onMounted } from 'vue'
@@ -60,7 +63,22 @@ import msg from '../../../common/msg';
 import http from '../../../plugin/axios';
 const store = useStore()
 const data = reactive({
-    userInfo: {}
+    userInfo: {
+        id: 0,
+        status: 0,
+        age: 0,
+        stuNumber: 0,
+        createTime: 0,
+        gender: 0,
+        grade: '',
+        userName: '',
+        avatar: '',
+        realName: '',
+        school: '',
+        major: '',
+        instruction: '',
+        email: ''
+    }
 })
 
 const getUserDetial = async () => {
@@ -70,7 +88,36 @@ const getUserDetial = async () => {
         return
     }
     data.userInfo = res.data
+    console.log(data.userInfo);
 }
+const updateMySelfInfo = async () => {
+    let d = {
+        age: Number(data.userInfo.age) || 0,
+        id: data.userInfo.id || 0,
+        status: Number(data.userInfo.status || 0),
+        grade: Number(data.userInfo.grade || 0),
+        stuNumber: Number(data.userInfo.stuNumber || 0),
+        createTime: data.userInfo.createTime || 0,
+        gender: data.userInfo.gender || '',
+        userName: data.userInfo.userName || '',
+        avatar: data.userInfo.avatar || '',
+        realName: data.userInfo.realName || '',
+        school: data.userInfo.school || '',
+        major: data.userInfo.major || '',
+        instruction: data.userInfo.instruction || '',
+        email: data.userInfo.email || ''
+    }
+    console.log(d);
+    const { data: res } = await http.post('/user/updateinfo', d)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    } else {
+        msg.ok('修改成功')
+        getUserDetial()
+    }
+}
+
 
 
 onMounted(() => {
