@@ -25,22 +25,28 @@
 					</template>
 				</Poptip>
 			</Space>
+			<!-- <ProblemListItem></ProblemListItem>
 			<ProblemListItem></ProblemListItem>
-			<ProblemListItem></ProblemListItem>
-			<ProblemListItem></ProblemListItem>
+			<ProblemListItem></ProblemListItem> -->
+
+			<ProblemListItem v-for="item in data.problemList" :name="item.name" :problem-list-id="item.id"
+				:creator="item.creator" :activation="item.activation" :avatar="item.avatar"
+				:collection-num="item.collectionNum" :instruction="item.instruction" :is-collection="item.isCollection"
+				:problem-num="item.problemNum" :update-time="item.lastUpdateTime"
+				:tag-list="data.problemListTagMap.get(item.id)"></ProblemListItem>
 			<Space direction="vertical" type="flex" align="center">
-				<Page :total="100" :page-size="10" show-elevator show-sizer show-total />
+				<Page :total="data.pageInfo.total" :page-size="data.pageInfo.pageSize" show-elevator show-sizer show-total
+					:page-size-opts="[10, 15, 20]" :model-value="data.pageInfo.currPage" @on-change="changePage"
+					@on-page-size-change="changePageSize" />
 			</Space>
 		</Space>
-		<Modal v-model="data.showCreatProblemList" title="创建题单" :closable="false"
-			:mask-closable="false">
+		<Modal v-model="data.showCreatProblemList" title="创建题单" :closable="false" :mask-closable="false">
 			<Form :model="data.modalFormInput" label-position="right" :label-width="100" :rules="ruleValidate">
 				<FormItem label="题单名称" prop="title">
 					<Input v-model="data.modalFormInput.title"></Input>
 				</FormItem>
 				<FormItem label="题目标签">
-					<Select class="sb-select" :placeholder="data.selectorPlaceholder" style="width:140px"
-						not-found-text="">
+					<Select class="sb-select" :placeholder="data.selectorPlaceholder" style="width:140px" not-found-text="">
 						<div style="width: 500px; padding: 0px 20px 20px 20px;" class="all-tag">
 							<Space style="width:100% ;margin-bottom: 20px;">
 								<Input style="width: 100%;" v-model="data.tagSearchKey" search enter-button
@@ -106,11 +112,20 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
 import ProblemListItem from '../../../components/goforit/problem/ProblemListItem.vue';
-import http from '../../../plugin/axios';
+import http from '../../../plugin/axios'
+import time from '../../../common/time'
+import msg from '../../../common/msg'
+
+
 const router = useRouter()
 
 
 const data = reactive({
+	pageInfo: {
+		currPage: 1,
+		pageSize: 10,
+		total: 0
+	},
 	justMyOwn: false,
 	showCreatProblemList: false,
 	modalFormInput: {
@@ -128,7 +143,19 @@ const data = reactive({
 
 onMounted(() => {
 	getTagList()
+	getProblemList()
+
 })
+
+const changePage = (page) => {
+	data.pageInfo.currPage = page
+	getProblemList()
+}
+
+const changePageSize = (psize) => {
+	data.pageInfo.pageSize = psize
+	getProblemList()
+}
 
 const getTagList = async () => {
 	const { data: res } = await http.get('/problem/tags')
@@ -181,11 +208,9 @@ const handleTagRemove = (_, name) => {
 	}
 	data.modalFormInput.selectedTagList.splice(i, 1)
 	data.modalFormInput.selectedTagMap.delete(id)
-	// conditionSearchProblem()
 }
 
 const handleSelectTag = (tagFarther, tag) => {
-	console.log(tagFarther, tag)
 	if (!data.modalFormInput.selectedTagMap.has(tag.id)) {
 		data.modalFormInput.selectedTagMap.set(tag.id, 0)
 		data.modalFormInput.selectedTagList.push({
@@ -193,8 +218,6 @@ const handleSelectTag = (tagFarther, tag) => {
 			name: tag.name
 		})
 	}
-	// console.log(data.modalFormInput.selectedTagList);
-	// conditionSearchProblem()
 }
 
 const createProblemListCancel = () => {
@@ -204,11 +227,11 @@ const createProblemListCancel = () => {
 
 const createProblemListOk = () => {
 	data.showCreatProblemList = false
-	console.log("simple data:",{
-		title:data.modalFormInput.title,
-		tags:data.modalFormInput.selectedTagList,
-		instruction:data.modalFormInput.instruction,
-		creator:'userId'
+	console.log("simple data:", {
+		title: data.modalFormInput.title,
+		tags: data.modalFormInput.selectedTagList,
+		instruction: data.modalFormInput.instruction,
+		creator: 'userId'
 	});
 	clearProblemSearchCondition()
 }
@@ -216,6 +239,46 @@ const createProblemListOk = () => {
 const handleModalOpen = () => {
 	data.showCreatProblemList = true
 }
+
+const getProblemList = async () => {
+	const { data: res } = await http.post('/problemlist/all', {
+		currPage: data.pageInfo.currPage,
+		pageSize: data.pageInfo.pageSize,
+		sortBy: data.selectMode
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	data.problemList = []
+	data.problemListTagMap = new Map()
+	res.data.problemlists.forEach((item) => {
+		data.problemList.push({
+			name: item.title,
+			id: item.id || 0,
+			creator: item.creator.toString() || '',
+			collectionNum: item.collectionNum || 0,
+			activation: item.activation || 0,
+			instruction: item.instruction || '',
+			isCollection: item.isCollection,
+			avatar: item.avatar || '',
+			lastUpdateTime: time.formatDate(new Date(item.lastUpdateTime / 1000000)),
+			createTime: time.formatDate(new Date(item.createTime)),
+			problemNum: item.problemNum || 0,
+		})
+	})
+	res.data.tags.forEach((item) => {
+		if (!data.problemListTagMap.has(item.problemlistId)) {
+			data.problemListTagMap.set(item.problemlistId, [item])
+		} else {
+			data.problemListTagMap.get(item.problemlistId).push(item)
+		}
+	})
+	data.pageInfo.total = res.data.total
+	getProblemList()
+
+}
+
 
 const ruleValidate = reactive({
 	title: [

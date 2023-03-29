@@ -34,8 +34,8 @@
                                                 (((data.problem.info.acceptCount || 0) / (data.problem.info.submitCount || 1)) *
                                                     100).toFixed(1) }}%
                                     </div>
-                                    <span>总提交数:{{ data.problem.info.acceptCount || 0 }}</span>
-                                    <span>总通过数:{{ data.problem.info.submitCount || 0 }}</span>
+                                    <span>总提交数:{{ data.problem.info.submitCount || 0 }}</span>
+                                    <span>总通过数:{{ data.problem.info.acceptCount || 0 }}</span>
                                 </Space>
                                 <Space :size="20" :wrap="true">
                                     <div>
@@ -111,9 +111,33 @@
                                         <div>Loading</div>
                                     </Spin>
                                     <div v-else>
-                                        <h1>HHHHHHHHHHHHH</h1>
-                                        <h1>HHHHHHHHHHHHH</h1>
-                                        <h1>HHHHHHHHHHHHH</h1>
+                                        <span v-if="!data.runRes.status" style="color: green;"></span>
+                                        <!-- <span v-if="data.runRes.status == 1" style="color: green;">Accept</span> -->
+                                        <!-- <span v-else style="color: red;">{{ selectRunStatus(data.runRes.status) }}</span> -->
+                                        <!-- <span>{{ data.runRes }}</span> -->
+                                        <Result type="success" v-else-if="data.runRes.status == 1">
+                                            <template #title>
+                                                Accept
+                                            </template>
+                                            <template #desc>
+                                                <Space>
+                                                    <div style="margin: 0 10px;">
+                                                        运行时间：{{ (data.runRes.costTime / 1e6).toFixed(2) }} ms
+                                                    </div>
+                                                    <div style="margin: 0 10px;">
+                                                        运行空间：{{ data.runRes.costMemory / 1024 }} KB
+                                                    </div>
+                                                </Space>
+                                            </template>
+                                        </Result>
+                                        <Result type="error" v-else>
+                                            <template #title>
+                                                <span>{{ selectRunStatus(data.runRes.status) }}</span>
+                                            </template>
+                                            <template #extra v-if="data.runRes.statusDetial">
+                                                <span style="color:red">{{ data.runRes.statusDetial }}</span>
+                                            </template>
+                                        </Result>
                                     </div>
                                 </TabPane>
                             </Tabs>
@@ -268,12 +292,12 @@ const data = reactive({
         id: router.currentRoute.value.params.id,
         info: {},
         tags: [],
-        languageName: 'C++11',
+        languageName: 'C++',
         language: 'text/x-c++src',
         theme: 'solarized'
     },
     languageOptions: [
-        { language: 'C++11', mode: 'text/x-c++src' },
+        { language: 'C++', mode: 'text/x-c++src' },
         { language: 'C', mode: 'text/x-csrc' },
         { language: 'Java', mode: 'text/x-java' },
         { language: 'Python3', mode: 'text/x-python' },
@@ -298,7 +322,7 @@ const data = reactive({
     submitBtnLoading: false,
     // 下面的字符串不要乱改，或导致在代码编辑器格式有问题
     codeTemplate: {
-        "C++11": `#include <iostream>
+        "C++": `#include <iostream>
 using namespace std;
 int main()
 {     
@@ -355,6 +379,18 @@ func main(){
     tagList: [],
     tagSearchKey: '',
     tagSearchList: [],
+    runRes: {},
+    errorArray: [
+        "Accept",        // normal
+        "Compile Error",         // compile error
+        "Memory Limit Exceeded", // mle
+        "Time Limit Exceeded", // tle
+        "Output Limit Exceeded", // ole
+        "File Error", // fe
+        "Nonzero Exit Status",
+        "Signalled",
+        "Internal Error", // system error
+        "Wrong Answer"]
 });
 
 const addProblemToProblemList = async (problemlistId) => {
@@ -557,6 +593,15 @@ const updateCodeMirrorSize = function () {
     }
 }
 
+const selectRunStatus = (i) => {
+    if (i > data.errorArray.length) {
+        i = 0
+    }
+    return data.errorArray[i - 1]
+
+}
+
+
 const handleSubmitProblem = async () => {
     data.submitBtnLoading = true
     openDrawer('runResult')
@@ -572,12 +617,18 @@ const handleSubmitProblem = async () => {
     console.log(res);
     if (res.code != 200) {
         msg.err(res.msg)
-        data.submitBtnLoading = false
-        return
+        data.runRes = {
+            status: 0,
+            statusDetial: res.msg
+        }
+
+    } else {
+        data.runRes = res.data
     }
-    setTimeout(() => {
-        data.submitBtnLoading = false
-    }, 1000)
+    data.submitBtnLoading = false
+    // setTimeout(() => {
+    //     data.submitBtnLoading = false
+    // }, 1000)
 }
 
 
@@ -661,6 +712,9 @@ const ruleValidate = reactive({
     min-width: 900px;
 
     .left-area {
+        height: 100%;
+        overflow-y: auto;
+
         .btn-line {
             background-color: #eee;
             width: 100%;

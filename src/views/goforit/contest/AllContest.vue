@@ -108,7 +108,6 @@ const handleTagClick = (t) => {
 }
 
 const handleLv2Change = (t) => {
-    queryContestTagId.value = t.id
     getContestList()
 }
 
@@ -119,9 +118,7 @@ const getContestList = async () => {
         tagId: queryContestTagId.value,
         status: queryContestStatus.value
     }
-    console.log(d);
     const { data: res } = await http.post('/contest/all', d)
-    console.log(res);
     if (res.code != 200) {
         msg.err(res.msg)
         return

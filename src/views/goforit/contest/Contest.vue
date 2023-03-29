@@ -48,10 +48,10 @@
 								</div>
 								<Space v-else direction="vertical">
 									<CascaderTagSelect title-lv1="方向" title-lv2="分类" :data-list="cascaderList"
-										@on-lv2-change="handleLv2Change" @on-lv1-change="handleLv1Change">
+										@on-lv2-change="handleClickContestTag" @on-lv1-change="handleLv1Change">
 									</CascaderTagSelect>
 									<TagSelectSignle title="状态" :data-list="contestStatusTagList"
-										@on-change="handleMyTagClick">
+										@on-change="handleClickContestStatus">
 									</TagSelectSignle>
 								</Space>
 							</div>
@@ -65,7 +65,7 @@
 								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
 								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
 								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
-								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp" />
 							<div style="width: 100%;height: 50px;" v-if="contestListInProcess.length > 10">
 								<Button type="text" style="float: right;">查看所有正在进行的比赛</Button>
 							</div>
@@ -78,7 +78,7 @@
 								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
 								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
 								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
-								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp" />
 
 							<div style="width: 100%;height: 50px;" v-if="contestListNotStrated.length > 0">
 								<Button type="text" style="float: right;">查看所有正在报名的比赛</Button>
@@ -92,11 +92,10 @@
 								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
 								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
 								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
-								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp"/>
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp" />
 							<div style="width: 100%;height: 50px;" v-if="contestListFinished.length > 10">
 								<Button style="background-color: #9b9b9b;float: right;" type="text">查看所有已结束的比赛</Button>
 							</div>
-							<!-- <Button type="primary" style="float: right;">查看全部比赛</Button> -->
 						</Space>
 					</Card>
 					<div style="width: 100%;height: 100px;display: flex;align-items: center;justify-content: center;">
@@ -165,29 +164,38 @@ const cascaderList = ref([])
 const contestListFinished = ref([])
 const contestListNotStrated = ref([])
 const contestListInProcess = ref([])
+const queryContestStatus = ref(0)
+const queryContestTagId = ref(0)
 
 const getContestList = async () => {
-	const { data: res } = await http.post('/contest/with/status', {
-		currPage: 1,
-		pageSize: 15
-	})
+	let d = {
+		tagId: queryContestTagId.value,
+		status: queryContestStatus.value
+	}
+	console.log(d);
+	const { data: res } = await http.post('/contest/with/status', d)
 	if (res.code != 200) {
 		msg.err(res.msg)
 		return
 	}
-	// console.log(res);
-	contestListFinished.value = res.data.finished
-	contestListNotStrated.value = res.data.notStarted
-	let now = (new Date().getTime())
-	for (let i = 0; i < contestListFinished.value.length; i++) {
-		const element = contestListFinished.value[i];
-		console.log('hhhhh');
-		if (element.startTime < now && element.endTime > now) {
-			contestListInProcess.value.push(element)
-			contestListFinished.value.splice(i, 1)
-		}
-	}
+	try {
+		contestListFinished.value = res.data.finished || []
 
+	} catch (e) {
+		contestListFinished.value = []
+	}
+	try {
+		contestListInProcess.value = res.data.inProcess || []
+
+	} catch (e) {
+		contestListInProcess.value = []
+	}
+	try {
+		contestListNotStrated.value = res.data.notStarted || []
+
+	} catch (e) {
+		contestListNotStrated.value = []
+	}
 }
 
 
@@ -196,16 +204,18 @@ onMounted(() => {
 	getContestTags()
 })
 
-const handleMyTagClick = (name) => {
-	console.log("mtTag:", name)
+const handleClickContestStatus = (t) => {
+	queryContestStatus.value = t
+	getContestList()
 }
 
-const handleLv1Change = (name) => {
-	console.log("lv1:", name)
+const handleLv1Change = (t) => {
 }
 
-const handleLv2Change = (name) => {
-	console.log("lv2:", name)
+const handleClickContestTag = (t) => {
+	queryContestTagId.value = t.id
+	getContestList()
+
 }
 
 const competitionItem = reactive([{

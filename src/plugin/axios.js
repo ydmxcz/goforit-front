@@ -7,7 +7,7 @@ import JSONbig from 'json-bigint'
 const http = axios.create({
 	withCredentials: true, 
     baseURL: '/goforit',
-    timeout: 3000,
+    timeout: 10000,
     transformRequest:[data => {
         return JSONbig.stringify(data)
     }],

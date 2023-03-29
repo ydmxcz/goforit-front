@@ -6,11 +6,10 @@
         <Row :wrap="false" style="width:100%">
             <Col flex="950px" style="padding-right: 20px;">
             <Space direction="vertical" style="width: 100%;">
-                <Card class="content-card" style="width:100%;margin-top: 20px;">
+                <!-- <Card class="content-card" style="width:100%;margin-top: 20px;">
                     <h3 class="ptb-10">训练任务</h3>
                     <List size="large">
                         <ListItem>
-                            <!-- Optins:avatar="https://dev-file.iviewui.com/userinfoPDvn9gKWYihR24SpgC319vXY8qniCqj4/avatar" -->
                             <ListItemMeta title="This is title"
                                 description="This is description, this is description." />
                             <template #action>
@@ -38,18 +37,17 @@
                             </template>
                         </ListItem>
                     </List>
-                </Card>
+                </Card> -->
 
-                <Card class="content-card" style="width:100%;">
+                <Card class="content-card" style="width:100%;margin-top: 20px;">
                     <Space direction="vertical" style="width: 100%;">
                         <h3 class="ptb-10">最近比赛</h3>
 
-                        <ContestList v-for="item in competitionItem" :name="item.name"
-                            :is-original="item.isOriginal" :is-rated="item.isRated" :sign-up-start="item.signUpStart"
-                            :sign-up-end="item.competitionEnd" :contest-start="item.competitionStart"
-                            :contest-end="item.competitionEnd" :length-time="item.lengthTime"
-                            :sponsor="item.sponsor" :number="item.number" :status="item.status"
-                            :max-rating="item.maxRating" />
+                        <ContestList v-for="item in competitionItem" :name="item.name" :is-original="item.isOriginal"
+                            :is-rated="item.isRated" :sign-up-start="item.signUpStart" :sign-up-end="item.competitionEnd"
+                            :contest-start="item.competitionStart" :contest-end="item.competitionEnd"
+                            :length-time="item.lengthTime" :sponsor="item.sponsor" :number="item.number"
+                            :status="item.status" :max-rating="item.maxRating" />
                     </Space>
                 </Card>
 
@@ -68,8 +66,8 @@
                     <Row style="width: 100%;display: flex;align-items: center;justify-content: center;" :wrap="false">
                         <!-- <Col flex="100px"> -->
                         <!-- 简单 -->
-                        <Circle :size="circleCfg.size" :trail-width="7" :stroke-width="7"
-                            :percent="data.circleData.simple" stroke-linecap="square" stroke-color="#19be6b">
+                        <Circle :size="circleCfg.size" :trail-width="7" :stroke-width="7" :percent="data.circleData.simple"
+                            stroke-linecap="square" stroke-color="#19be6b">
                             <!-- 中等 -->
                             <Circle :size="circleCfg.size" :trail-width="7" :stroke-width="8"
                                 :percent="data.circleData.middle" stroke-linecap="square" stroke-color="#f90"
@@ -86,7 +84,7 @@
                                             :style="{ color: '#657180', fontSize: circleCfg.frontSize + 'px', fontWeight: 'normal' }">
                                             {{
                                                 data.problemData.simple + data.problemData.middle +
-                                                    data.problemData.difficult
+                                                data.problemData.difficult
                                             }}/ {{ data.problemData.total }}</h1>
                                     </div>
                                 </Circle>
@@ -97,11 +95,11 @@
                         <span> 简单 : <span style="color: #19be6b;">{{ data.problemData.simple }}</span> / {{
                             data.problemData.simpleTotal
                         }}</span>
-                        <Progress :percent="data.problemData.simplePercent" :stroke-width="20" status="active"
-                            text-inside stroke-color="#19be6b" />
+                        <Progress :percent="data.problemData.simplePercent" :stroke-width="20" status="active" text-inside
+                            stroke-color="#19be6b" />
                         <span> 中等 :<span style="color: #ff9900;">360</span> / 5000</span>
-                        <Progress :percent="data.problemData.middlePercent" :stroke-width="20" status="active"
-                            text-inside stroke-color="#ff9900" />
+                        <Progress :percent="data.problemData.middlePercent" :stroke-width="20" status="active" text-inside
+                            stroke-color="#ff9900" />
                         <span> 困难 :<span style="color: ##ed4014;">60</span> / 200</span>
                         <Progress :percent="data.problemData.difficultPercent" :stroke-width="20" status="active"
                             text-inside stroke-color="#ed4014" />

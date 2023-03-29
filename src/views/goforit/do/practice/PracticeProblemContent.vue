@@ -29,7 +29,7 @@ const selectProblemContent = async () => {
 }
 
 onMounted(()=>{
-    console.log(data.id);
+    // console.log(data.id);
     selectProblemContent()
 })
 

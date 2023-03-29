@@ -63,8 +63,7 @@ const props = defineProps({
         type: String,
         default: 'GoForIt热题 HOT 100',
     }, problemListId: {
-        type: Number,
-        default: Object,
+        type: Object,
     }, creator: {
         type: String,
         default: 'edmund',
