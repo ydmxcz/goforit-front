@@ -31,7 +31,7 @@
         <Page :total="100" :page-size="10" show-elevator show-sizer show-total />
     </Space>
 </template>
-<script setup name='GroupNumbers'>
+<script setup name="GroupNumbers">
 import { ref, reactive, onMounted } from 'vue'
 
 const datalist = ref([

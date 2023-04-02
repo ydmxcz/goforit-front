@@ -132,7 +132,7 @@
                                         </Result>
                                         <Result type="error" v-else>
                                             <template #title>
-                                                <span>{{ selectRunStatus(data.runRes.status) }}</span>
+                                                <span>{{ utils.selectRunStatus(data.runRes.status) }}</span>
                                             </template>
                                             <template #extra v-if="data.runRes.statusDetial">
                                                 <span style="color:red">{{ data.runRes.statusDetial }}</span>
@@ -271,10 +271,9 @@ import msg from '../../../../common/msg';
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import storage from '../../../../common/storage';
+import utils from '../../../../common/utils';
 
 const store = useStore()
-
-
 const router = useRouter()
 const data = reactive({
     userId: store.getters.userInfo.id,
@@ -380,17 +379,17 @@ func main(){
     tagSearchKey: '',
     tagSearchList: [],
     runRes: {},
-    errorArray: [
-        "Accept",        // normal
-        "Compile Error",         // compile error
-        "Memory Limit Exceeded", // mle
-        "Time Limit Exceeded", // tle
-        "Output Limit Exceeded", // ole
-        "File Error", // fe
-        "Nonzero Exit Status",
-        "Signalled",
-        "Internal Error", // system error
-        "Wrong Answer"]
+    // errorArray: [
+    //     "Accept",        // normal
+    //     "Compile Error",         // compile error
+    //     "Memory Limit Exceeded", // mle
+    //     "Time Limit Exceeded", // tle
+    //     "Output Limit Exceeded", // ole
+    //     "File Error", // fe
+    //     "Nonzero Exit Status",
+    //     "Signalled",
+    //     "Internal Error", // system error
+    //     "Wrong Answer"]
 });
 
 const addProblemToProblemList = async (problemlistId) => {
@@ -532,7 +531,6 @@ const getMyProblemList = async () => {
         msg.err(res.msg)
         return
     } else {
-        // console.log(res.data);
         data.myProblemlists = res.data.problemlist
     }
 }
@@ -593,13 +591,12 @@ const updateCodeMirrorSize = function () {
     }
 }
 
-const selectRunStatus = (i) => {
-    if (i > data.errorArray.length) {
-        i = 0
-    }
-    return data.errorArray[i - 1]
-
-}
+// const selectRunStatus = (i) => {
+//     if (i > data.errorArray.length) {
+//         i = 0
+//     }
+//     return data.errorArray[i - 1]
+// }
 
 
 const handleSubmitProblem = async () => {

@@ -1,80 +1,79 @@
 <template>
-	<div class="mdeditor-main">
-		<Card class="mdeditor-card" :padding="0">
-			<div class="md-preview-wrapper">
-				<!-- 用js动态调整高度 -->
-				<v-md-editor class="md-editor" v-model="problemMdText" ></v-md-editor>
-			</div>
-		</Card>
-	</div>
+	<Space class="mdeditor-main" direction="vertical" style="width: 100%;">
+		<Row class="top-area" type="flex">
+			<Col flex="100px" class="elem-center">
+			<span>文章标题：</span>
+			</Col>
+			<Col flex="auto" class="elem-center">
+			<Input v-model="data.blogTitle" show-word-limit maxlength="100" style="flex: 1;"></Input>
+			</Col>
+			<Col flex="100px" class="elem-center">
+			<Button type="primary">发布</Button>
+			</Col>
+		</Row>
+		<v-md-editor v-model="data.problemMdText" :height="data.windowHeight + 'px'"></v-md-editor>
+	</Space>
 </template>
 <script setup name="MarkDownEditer">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, reactive } from 'vue';
 // import { useRouter } from 'vue-router';
 
 // const $router = useRouter();
-// const problemId = ref(0)
 
-// const split = ref(0.5)
+const data = reactive({
+	problemMdText: ``,
+	blogTitle: '',
+	windowHeight: window.innerHeight,
+});
 
+const updateHeight = function () {
+	let h = window.innerHeight - 50 - 20 - 45
+	if (h < 500) {
+		data.windowHeight = 500
+	} else {
+		data.windowHeight = h
+	}
+}
 
-const problemMdText = ref(`
-### Acwing888.数的范围
+onMounted(() => {
+	updateHeight()
+	window.addEventListener('resize', updateHeight)
+})
 
-给定一个按照升序排列的长度为 n 的整数数组，以及 q 个查询。
-
-对于每个查询，返回一个元素 k 的起始位置和终止位置（位置从 0 开始计数）。problemMdTextproblemMdTextproblemMdTextproblemMdText
-
-如果数组中不存在该元素，则返回 \`-1\`。
-
-#### 输入格式
-
-第一行包含整数 n 和 q，表示数组长度和询问个数。
-
-第二行包含 n 个整数（均在 1∼10000 范围内），表示完整数组。
-
-接下来 q 行，每行包含一个整数 k，表示一个询问元素。
-
-#### 输出格式
-
-共 q 行，每行包含两个整数，表示所求元素的起始位置和终止位置。
-
-如果数组中不存在该元素，则返回 \`-1\`。
-
-#### 数据范围
-
-$1≤n≤100000$
-$1≤q≤10000$
-$1≤k≤10000$
-
-#### 输入样例：`)
-
+onUnmounted(() => {
+	window.removeEventListener('resize', updateHeight)
+})
 
 </script>
 
 <style lang="less" scoped >
 .mdeditor-main {
-	// width: calc(100vw);
-	// height: calc(100vh - 50px);
+
 	width: 100%;
 	height: 100%;
-	// 把Card向下顶
-	padding-top: 20px;
+	min-width: 600px;
+
+	.top-area {
+		padding: 10px;
+	}
 
 	.mdeditor-card {
 		// 把Card向左顶
-		margin-left: 20px;
-		height: calc(100vh - 90px);
-		width: calc(100vw - 40px);
-		padding: 10px;
-		border-radius: 25px;
-		min-width: 800px;
+		// margin-left: 20px;
+		// padding: 10px;
+		// border-radius: 25px;
+		// min-width: 800px;
 		// .md-editor{
 		// 	height: 100px;
 		// }
 
 	}
 
+	.elem-center {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
 }
 </style>

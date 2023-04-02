@@ -120,7 +120,7 @@ import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import msg from '../../../common/msg';
 import ProblemListItem from '../../../components/goforit/problem/ProblemListItem.vue';
 import http from '../../../plugin/axios';
-import time from '../../../common/time'
+import time from '../../../common/utils'
 
 const router = useRouter()
 const store = useStore()
@@ -137,6 +137,7 @@ const data = reactive({
         { label: '最多收藏', value: 2 },
         { label: '最高活跃', value: 3 },
     ],
+    showCreatProblemList: false,
     modalFormInput: {
         title: '',
         search: [],
@@ -204,7 +205,7 @@ const searchTag = () => {
 
 const clearSelectedTag = () => {
     data.modalFormInput.selectedTagList = []
-    data.modalFormInputselectedTagMap = new Map()
+    data.modalFormInput.selectedTagMap = new Map()
 }
 
 const clearCreateProblemListFormInput = () => {

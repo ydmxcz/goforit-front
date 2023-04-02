@@ -431,7 +431,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg'
-import time from '../../../common/time'
+import time from '../../../common/utils'
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 

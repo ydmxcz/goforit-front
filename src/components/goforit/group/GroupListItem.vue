@@ -7,7 +7,7 @@
             <Col flex="auto">
             <Row class="group-info">
                 <Col flex="auto">
-                <h3 class="group-name" @click="router.push('/group/'+groupInfo.id)">{{ groupInfo.name }}</h3>
+                <h3 class="group-name" @click="router.push('/group/' + groupInfo.id)">{{ groupInfo.name }}</h3>
                 </Col>
                 <Col flex="70px">
                 <Button v-if="groupInfo.status == 1" style="margin-right: 20px;" type="primary" ghost shape="circle"
@@ -47,14 +47,14 @@
 </template>
 
 <script setup name="GroupListItem">
-import { ref, onMounted, reactive } from 'vue'
-import {useRouter} from 'vue-router'
+import { ref, onMounted, reactive, watch } from 'vue'
+import { useRouter } from 'vue-router'
 const router = useRouter()
 const props = defineProps({
 
     status: {
         type: Number,
-        default: -1,
+        default: 2,
     },
     name: {
         type: String,
@@ -89,7 +89,7 @@ const addGroup = () => {
     emits('add-group', groupInfo.id)
 }
 const getColor = (status) => {
-    if (status == -1) {
+    if (status == 2) {
         return '#dbdbdb'
     } else if (status == 0) {
         return '#fde2e2'
@@ -97,7 +97,16 @@ const getColor = (status) => {
         return '#dbedff'
     }
 }
+
 const bgColor = ref(getColor(groupInfo.status))
+
+watch(() => groupInfo.status, (newValue, oldValue) => {
+    bgColor.value = getColor(newValue)
+})
+
+
+
+
 const grouppic = ref(props.pic)
 
 // onMounted(() => {

@@ -13,7 +13,7 @@ export default defineConfig({
       '/goforit': {
         timeout: 10000,
         // target: 'http://my.mcdd.top:9527/',
-        target: 'http://192.168.0.200:7999/', // 根据需求替换 请求后台接口
+        target: 'http://192.168.0.194:7999/', // 根据需求替换 请求后台接口
         changeOrigin: true, // 允许跨域
         ws: true,
         rewrite: (path) => path.replace(/^\/goforit/, '') // 重写请求

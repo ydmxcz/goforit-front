@@ -1,5 +1,4 @@
 <template>
-
 	<Row class="blog-main">
 		<Col flex="3">
 		</Col>
@@ -11,8 +10,7 @@
 			<Affix :offset-top="0">
 				<Card class="left-class-list" :padding="5" shadow>
 					<div ref="blogClassDomList">
-						<div class="tag-list" v-for="(item, idx) in blogClassList"
-							@click="handleBlogClassListClick(idx)">
+						<div class="tag-list" v-for="(item, idx) in blogClassList" @click="handleBlogClassListClick(idx)">
 							<Icon :type="item.icon" />{{ item.name }}
 						</div>
 					</div>
@@ -25,7 +23,7 @@
 								<Space style="width: 100%;" direction="vertical" align="start">
 									<Space>
 										<Input style="width: 100%;" v-model="tagSearchKey" search enter-button
-										placeholder="搜索标签" @on-search="searchTag" />
+											placeholder="搜索标签" @on-search="searchTag" />
 										<Button>清空</Button>
 									</Space>
 
@@ -59,8 +57,9 @@
 			</Col>
 			<Col flex="300px" class="row-right">
 			<Space style="width: 100%;" direction="vertical">
-				<Button style="background-color: #409EFF; " class="row-right-top-button">
-					<Icon type="md-open" size="16px" /> 写博客
+				<Button style="background-color: #409EFF; " icon="md-open" class="row-right-top-button"
+					@click="router.push('/mdedit/' + store.getters.userInfo.id)">
+					写博客
 				</Button>
 				<Button style="background-color: #F56C6C;" class="row-right-top-button">
 					<Icon type="md-paper" size="16px" /> 我的
@@ -107,7 +106,9 @@ import DynamicBreadcrumb from '../../../components/common/DynamicBreadcrumb.vue'
 
 import { reactive, ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex';
 const router = useRouter()
+const store = useStore()
 const blogClassList = reactive([
 	{ name: '最新', to: '/blog/all', icon: 'md-pulse' },
 	{ name: '热门', to: '/blog/hot', icon: 'md-thermometer' },

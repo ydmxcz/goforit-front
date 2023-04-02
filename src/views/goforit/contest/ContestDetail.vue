@@ -94,7 +94,7 @@ import { useRouter } from 'vue-router';
 import { Message } from 'view-ui-plus'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
-import time from '../../../common/time';
+import time from '../../../common/utils';
 
 const router = useRouter()
 // const route = useRoute()

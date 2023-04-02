@@ -27,7 +27,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import msg from '../../../../common/msg';
-import time from '../../../../common/time';
+import time from '../../../../common/utils';
 import http from '../../../../plugin/axios';
 
 const store = useStore()

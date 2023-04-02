@@ -1,33 +1,39 @@
 <template>
-    <Table stripe :columns="data.recordsColums" :data="data.recordsList">
-        <template #status="{ row }">
-            <span v-if="row.status == 1" style="color:#19be6b">通过</span>
-            <span v-else style="color:#ed4014">未知错误</span>
-            <!-- <span>{{ row.status }}</span> -->
-        </template>
-        <template #costTime="{ row }">
-            <span>{{ (row.costTime / 1000000).toFixed(1) }} ms</span>
-        </template>
-        <template #costMemory="{ row }">
-            <span>{{ ((row.costMemory / 1024) / 1024).toFixed(1) }} MB</span>
-        </template>
-        <template #submitTime="{ row }">
-            <span>{{ time.formatDate(new Date(Number((row.submitTime / 1000000).toFixed(0)))) }}</span>
-            <!-- <span>{{ new Date(row.submitTime / 1000) }}</span> -->
-        </template>
-    </Table>
-    <Space direction="vertical" type="flex" align="center" v-if="data.total > 20">
-        <Page :total="data.total" :page-size="data.pageSize" show-elevator show-sizer show-total
-            :page-size-opts="[10, 15, 20]" :model-value="data.currPage" @on-change="handlePageOrPageSizeChange"
-            @on-page-size-change="handlePageOrPageSizeChange" />
+    <Space direction="vertical" style="width: 100%;">
+        <div style="width: 100%;">
+            <Button type="primary" icon="md-fresh" style="float: right;" @click="selectProblemSubmitRecords">刷新</Button>
+        </div>
+        <Table stripe :columns="data.recordsColums" :data="data.recordsList">
+            <template #status="{ row }">
+                <span v-if="row.status == 1" style="color:#19be6b">Accept</span>
+                <span v-else style="color:#ed4014">{{ utils.selectRunStatus(row.status) }} </span>
+            </template>
+            <template #costTime="{ row }">
+                <span>{{ ((row.costTime / 1000000) || 0).toFixed(1) }} ms</span>
+            </template>
+            <template #costMemory="{ row }">
+                <span>{{ ((row.costMemory / 1024) || 0).toFixed(1) }} KB</span>
+            </template>
+            <template #submitTime="{ row }">
+                <span>{{ utils.formatDate(new Date(Number((row.submitTime / 1000000).toFixed(0)))) }}</span>
+                <!-- <span>{{ new Date(row.submitTime / 1000) }}</span> -->
+            </template>
+        </Table>
+        <Space direction="vertical" type="flex" align="center" v-if="data.total > data.pageSize" style="margin: 10px 0px;">
+            <Page :total="data.total" :page-size="data.pageSize" show-elevator show-sizer show-total
+                :page-size-opts="[10, 15, 20]" :model-value="data.currPage" @on-change="handlePageChange"
+                @on-page-size-change="handlePageSizeChange" />
+        </Space>
     </Space>
 </template>
+
 <script setup name='PracticeProblemSubmited'>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import msg from '../../../../common/msg';
-import time from '../../../../common/time';
+import utils from '../../../../common/utils';
 import http from '../../../../plugin/axios';
 
 const store = useStore()
@@ -43,19 +49,17 @@ const data = reactive({
     ],
     recordsList: [],
     currPage: 1,
-    pageSize: 20,
+    pageSize: 10,
     total: 0
 })
 
-
-const selectProblemContent = async () => {
+const selectProblemSubmitRecords = async () => {
     const { data: res } = await http.post('/problem/submit/records', {
-        userId: BigInt('1188889026082373823'),
+        userId: BigNumber(store.getters.userInfo.id),
         problemId: Number(data.id),
         currPage: data.currPage,
         pageSize: data.pageSize
     })
-    console.log(res)
     if (res.code != 200) {
         msg.err(res.msg)
         return
@@ -64,13 +68,18 @@ const selectProblemContent = async () => {
     data.total = res.data.total
 }
 
-const handlePageOrPageSizeChange = () => {
-    selectProblemContent()
+const handlePageChange = (page) => {
+    data.currPage = page
+    selectProblemSubmitRecords()
 }
 
+const handlePageSizeChange = (pageSize) => {
+    data.pageSize = pageSize
+    selectProblemSubmitRecords()
+}
 
 onMounted(() => {
-    selectProblemContent()
+    selectProblemSubmitRecords()
 })
 
 </script>

@@ -64,7 +64,7 @@
 
 <script setup name="ContestList">
 import { ref, onMounted, reactive ,watch} from 'vue';
-import time from '../../../common/time';
+import time from '../../../common/utils';
 const emits = defineEmits(['onSignUp','toDetialPage']);
 
 

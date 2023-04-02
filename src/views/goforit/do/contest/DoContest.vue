@@ -237,7 +237,6 @@ const updateCodeMirrorSize = function () {
     } else {
         data.codeMirrorOpt.height = h
     }
-    // }
 }
 
 const handleSubmitProblem = () => {

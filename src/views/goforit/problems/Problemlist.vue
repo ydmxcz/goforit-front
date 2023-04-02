@@ -113,7 +113,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
 import ProblemListItem from '../../../components/goforit/problem/ProblemListItem.vue';
 import http from '../../../plugin/axios'
-import time from '../../../common/time'
+import time from '../../../common/utils'
 import msg from '../../../common/msg'
 
 

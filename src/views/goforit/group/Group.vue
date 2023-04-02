@@ -12,6 +12,7 @@
                         <Button type="primary" @click="data.showCreatGroup = true">
                             <Icon type="md-add" style="margin-right: 5px;" />创建小组
                         </Button>
+                        <Checkbox v-model="data.formInput.justMyJoin" @on-change="handleCheckBoxChange">只看我参加的</Checkbox>
                         <Poptip trigger="hover" placement="right" width="500" title="活跃度计算方式">
                             <span class="active-detail">
                                 <Icon type="ios-help-circle" />活跃度计算方式
@@ -29,26 +30,16 @@
                         </Poptip>
                     </Space>
                     <Space style="padding-left: 10px;">
-                        <span style="font-size: 16px;">小组类型：</span>
-                        <Poptip trigger="hover" placement="bottom" content="全部小组">
-                            <Tag :checkable="false" color="blue">全部</Tag>
-                        </Poptip>
-                        <Poptip trigger="hover" placement="bottom" content="公开小组可以直接加入">
-                            <Tag :checkable="false" color="green">公开</Tag>
-                        </Poptip>
-                        <Poptip trigger="hover" placement="bottom" content="加入私有小组需要向管理员申请">
-                            <Tag :checkable="false" color="red">私有</Tag>
-                        </Poptip>
-                        <Poptip trigger="hover" placement="bottom" content="我参加的小组">
-                            <Tag :checkable="false" color="orange">我参加的</Tag>
-                        </Poptip>
+                        <TagSelectSignle title="小组类型" :data-list="data.groupTypeList" @on-change="handleClickGroupType">
+                        </TagSelectSignle>
                     </Space>
                 </Space>
             </Card>
             <Card style="border-radius: 10px;">
-                <GroupListItem v-for="item in groupInfo.glist" :status="item.status" :activation="item.activation"
-                    :name="item.name" :detail="item.detail" :id="item.id" :number="item.number"
-                    :createTime="item.createTime" :pic="item.pic" @add-group="joinGroup"></GroupListItem>
+                <GroupListItem v-for="item in data.groupList" :status="item.public || 0" :activation="item.activation"
+                    :name="item.name" :detail="item.instruction" :id="String(item.id)" :number="item.number"
+                    :createTime="utils.formatDate(new Date(item.create_time / 1e6))" :pic="item.pic" @add-group="joinGroup">
+                </GroupListItem>
                 <!-- 使用Space可以非常简单的让分页栏居中 -->
                 <Space direction="vertical" type="flex" align="center">
                     <Page :total="data.pageInfo.total" :page-size="data.pageInfo.pageSize" show-elevator show-sizer
@@ -92,11 +83,14 @@
 
 <script setup name="Group">
 import GroupListItem from '../../../components/goforit/group/GroupListItem.vue'
-import { ref, reactive } from 'vue'
+import TagSelectSignle from '../../../components/common/TagSelectSignle.vue';
+
+import { ref, reactive, onMounted } from 'vue'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import utils from '../../../common/utils';
 const store = useStore()
 const data = reactive({
     showCreatGroup: false,
@@ -107,14 +101,34 @@ const data = reactive({
             { label: '公开', value: 1 },
             { label: '私有', value: 2 },
         ],
-        instruction: ''
+        instruction: '',
+        groupType: 0,
+        justMyJoin: false,
     },
+    groupTypeList: [
+        { label: '全部', value: 0 },
+        { label: '私有', value: 1 },
+        { label: '公开', value: 2 },
+    ],
     pageInfo: {
         currPage: 1,
         pageSize: 10,
         total: 0
     },
+    groupList: []
 });
+
+const handleCheckBoxChange = () => {
+    console.log(data.formInput.justMyJoin);
+    getGroupList()
+}
+
+
+const handleClickGroupType = (t) => {
+    data.formInput.groupType = t
+    getGroupList()
+}
+
 
 const clearFromInput = () => {
     data.formInput.name = ''
@@ -157,12 +171,29 @@ const changePageSize = (psize) => {
 
 
 const getGroupList = async () => {
-    // const { data: res } = await http.post('/group/list', d)
-    // if (res.code != 200) {
-    //     msg.err(res.msg)
-    //     return
-    // }
+    let userId;
+    if (data.formInput.justMyJoin) {
+        userId = BigNumber(store.getters.userInfo.id)
+    }
+    let d = {
+        currPage: data.pageInfo.currPage,
+        pageSize: data.pageInfo.pageSize,
+        userId: userId,
+        groupType: Number(data.formInput.groupType) - 1,
+    }
+    const { data: res } = await http.post('/group/list', d)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    data.pageInfo.total = res.data.total
+    data.groupList = res.data.infos
+    // console.log(res);
 }
+
+onMounted(() => {
+    getGroupList()
+})
 
 
 const ruleValidate = reactive({
@@ -177,16 +208,16 @@ const detailText = ref('史蒂夫·乔布斯（英语：Steve Jobs），是一�
 
 const groupInfo = reactive({
     glist: [
-        { status: 1, name: '这是小组1', detail: detailText.value, id: '12345678912341', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 0, name: '这是小组2', detail: detailText.value, id: '12345678912342', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: -1, name: '这是小组3', detail: 'xixixixi', id: '12345678912343', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组4', detail: detailText.value, id: '12345678912344', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组5', detail: detailText.value, id: '12345678912345', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组6', detail: detailText.value, id: '12345678912346', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组7', detail: detailText.value, id: '12345678912347', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组8', detail: detailText.value, id: '12345678912348', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组9', detail: detailText.value, id: '12345678912349', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
-        { status: 1, name: '这是小组10', detail: detailText.value, id: '12345678912340', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组1', instruction: detailText.value, id: '12345678912341', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 0, name: '这是小组2', instruction: detailText.value, id: '12345678912342', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: -1, name: '这是小组3', instruction: 'xixixixi', id: '12345678912343', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组4', instruction: detailText.value, id: '12345678912344', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组5', instruction: detailText.value, id: '12345678912345', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组6', instruction: detailText.value, id: '12345678912346', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组7', instruction: detailText.value, id: '12345678912347', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组8', instruction: detailText.value, id: '12345678912348', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组9', instruction: detailText.value, id: '12345678912349', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
+        { status: 1, name: '这是小组10', instruction: detailText.value, id: '12345678912340', number: '9999', activation: '9999', createTime: '2006-01-02 15:04', pic: '../../../assets/goforit-group.png' },
     ]
 })
 

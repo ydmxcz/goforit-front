@@ -15,9 +15,6 @@
                             <span style="font-size:20px;height: 20px;">{{ groupInfo.groupname }}</span>
                             <!-- <span style="font-size:14px;">ID:{{ groupInfo.id }}</span> -->
                         </Space>
-                        <!-- <div class="group-info-introduce">
-                            <Ellipsis :text="'团队介绍：' + groupInfo.instruction" :lines="1" tooltip />
-                        </div> -->
                         <div class="group-info-bot">
                             <div style="float: left;">
                                 <Space :wrap="false">
@@ -25,14 +22,6 @@
                                         <Icon style="margin-right: 5px;" type="md-information-circle" size="20" />
                                         <span>ID：{{ groupInfo.id }}</span>
                                     </span>
-                                    <!-- <span>
-                                        <Icon style="margin-right: 5px;" type="ios-contacts" size="20" />
-                                        <span>人数：{{ groupInfo.number }}</span>
-                                    </span>
-                                    <span>
-                                        <Icon style="margin-right: 5px;" type="md-bonfire" size="20" />
-                                        <span>活跃度：{{ groupInfo.active }}</span>
-                                    </span> -->
                                 </Space>
                             </div>
                             <Button v-if="groupInfo.status == 1" style="float: right;" shape="circle" type="error"
@@ -44,7 +33,6 @@
                             <Button v-else style="float: right;" shape="circle" type="primary" icon="md-add"
                                 disabled>加入</Button>
                         </div>
-
                     </Space>
                     </Col>
                 </Row>
@@ -52,7 +40,6 @@
             <Row :wrap="false">
                 <Col flex="250px" class="middle-left">
                 <Space direction="vertical" style="width:100%;">
-                    <!-- <Card style="width: 100%;border-radius: 15px;"> -->
                     <Row :wrap="false" style="text-align: center;font-size: 14px;">
                         <Col flex="12">
                         <Icon style="margin-right: 5px;" type="ios-contacts" size="20" />团队成员</Col><span
@@ -64,8 +51,6 @@
                         <Col flex="12">9</Col>
                         <Col flex="12">6</Col>
                     </Row>
-                    <!-- </Card> -->
-                    <!-- <Card style="width: 100%;border-radius: 15px;"> -->
                     <Divider class="left-divider" />
 
                     <div class="left-title">
@@ -104,7 +89,7 @@
                     <Divider class="left-divider" />
                     <!-- </Card> -->
                     <!-- <Card style="width: 100%;border-radius: 15px;"> -->
-                    <div class="left-title">
+                    <!-- <div class="left-title">
                         <h3>算法标签</h3>
                     </div>
                     <Space :wrap="false">
@@ -117,7 +102,7 @@
 
                         </div>
                     </Space>
-                    <Divider class="left-divider" />
+                    <Divider class="left-divider" /> -->
                     <!-- </Card>
                     <Card style="width: 100%;border-radius: 15px;"> -->
                     <div class="left-title">
@@ -162,7 +147,7 @@ const groupInfo = reactive({
     id: '12345678912341',
     number: 999,
     active: 666,
-    public: 0, 
+    public: 0,
     status: 0,
 })
 
