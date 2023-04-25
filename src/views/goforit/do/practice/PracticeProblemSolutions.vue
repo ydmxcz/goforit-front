@@ -6,7 +6,7 @@
         </div>
         <List item-layout="vertical">
             <ListItem v-for="item in data.solutionList" :key="item.title">
-                <ListItemMeta :avatar="item.avatar" :title="item.title" :description="item.description"
+                <ListItemMeta :avatar="item.avatar" :title="item.userName" :description="item.title"
                     @click="checkSolution(item)">
                     <template #title>
                         {{ item.title }}
@@ -15,10 +15,10 @@
                 </ListItemMeta>
                 <template #action>
                     <li @click="clickThumbs">
-                        <Icon type="ios-thumbs-up-outline" /> 234
+                        <Icon type="ios-thumbs-up-outline" /> {{ item.thumbNum || 0 }}
                     </li>
                     <li>
-                        <Icon type="ios-chatbubbles-outline" /> 345
+                        <Icon type="ios-chatbubbles-outline" /> {{ item.viewsNum || 0 }}
                     </li>
                 </template>
             </ListItem>
@@ -30,17 +30,17 @@
         </Space>
     </Space>
     <Modal v-model="data.problemSolution.showModal" :title="'写题解'" width="1000" style="top:20px;margin-bottom: 50px;"
-         :before-close="handleModalBeforeClose" scrollable :closable="false" :mask-closable="false">
+        :before-close="handleModalBeforeClose" scrollable :closable="false" :mask-closable="false">
 
         <Form :model="data.problemSolution" :label-width="80" :rules="ruleValidate">
-            <FormItem label="题解名称" prop="title" >
+            <FormItem label="题解名称" prop="title">
                 <Input v-model="data.problemSolution.title"></Input>
             </FormItem>
             <FormItem label="题目内容" prop="problem">
                 <v-md-preview v-if="data.problemSolution.showContent"
                     :text="data.problemSolution.problemContent"></v-md-preview>
                 <Button type="primary" @click="handlerProblemContent" :icon="data.problemSolution.btnIcon">
-                {{  data.problemSolution.btnText }}</Button>
+                    {{ data.problemSolution.btnText }}</Button>
             </FormItem>
             <FormItem label="题解内容" prop="solution">
                 <v-md-editor class="md-editor" v-model="data.problemSolution.solutionContent" height="500px" mode="edit"
@@ -57,12 +57,30 @@
             </div>
         </template>
     </Modal>
+    <Modal v-model="data.showProblemSolution" :title="data.solutionDetial.title" width="1000"
+        style="top:20px;margin-bottom: 50px;" :before-close="handleModalBeforeClose" scrollable :closable="false"
+        :mask-closable="false">
+        <v-md-preview :text="data.solutionDetial.content"></v-md-preview>
+        <template #footer>
+            <!-- <div style="width: 100%;height: 40px;">
+                <Space style="float: right;">
+                    <Button @click="writeSolutionCancel">取消</Button>
+                    <Button type="primary" @click="writeSolutionOk">确定</Button>
+                </Space>
+            </div> -->
+        </template>
+    </Modal>
 </template>
-<script setup name='PracticeProblemSolutions'>
+<script setup name="PracticeProblemSolutions">
 import { ref, reactive, onMounted } from 'vue'
 import http from '../../../../plugin/axios';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import msg from '../../../../common/msg';
 const router = useRouter();
+const store = useStore()
+
 
 const data = reactive({
     id: router.currentRoute.value.params.id,
@@ -97,32 +115,86 @@ const data = reactive({
         btnText: '显示',
         showContent: false,
         btnIcon: 'ios-arrow-down'
-    }
+    },
+    showProblemSolution: false,
+    solutionDetial: {}
+
+    // solutionList:[]
 })
+
+const clickThumbs = () => {
+    console.log("thumbs");
+}
 
 
 const handleModalBeforeClose = () => {
-    console.log('handleModalBeforeClose');
+    // console.log('handleModalBeforeClose');
 }
 
 const writeSolutionCancel = () => {
-    console.log('writeSolutionCancel');
     data.problemSolution.showModal = false
 }
 
-const writeSolutionOk = () => {
-    console.log('writeSolutionOk');
+const writeSolutionOk = async () => {
+    let d = {
+        userId: BigNumber(store.getters.userInfo.id),
+        problemId: Number(data.id),
+        content: data.problemSolution.solutionContent,
+        title: data.problemSolution.title
+    }
+    console.log(d);
+    const { data: res } = await http.post('/problem/add/solution', d)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    } else {
+        msg.ok('题解发布成功！')
+    }
+    data.problemSolution.showModal = false
+    selectProblemSolution()
+    // console.log('writeSolutionOk');
 }
 
 const writeProblemSolution = () => {
-    console.log('writeProblemSolution');
     data.problemSolution.showModal = true
 }
 
 
-const checkSolution = (item) => {
-    console.log(item);
+const selectProblemSolution = async () => {
+    const { data: res } = await http.post('/problem/solution', {
+        currPage: data.currPage,
+        pageSize: data.pageSize,
+        problemId: Number(data.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res);
+    data.solutionList = res.data.solutions
+
 }
+
+onMounted(() => {
+    selectProblemSolution()
+})
+
+const checkSolution = (item) => {
+    // console.log(item);
+    data.showProblemSolution = true
+    selectProblemSolutionDetial(item.id)
+}
+
+const selectProblemSolutionDetial = async (id) => {
+    const { data: res } = await http.post('/problem/solution/detial', { id: BigNumber(id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res);
+    data.solutionDetial = res.data
+}
+
 
 
 const handlePageOrPageSizeChange = () => {
@@ -156,14 +228,14 @@ const selectProblemContent = async () => {
 }
 
 const ruleValidate = reactive({
-	title: [
-		{ required: true, message: '题目名称不能为空', trigger: 'blur' },
-		{ type: 'string', max: 100, message: '个人介绍不能多于100个字', trigger: 'blur' }
+    title: [
+        { required: true, message: '题目名称不能为空', trigger: 'blur' },
+        { type: 'string', max: 100, message: '个人介绍不能多于100个字', trigger: 'blur' }
 
-	],
+    ],
     solution: [
-		{ required: true, message: '题解内容不能为空', trigger: 'blur' },
-	],
+        { required: true, message: '题解内容不能为空', trigger: 'blur' },
+    ],
 })
 
 

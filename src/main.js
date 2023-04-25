@@ -11,10 +11,10 @@ import store from './store'
 //  导入vue-md-editor组件
 import VMdPreview from '@kangc/v-md-editor/lib/preview';
 import '@kangc/v-md-editor/lib/style/preview.css';
-// import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
-// import '@kangc/v-md-editor/lib/theme/style/github.css';
-import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js';
-import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
+import '@kangc/v-md-editor/lib/theme/style/github.css';
+// import vuepressTheme from '@kangc/v-md-editor/lib/theme/vuepress.js';
+// import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
 // import VueMarkdownEditor from '@kangc/v-md-editor';
 import createKatexPlugin from '@kangc/v-md-editor/lib/plugins/katex/cdn';
 // 表情插件
@@ -28,7 +28,7 @@ const katexPlugin = createKatexPlugin();
 // VMdPreview配置 
 VMdPreview
 	//  支持主题和代码高亮
-	.use(vuepressTheme, { Hljs: hljs, })
+	.use(githubTheme, { Hljs: hljs, })
 	// 使用解析katex公式（数学公式）的插件
 	.use(katexPlugin);
 
@@ -51,6 +51,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import 'codemirror/mode/htmlmixed/htmlmixed';
 import 'codemirror/mode/vue/vue';
+import 'codemirror/mode/shell/shell';
 // edit
 import 'codemirror/addon/edit/closebrackets';
 import 'codemirror/addon/edit/closetag';
@@ -70,7 +71,7 @@ import 'codemirror/lib/codemirror.css';
 import echarts from './plugin/echarts';
 
 VMdEditor.Codemirror = Codemirror;
-VMdEditor.use(vuepressTheme, {
+VMdEditor.use(githubTheme, {
 	Hljs: hljs,
 }).use(katexPlugin).use(createEmojiPlugin());
 

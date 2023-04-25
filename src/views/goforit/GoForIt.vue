@@ -13,7 +13,7 @@
 				</div>
 			</div>
 			<div v-if="userInfo.id == -1" style="display: flex;align-items: center;
-					float: right;width: 230px;min-width: 230px;height: 50px;">
+						float: right;width: 230px;min-width: 230px;height: 50px;">
 				<Button @click="clickLogin" type="primary" style="float: left;">登录/注册</Button>
 			</div>
 
@@ -27,7 +27,7 @@
 					<template #list>
 						<DropdownMenu>
 							<DropdownItem @click="$router.push('/msg/system')">系统信息</DropdownItem>
-							<DropdownItem @click="$router.push('/msg/attention')">系统信息</DropdownItem>
+							<DropdownItem @click="$router.push('/msg/attention')">新增粉丝</DropdownItem>
 							<DropdownItem @click="$router.push('/msg/like')">点赞</DropdownItem>
 							<DropdownItem @click="$router.push('/msg/comment')">评论</DropdownItem>
 							<DropdownItem @click="$router.push('/msg/collection')">收藏</DropdownItem>

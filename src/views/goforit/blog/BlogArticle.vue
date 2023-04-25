@@ -1,5 +1,4 @@
 <template>
-
     <Row :wrap="false" class="article-page">
         <Col flex="3">
         </Col>
@@ -7,13 +6,37 @@
         <Row :wrap="false" class="middle-row">
             <Col flex="80px">
             <Space direction="vertical" :size="20" class="left-side">
-                <div v-for="i in 6" class="elem-center circle-button">
+                <div class="elem-center circle-button">
                     <Badge>
-                        <Icon type="ios-search" size="20" />
+                        <Icon type="md-thumbs-up" size="25" style="color:#8a919f" />
                         <template #count>
-                            <span class="button-template">9</span>
+                            <span class="button-template" style="color: #fff;">{{ blogInfo.infos.thumbsNum || 0 }}</span>
                         </template>
                     </Badge>
+                </div>
+                <div class="elem-center circle-button">
+                    <Badge>
+                        <a href="#comment" style="color:#8a919f">
+                            <Icon type="md-text" size="25" />
+                        </a>
+                        <template #count>
+                            <span class="button-template" style="color: #fff;">{{ blogInfo.infos.commentNum || 0 }}</span>
+                        </template>
+                    </Badge>
+                </div>
+                <div class="elem-center circle-button">
+                    <Badge>
+                        <Icon type="md-star" size="25" style="color:#8a919f" />
+                        <template #count>
+                            <span class="button-template" style="color: #fff;">{{ blogInfo.infos.collectNum || 0 }}</span>
+                        </template>
+                    </Badge>
+                </div>
+                <div class="elem-center circle-button">
+                    <Icon type="md-share-alt" size="25" style="color:#8a919f" />
+                </div>
+                <div class="elem-center circle-button">
+                    <Icon type="ios-warning" size="25" style="color:#8a919f" />
                 </div>
 
             </Space>
@@ -22,7 +45,7 @@
             <Space direction="vertical" style="width: 100%;">
                 <Card class="article-area">
                     <Space direction="vertical" style="width: 100%;">
-                        <h1 class="article-title">if err != nil 太烦？Go 创始人教你如何对错误进行编程！</h1>
+                        <h1 class="article-title">{{ blogInfo.infos.title }}</h1>
                         <div class="article-top-info">
                             <Row :wrap="false">
                                 <Col flex="40px">
@@ -32,15 +55,15 @@
                                 <Col flex="auto" style="padding-left: 20px;">
                                 <Row style="width: 100%;" :wrap="false">
                                     <Space>
-                                        <span style="font-size: 16px;color: #515767;">煎鱼eddycjy</span>
-                                        <span>lv-5</span>
+                                        <span style="font-size: 18px;color: #515767;">{{ blogInfo.infos.authorName }}</span>
+                                        <!-- <span>lv-5</span> -->
                                     </Space>
                                     <span></span>
                                 </Row>
                                 <Row :wrap="false">
                                     <Space style="font-size: 14px;color: #8a919f;">
-                                        <span>2022年08月01日 12:04</span>
-                                        <span>阅读 4101</span>
+                                        <span>{{ utils.formatDate(new Date((blogInfo.infos.createTime / 1e6))) }}</span>
+                                        <span>阅读 {{ blogInfo.infos.viewNum }}</span>
                                     </Space>
                                 </Row>
                                 </Col>
@@ -48,18 +71,16 @@
                         </div>
                         <div style="width: 100%;">
                             <!-- articleText -->
-                            <v-md-preview mode="preview" :text="articleText"></v-md-preview>
+                            <v-md-preview mode="preview" :text="blogInfo.infos.content"></v-md-preview>
                         </div>
                         <div class="article-bottom-info">
                             <Space style="margin-right: 30px;">
                                 <span>分类：</span>
-                                <Tag size="medium">算法训练</Tag>
+                                <Tag size="medium">{{ topicInfo.topicName }}</Tag>
                             </Space>
                             <Space>
                                 <span>标签：</span>
-                                <Tag color="blue">算法训练</Tag>
-                                <Tag color="blue">算法训练</Tag>
-                                <Tag color="blue">算法训练</Tag>
+                                <Tag color="blue" v-for="item in blogInfo.blogTags">{{ item.name }}</Tag>
                             </Space>
                         </div>
                     </Space>
@@ -67,9 +88,8 @@
                 </Card>
                 <Card class="comment-area">
                     <Space direction="vertical" style="width: 100%;">
-                        <div class="comment-text-title">
-                            <h3>评论</h3>
-                        </div>
+                        <span id="comment"
+                            style="font-size: 18px;color: #252933;font-weight: bolder;padding-left: 10px;">评论</span>
                         <Row class="user-action-area" :wrap="false">
                             <Col flex="70px" style="display: flex;justify-content: center;">
                             <Avatar icon="ios-person" class="user-avator"
@@ -77,9 +97,8 @@
                             </Col>
                             <Col flex="auto">
                             <Space direction="vertical" style="width: 100%;">
-                                <!-- <Input v-model="value1" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }"
-                                    placeholder="输入你的评论....." /> -->
-                                <v-md-editor class="md-editor" v-model="problemMdText" height="150px" mode="edit" placeholder="输入你的评论....."
+                                <v-md-editor class="md-editor" v-model="commentMdText" height="150px" mode="edit"
+                                    placeholder="输入你的评论....."
                                     left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
                                 <div style="width: 100%;">
                                     <Space style="float: left;">
@@ -88,8 +107,8 @@
                                             <template #content>
                                                 <div style="height:200px">
                                                     <Row>
-                                                        <div v-for="val in store.state.emojis"
-                                                            @click="handleEmojiClick(val)" class="emoji-list-item">
+                                                        <div v-for="val in store.state.emojis" @click="commentMdText += val"
+                                                            class="emoji-list-item">
                                                             {{ val }}
                                                         </div>
                                                     </Row>
@@ -97,77 +116,161 @@
                                             </template>
                                         </Poptip>
                                     </Space>
-                                    <Button style="float: right;" type="primary">发表评论</button>
+                                    <Button style="float: right;" type="primary" @click="makeComment">发表评论</button>
                                 </div>
-
                             </Space>
                             </Col>
-
                         </Row>
-                        <div class="all-comment-text-title">
-                            <h3>全部评论</h3>
+                        <div style="height: 40px;">
+                            <span id="comment"
+                                style="font-size: 18px;color: #252933;font-weight: bolder;padding-left: 10px;">全部评论</span>
                         </div>
-                        <Row :wrap="false" style="width: 100%;">
+                        <Row :wrap="false" style="width: 100%;" v-for="item in commentInfo">
                             <Col flex="60px" style="display: flex;justify-content: center;">
-                            <Avatar icon="ios-person" class="all-comment-user-avator"
-                                src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                            <Avatar icon="ios-person" class="all-comment-user-avator" :src="item.avatar" />
                             </Col>
                             <Col flex="auto">
                             <Space direction="vertical" style="width: 100%;">
                                 <div style="width: 100%;">
                                     <Space>
-                                        <span style="font-size:15px;">EdmundShelby</span>
+                                        <span style="font-size:15px;">{{ item.userName }}</span>
                                         <!-- 以后可以在此插入用户标签 -->
                                         <span style="font-size:14px;color: #8a919f;">资深架构师</span>
                                     </Space>
-                                    <span style="float: right;margin-right: 10px;">3个月前</span>
+                                    <!-- <Time style="float: right;margin-right: 10px;"
+                                        :time="new Date(item.createTime / 1e6)" /> -->
+                                    <!-- <span style="float: right;margin-right: 10px;">3个月前</span> -->
                                 </div>
                                 <!-- 用户评论的内容 -->
                                 <div class="user-comment">
                                     <!-- <span style="font-size: 14px;"> {{ commentText }}</span> -->
-                                    <v-md-preview mode="preview" :text="commentText"></v-md-preview>
+                                    <v-md-preview mode="preview" :text="item.content"></v-md-preview>
                                 </div>
-                                <Space>
+                                <Space :size="20">
+                                    <Time :time="new Date(item.createTime / 1e6)" />
                                     <div style="font-size: 14px;">
-                                        <Icon type="ios-thumbs-up" />点赞
+                                        <Icon type="ios-thumbs-up" />{{ item.thumbNum || 0 }}
                                     </div>
                                     <div style="font-size: 14px;">
-                                        <Icon type="md-text" />评论
+                                        <Icon type="ios-thumbs-down" />{{ item.thumbNum || 0 }}
+                                    </div>
+                                    <div style="font-size: 14px;">
+                                        <Icon type="md-text" />{{ item.children.length || 0 }}
+                                    </div>
+                                    <div style="font-size: 14px;">
+                                        <span @click="handleShowCommentInput(item)">回复</span>
                                     </div>
                                 </Space>
-                                <div class="level-two-comment">
-                                    <Row :wrap="false" style="width: 100%;">
-                                        <Col flex="60px" style="display: flex;justify-content: center;">
-                                        <Avatar icon="ios-person" class="level-two-avator"
-                                            src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
-                                        </Col>
-                                        <Col flex="auto">
-                                        <Space direction="vertical" style="width: 100%;">
-                                            <div style="width: 100%;">
-                                                <Space>
-                                                    <span style="font-size:15px;">EdmundShelby</span>
-                                                    <!-- 以后可以在此插入用户标签 -->
-                                                    <span style="font-size:14px;color: #8a919f;">资深架构师</span>
-                                                </Space>
-                                                <span style="float: right;margin-right: 10px;">3个月前</span>
-                                            </div>
-                                            <!-- 用户评论的内容 -->
-                                            <div class="user-reply">
-                                                <!-- <span style="font-size: 14px;"> {{ commentText }}</span> -->
-                                                <v-md-preview mode="preview" :text="commentText"></v-md-preview>
-                                            </div>
-                                            <Space>
-                                                <div style="font-size: 14px;">
-                                                    <Icon type="ios-thumbs-up" />点赞
+                                <Row class="user-action-area" :wrap="false" v-if="item.showComment">
+                                    <Col flex="70px" style="display: flex;justify-content: center;">
+                                    <Avatar icon="ios-person" class="user-avator"
+                                        src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                                    </Col>
+                                    <Col flex="auto">
+                                    <Space direction="vertical" style="width: 100%;">
+                                        <!-- <Input v-model="value1" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }"
+                                    placeholder="输入你的评论....." /> -->
+                                        <v-md-editor class="md-editor" v-model="replyMdText" height="150px" mode="edit"
+                                            :placeholder="commentPlaceholder"
+                                            left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
+                                        <div style="width: 100%;">
+                                            <Space style="float: left;">
+                                                <Poptip placement="right-start" width="400">
+                                                    <Icon type="md-happy" size="30" class="emoji-icon" color="#ffc83d" />
+                                                    <template #content>
+                                                        <div style="height:200px">
+                                                            <Row>
+                                                                <div v-for="val in store.state.emojis"
+                                                                    @click="replyMdText += val" class="emoji-list-item">
+                                                                    {{ val }}
+                                                                </div>
+                                                            </Row>
+                                                        </div>
+                                                    </template>
+                                                </Poptip>
+                                            </Space>
+                                            <Button style="float: right;" type="primary"
+                                                @click="makeReply(item.id, item)">发表评论</button>
+                                        </div>
+                                    </Space>
+                                    </Col>
+                                </Row>
+                                <div class="level-two-comment" v-if="item.children.length > 0">
+                                    <div style="margin-bottom: 20px;" v-for="subItem in item.children">
+                                        <Row :wrap="false" style="width: 100%;">
+                                            <Col flex="60px" style="display: flex;justify-content: center;">
+                                            <Avatar icon="ios-person" class="level-two-avator" :src="subItem.avatar" />
+                                            </Col>
+                                            <Col flex="auto">
+                                            <Space direction="vertical" style="width: 100%;">
+                                                <div style="width: 100%;">
+                                                    <Space>
+                                                        <span style="font-size:15px;">{{ subItem.userName }}</span>
+                                                        <span v-if="subItem.parent != subItem.id">回复</span>
+                                                        <!-- 以后可以在此插入用户标签 -->
+                                                        <span style="font-size:15px;" v-if="subItem.parent != subItem.id">{{
+                                                            commentMap.get(subItem.parent).userName }}</span>
+                                                    </Space>
+
                                                 </div>
-                                                <div style="font-size: 14px;">
-                                                    <Icon type="md-text" />评论
+                                                <!-- 用户评论的内容 -->
+                                                <div class="user-reply">
+                                                    <!-- <span style="font-size: 14px;"> {{ commentText }}</span> -->
+                                                    <v-md-preview mode="preview" :text="subItem.content"></v-md-preview>
+                                                </div>
+                                                <Space :size="20">
+                                                    <Time :time="new Date(subItem.createTime / 1e6)" />
+                                                    <div style="font-size: 14px;">
+                                                        <Icon type="ios-thumbs-up" />{{ subItem.thumbNum || 0 }}
+                                                    </div>
+                                                    <div style="font-size: 14px;">
+                                                        <Icon type="ios-thumbs-down" />{{ subItem.thumbNum || 0 }}
+                                                    </div>
+                                                    <div style="font-size: 14px;">
+                                                        <span @click="handleShowCommentInput(subItem)">回复</span>
+                                                    </div>
+                                                </Space>
+                                            </Space>
+                                            </Col>
+                                        </Row>
+                                        <Row class="user-action-area" :wrap="false" v-if="subItem.showComment">
+                                            <Col flex="70px" style="display: flex;justify-content: center;">
+                                            <Avatar icon="ios-person" class="user-avator"
+                                                src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                                            </Col>
+                                            <Col flex="auto">
+                                            <Space direction="vertical" style="width: 100%;">
+                                                <!-- <Input v-model="value1" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }"
+                                    placeholder="输入你的评论....." /> -->
+                                                <v-md-editor class="md-editor" v-model="replyMdText" height="150px"
+                                                    mode="edit" :placeholder="commentPlaceholder"
+                                                    left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
+                                                <div style="width: 100%;">
+                                                    <Space style="float: left;">
+                                                        <Poptip placement="right-start" width="400">
+                                                            <Icon type="md-happy" size="30" class="emoji-icon"
+                                                                color="#ffc83d" />
+                                                            <template #content>
+                                                                <div style="height:200px">
+                                                                    <Row>
+                                                                        <div v-for="val in store.state.emojis"
+                                                                            @click="replyMdText += val"
+                                                                            class="emoji-list-item">
+                                                                            {{ val }}
+                                                                        </div>
+                                                                    </Row>
+                                                                </div>
+                                                            </template>
+                                                        </Poptip>
+                                                    </Space>
+                                                    <Button style="float: right;" type="primary"
+                                                        @click="makeReply(item.id, subItem)">发表评论</button>
                                                 </div>
                                             </Space>
-                                        </Space>
-                                        </Col>
+                                            </Col>
+                                        </Row>
+                                    </div>
 
-                                    </Row>
                                 </div>
                             </Space>
                             </Col>
@@ -187,7 +290,7 @@
                         </Col>
                         <Col flex="auto" style="padding-left: 10px;">
                         <Space direction="vertical">
-                            <span style="font-size: 16px;color: #515767;">煎鱼eddycjy</span>
+                            <span style="font-size: 16px;color: #515767;">{{ blogInfo.infos.authorName }}</span>
                             <span style="font-size: 12px;color: #515767;">前端技术布道</span>
                         </Space>
                         </Col>
@@ -201,22 +304,21 @@
                             <Icon type="ios-thumbs-up" color="#7bb9ff" />
                         </div>
                         <span>获得点赞</span>
-                        <span>113</span>
+                        <span>{{ blogInfo.infos.thumbsNum || 0 }}</span>
                     </Space>
                     <Space>
                         <div class="elem-center userinfo-card-icon">
                             <Icon type="md-text" color="#7bb9ff" />
                         </div>
                         <span>文章被阅读</span>
-                        <span>67,114</span>
+                        <span>{{ blogInfo.infos.viewNum }}</span>
                     </Space>
-
                 </Space>
             </Card>
             <Card class="right-side-hot-article-card">
                 <Space direction="vertical" style="width: 100%;">
                     <div class="card-title">
-                        热门文章</div>
+                        相关文章</div>
                     <div v-for="item in ['深入了解现代网络浏览器（第 1 部分）', '3Ds MAX 软件介绍', 'AE软件介绍', 'TKinter美化库——tkkbootstrap', '超详细anaconda安装教程（Mac，Windows，Linux版本）']"
                         class="hot-article-list-item">
                         <!-- 后期加hover伪类 border-bottom: 1px solid  #ddd; -->
@@ -239,9 +341,159 @@
 <script setup name="BlogArticle">
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex';
-const store = useStore()
+import http from '../../../plugin/axios';
+import { useRouter } from 'vue-router';
+import msg from '../../../common/msg';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import utils from '../../../common/utils';
 
-const problemMdText = ref('')
+
+const router = useRouter()
+const blogId = router.currentRoute.value.params.id
+const store = useStore()
+const blogInfo = ref({
+    infos: {
+        title: '',
+        authorName: '',
+        thumbsNum: 0,
+        commentNum: 0,
+        collectNum: 0
+    }
+});
+const commentInfo = ref([]);
+const authorInfo = ref({});
+const topicInfo = ref({
+    topicName: ''
+});
+onMounted(() => {
+    getBlogDetial()
+})
+
+const getBlogDetial = async () => {
+    if (!blogId) {
+        msg.err("无法加载博客,ID错误,", blogId)
+        return
+    }
+    const { data: res } = await http.post('/blog/detial', { blogId: BigNumber(blogId) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    blogInfo.value = res.data
+    getBlogCommentInfo(blogId)
+    getBlogTopicDetial(blogInfo.value.infos.topic)
+    console.log(blogInfo.value);
+}
+
+
+const getBlogTopicDetial = async (topicId) => {
+    if (!topicId) {
+        msg.err("文章分类ID错误：", topicId)
+        return
+    }
+    const { data: res } = await http.post('/blog/topic/detial', { topic: Number(topicId) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    topicInfo.value = res.data
+    // console.log(topicInfo.value);
+}
+
+const getAuthorBlogInfo = async () => {
+    const { data: res } = await http.post('/blog/detial', { blogId: BigNumber(id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    authorInfo.value = res.data
+}
+
+const commentMap = new Map()
+const commentPlaceholder = ref('');
+const commentMdText = ref('')
+const replyMdText = ref('')
+const LastShowedCommentInput = ref(0);
+const handleShowCommentInput = (commentItem) => {
+
+    commentMap.forEach((item, key) => {
+        if (key == commentItem.id) {
+            if (key != LastShowedCommentInput.value) {
+                replyMdText.value = ''
+            }
+            LastShowedCommentInput.value = commentItem.id
+            commentItem.showComment = !commentItem.showComment
+            commentPlaceholder.value = '回复 @' + commentItem.userName
+        } else {
+            item.showComment = false
+        }
+    })
+}
+
+
+const getBlogCommentInfo = async (id) => {
+    const { data: res } = await http.post('/blog/comment/select', { blogId: BigNumber(id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    res.data.comments.forEach((item) => {
+        item.showComment = false
+        commentMap.set(item.id || 0, item)
+        if (!item.root) {
+            item.children = []
+            commentInfo.value.push(item)
+        }
+    })
+    res.data.comments.forEach((item) => {
+        if (item.root) {
+            commentMap.get(item.root).children.push(item)
+        }
+    })
+    console.log(commentInfo.value);
+}
+
+
+const makeComment = async () => {
+    if (createBlogComment(commentMdText.value, 0, 0)) {
+        commentMdText.value = ''
+    }
+}
+
+
+const makeReply = async (root, parentItem) => {
+    if (createBlogComment(replyMdText.value, root, parentItem.id)) {
+        replyMdText.value = ''
+        handleShowCommentInput(parentItem)
+    }
+}
+
+const createBlogComment = async (content, root, parent) => {
+    if (content.length == 0) {
+        msg.err('请输入评论内容')
+        return
+    }
+    let p = {
+        blogId: BigNumber(blogId),
+        userId: BigNumber(store.getters.userInfo.id),
+        content: content,
+        root: root,
+        parent: parent
+    }
+    console.log(p);
+    const { data: res } = await http.post('/blog/comment/create', p)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res);
+    msg.ok('评论成功')
+    return true
+}
+
+
+
+
 const commentText = ref('这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论这是普通的评论')
 const articleText = ref(`# 这是用户文章
 ### Acwing789.数的范围
@@ -299,12 +551,11 @@ $1≤k≤10000$
 
 #### 输入样例：`)
 
-const value1 = ref('')
-const handleEmojiClick = (e) => {
-    value1.value += e
+// const value1 = ref('')
+const handleEmojiClick = (content, e) => {
+    content += e
+    // value1.value += e
 }
-onMounted(() => {
-})
 
 </script>
 
@@ -321,6 +572,7 @@ onMounted(() => {
             .left-side {
                 width: 50px;
                 margin-right: 30px;
+                padding-top: 10px;
 
                 .circle-button {
                     background-color: #fff;
@@ -382,6 +634,7 @@ onMounted(() => {
 
                     .user-action-area {
                         width: 100%;
+                        margin-top: 20px;
 
                         .user-avator {
                             width: 50px;
@@ -426,7 +679,7 @@ onMounted(() => {
                     .user-comment {
                         width: 100%;
 
-                        :deep(div.vuepress-markdown-body) {
+                        :deep(div.github-markdown-body) {
                             padding: 0;
                         }
                     }
@@ -445,8 +698,9 @@ onMounted(() => {
                         .user-reply {
                             width: 100%;
 
-                            :deep(div.vuepress-markdown-body) {
+                            :deep(div.github-markdown-body) {
                                 padding: 0;
+                                background-color: #f9fafb;
                             }
                         }
                     }

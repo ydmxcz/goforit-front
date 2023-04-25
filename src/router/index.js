@@ -20,7 +20,8 @@ import SubscriptionBlogs from '../views/goforit/blog/SubscriptionBlogs.vue'
 import HotBlogs from '../views/goforit/blog/HotBlogs.vue'
 import BlogSearchResult from '../views/goforit/blog/BlogSearchResult.vue'
 import BlogArticle from '../views/goforit/blog/BlogArticle.vue'
-import TagBlog from '../views/goforit/blog/TagBlog.vue'
+import BlogAllTopic from '../views/goforit/blog/BlogAllTopic.vue'
+import BlogTopic from '../views/goforit/blog/BlogTopic.vue'
 import Course from '../views/goforit/course/Course.vue'
 import CourseDetial from '../views/goforit/course/CourseDetial.vue'
 import CourseDetialInstruction from '../views/goforit/course/CourseDetialInstruction.vue'
@@ -99,7 +100,8 @@ const routes = [
 					{ path: "subscription", name: "SubscriptionBlogs", component: SubscriptionBlogs, meta: { title: '关注' }, },
 					{ path: "hot", name: "HotBlogs", component: HotBlogs, meta: { title: '热门' }, },
 					{ path: "search/:key", name: "BlogSearchResult", component: BlogSearchResult, meta: { title: '搜索结果' }, },
-					{ path: "tag/:id", name: "TagBlog", component: TagBlog, meta: { title: '搜索结果' }, }
+					{ path: "all-topic", name: "BlogAllTopic", component: BlogAllTopic, meta: { title: '所有分区' }, },
+					{ path: "topic/:id", name: "BlogTopic", component: BlogTopic, meta: { title: '分区' }, }
 				]
 			},
 			{ path: "/blog/article/:id", name: "BlogArticle", component: BlogArticle, meta: { title: '文章内容' }, },

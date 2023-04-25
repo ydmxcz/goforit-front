@@ -109,6 +109,7 @@ const props = defineProps({
         default: 'https://dev-file.iviewui.com/userinfoPDvn9gKWYihR24SpgC319vXY8qniCqj4/avatar'
     }
 })
+
 const borderLeftColor = ref('#9b9b9b')
 
 const handlesignUpClick = () => {

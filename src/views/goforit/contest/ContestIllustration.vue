@@ -1,6 +1,6 @@
 <template>
     <Card style="width: 100%;">
-        <v-md-preview :text="competitionIllustrationText"></v-md-preview>
+        <v-md-preview :text="contestInstructionText"></v-md-preview>
     </Card>
 </template>
 
@@ -8,17 +8,31 @@
 // params:{userId:userId.val}}
 // this.$router.params.userId,
 
-import { ref,reactive,onMounted } from 'vue';
-import { useRoute  } from 'vue-router';
-const route = useRoute ()
-const params = ref({})
+import { ref, reactive, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import http from '../../../plugin/axios';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import msg from '../../../common/msg';
+const route = useRoute()
 
-onMounted(()=>{
+
+const getCOntestInstruction = async () => {
+    const { data: res } = await http.post("/contest/instruction", { contestId: BigNumber(route.params.id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    contestInstructionText.value = res.data.instruction
+}
+
+
+onMounted(() => {
     // params.value = 
-    console.log(route.params.id)
+    // getCOntestInstruction()
+    // console.log(route.params.id)
 })
 
-const competitionIllustrationText = ref(`
+const contestInstructionText = ref(`
 # 这是比赛说明
 ### Acwing789.数的范围
 
@@ -77,6 +91,4 @@ $1≤k≤10000$
 `)
 </script>
 
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

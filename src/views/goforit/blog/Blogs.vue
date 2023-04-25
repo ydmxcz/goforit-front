@@ -24,18 +24,29 @@
 									<Space>
 										<Input style="width: 100%;" v-model="tagSearchKey" search enter-button
 											placeholder="搜索标签" @on-search="searchTag" />
-										<Button>清空</Button>
+										<Button v-if="tagSearchList.length != 0"
+											@click="handleTagSelectClearSearch">清空</Button>
+									</Space>
+									<Space style="width: 100%;" v-if="tagSearchList.length != 0" direction="vertical">
+										<div class="vertical-center item-title"
+											style=" borderLeft: 3px solid #2d8cf0 ;background-color: #9dcbfb ;display: flex;align-items: center;">
+											搜索结果</div>
+										<Space :wrap="true" style="margin-bottom: 16px;">
+											<Tag v-for="item in tagSearchList" color="blue" style="cursor: pointer;"
+												@click="selectTag(item.name, item)">
+												{{ item.name }}
+											</Tag>
+										</Space>
 									</Space>
 
-									<div class="all-tag-item" v-for="item in allTagList">
+									<div class="all-tag-item" v-for="(item, idx) in allTagList">
 										<div class="vertical-center item-title"
-											:style="{ borderLeft: '3px solid ' + item.color, background: item.colorBg }">
+											:style="{ borderLeft: '3px solid ' + colors[idx % colors.length].border, background: colors[idx % colors.length].backGround }">
 											{{ item.name }}</div>
 										<Row :wrap="true">
-											<Tag v-for="subitem in item.children" :color="subitem.color"
-												@click="searchInAllTag(item.name, subitem)" style="margin: 5px;">{{
-													subitem.name
-												}}
+											<Tag v-for="subitem in item.tagList" :color="colors[idx % colors.length].tag"
+												@click="selectTag(item.name, subitem)" style="margin: 5px;">
+												{{ subitem.name }}
 											</Tag>
 										</Row>
 									</div>
@@ -72,8 +83,9 @@
 					<Space direction="vertical">
 						<h4>热门标签</h4>
 						<Row>
-							<Tag v-for="item in hotTagList" :color="item.color" style="margin: 5px;"
-								@click="searchByTag(item.text)">{{ item.text }}</Tag>
+							<Tag v-for="item in hotTag"
+								:color="hotTagColors[Math.floor(Math.random() * (hotTagColors.length - 1))]"
+								style="margin: 5px;" @click="searchByTag(item.name)">{{ item.name }}</Tag>
 						</Row>
 					</Space>
 
@@ -82,8 +94,8 @@
 				<Card class="row-right-hot-topic">
 					<Space direction="vertical" style="width: 100%;">
 						<h4>热门分区</h4>
-						<div class="hot-topic-item" v-for="item in hotTopicList">
-							<div class="hot-topic-item-name vertical-center">{{ item.name }}</div>
+						<div class="hot-topic-item" v-for="item in hotTopic" @click="toTopicDetial(item.id)">
+							<div class="hot-topic-item-name vertical-center">{{ item.topicName }}</div>
 							<div class="hot-topic-item-arrow vertical-center" style="">></div>
 						</div>
 					</Space>
@@ -107,13 +119,15 @@ import DynamicBreadcrumb from '../../../components/common/DynamicBreadcrumb.vue'
 import { reactive, ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex';
+import msg from '../../../common/msg';
+import http from '../../../plugin/axios';
 const router = useRouter()
 const store = useStore()
 const blogClassList = reactive([
 	{ name: '最新', to: '/blog/all', icon: 'md-pulse' },
 	{ name: '热门', to: '/blog/hot', icon: 'md-thermometer' },
 	{ name: '关注', to: '/blog/subscription', icon: 'md-star' },
-	{ name: '分区', to: '/blog/tag/all', icon: 'ios-options' },
+	{ name: '分区', to: '/blog/all-topic', icon: 'ios-options' },
 ])
 
 const blogClassListOriginLen = ref(blogClassList.length)
@@ -122,6 +136,7 @@ const blogClassListOriginLen = ref(blogClassList.length)
 const blogClassDomList = ref()
 // 上一次点击左侧标签列表的索引，防止重复点击
 let lastPage = 0
+
 // 处理点击事件,更新idx位置的样式
 const handleBlogClassListClick = (idx) => {
 	if (blogClassList.length > blogClassListOriginLen.value) {
@@ -157,16 +172,40 @@ const updateBlogClassListByPath = (path) => {
 	})
 }
 
+const toTopicDetial = (id) => {
+	console.log(id);
+	router.push('/blog/topic/' + id)
+}
+
+
 const tagSearchKey = ref('')
+const tagSearchList = ref([])
 const searchTag = () => {
 	console.log(tagSearchKey.value)
+	if (tagSearchKey.value == '') {
+        return
+    }
+    allTagList.forEach((i) => {
+        i.tagList.forEach((item) => {
+            if (item.name.includes(tagSearchKey)) {
+                tagSearchList.push({
+                    id: item.id,
+                    name: item.name
+                })
+            }
+        })
+    })
+}
+
+const handleTagSelectClearSearch = () => {
+	data.tagSearchList = []
 }
 // 搜索框数据
 const blogSearchKey = ref('')
 // 搜索点击事件，按下回车或点击搜索图标触发
 // 函数逻辑：在左侧分类列表添加搜索结果一栏并跳转到相应页面
 const searchBlog = () => {
-	blogClassList.push({ name: '搜索结果', to: '/blogs/search/' + blogSearchKey.value, icon: 'md-search' })
+	blogClassList.push({ name: '搜索结果', to: '/blog/search/' + blogSearchKey.value, icon: 'md-search' })
 	// 当DOM完成刷新时调用，否侧blogClassDomList会因为来不及刷新而更新失败
 	nextTick(() => {
 		updateAndPushToBlogClassListByIdx(blogClassList.length - 1)
@@ -187,125 +226,71 @@ const initBlogClassList = () => {
 }
 
 
-const hotTagList = reactive([
-	{ color: 'magenta', text: 'ascdscsd' },
-	{ color: 'red', text: 'asc' },
-	{ color: 'volcano', text: 'ascasdasddscsd' },
-	{ color: 'orange', text: 'ascdscscdd' },
-	{ color: 'gold', text: 'ascd' },
-	{ color: 'yellow', text: 'ascdsdscsd' },
-	{ color: 'lime', text: 'ascdcsd' },
-	{ color: 'green', text: 'ascdcsdsdcscsd' },
-	{ color: 'cyan', text: 'ascds' },
-	{ color: 'blue', text: 'ascdssdccsd' },
-	{ color: 'geekblue', text: 'ad' },
-	{ color: 'purple', text: 'asdcdscscdscsd' },
-	{ color: '#FFA2D3', text: 'ascdd' },
-	{ color: 'red', text: 'ascdcsdscsd' },
-	{ color: 'yellow', text: 'ascdscdsd' },
-	{ color: 'magenta', text: 'ascdscsd' },
-	{ color: 'volcano', text: 'ascdscssdcsdcd' },
-	{ color: 'cyan', text: 'ascds' },
-	{ color: 'geekblue', text: 'asc' },
-])
-
 const searchByTag = (name) => {
 	console.log(name)
 }
 
-const hotTopicList = reactive([
-	{ name: '学习讨论', id: '12345' },
-	{ name: '技术分享', id: '12345' },
-	{ name: '开源推荐', id: '12345' },
-	{ name: '蓝桥杯', id: '12345' },
-	{ name: '站内公告', id: '12345' },
-])
-
-const allTagList = reactive([
-	{
-		name: '算法', id: '1', colorBg: '#9dcbfb', color: '#2d8cf0', children: [
-			{ name: '分布式系统', id: '1', color: 'blue' },
-			{ name: 'Go', id: '1', color: 'blue' },
-			{ name: 'Java', id: '1', color: 'blue' },
-			{ name: 'MySQL', id: '1', color: 'blue' },
-			{ name: 'Redis', id: '1', color: 'blue' },
-			{ name: 'Kafka', id: '1', color: 'blue' },
-			{ name: 'ElasticSearch', id: '1', color: 'blue' },
-			{ name: 'Spring', id: '1', color: 'blue' },
-			{ name: 'SpringCloud', id: '1', color: 'blue' },
-			{ name: 'Linux', id: '1', color: 'blue' },
-			{ name: '计算机网络', id: '1', color: 'blue' },
-			{ name: '算法', id: '1', color: 'blue' },
-			{ name: '面试', id: '1', color: 'blue' },
-			{ name: '架构', id: '1', color: 'blue' },
-			{ name: '数据库', id: '1', color: 'blue' },
-			{ name: 'Kubernetes', id: '1', color: 'blue' },
-			{ name: 'Docker', id: '1', color: 'blue' },
-			{ name: '源码阅读', id: '1', color: 'blue' },
-		]
-	}, {
-		name: '后端', id: '1', colorBg: '#9dcbfb', color: '#2d8cf0', children: [
-			{ name: '分布式系统', id: '1', color: 'blue' },
-			{ name: 'Go', id: '1', color: 'blue' },
-			{ name: 'Java', id: '1', color: 'blue' },
-			{ name: 'MySQL', id: '1', color: 'blue' },
-			{ name: 'Redis', id: '1', color: 'blue' },
-			{ name: 'Kafka', id: '1', color: 'blue' },
-			{ name: 'ElasticSearch', id: '1', color: 'blue' },
-			{ name: 'Spring', id: '1', color: 'blue' },
-			{ name: 'SpringCloud', id: '1', color: 'blue' },
-			{ name: 'Linux', id: '1', color: 'blue' },
-			{ name: '计算机网络', id: '1', color: 'blue' },
-			{ name: '算法', id: '1', color: 'blue' },
-			{ name: '面试', id: '1', color: 'blue' },
-			{ name: '架构', id: '1', color: 'blue' },
-			{ name: '数据库', id: '1', color: 'blue' },
-			{ name: 'Kubernetes', id: '1', color: 'blue' },
-			{ name: 'Docker', id: '1', color: 'blue' },
-			{ name: '源码阅读', id: '1', color: 'blue' },
-		]
-	}, {
-		name: '前端', id: '1', colorBg: '#a6ecc9', color: '#19be6b', children: [
-			{ name: 'Html', id: '1', color: 'green' },
-			{ name: 'JavaScript', id: '1', color: 'green' },
-			{ name: 'TypeScript', id: '1', color: 'green' },
-			{ name: 'CSS', id: '1', color: 'green' },
-			{ name: 'Vue', id: '1', color: 'green' },
-			{ name: 'Node.js', id: '1', color: 'green' },
-			{ name: 'Next.js', id: '1', color: 'green' },
-			{ name: 'React', id: '1', color: 'green' },
-			{ name: 'Webpack', id: '1', color: 'green' },
-			{ name: 'Flutter', id: '1', color: 'green' },
-		]
-	}, {
-		name: 'Android', id: '1', colorBg: '#fcd69d', color: '#ff9900', children: [
-			{ name: 'Java', id: '1', color: 'orange' },
-			{ name: 'Go', id: '1', color: 'orange' },
-			{ name: 'MySQL', id: '1', color: 'orange' },
-			{ name: 'Redis', id: '1', color: 'orange' },
-			{ name: 'Kafka', id: '1', color: 'orange' },
-			{ name: 'ElasticSearch', id: '1', color: 'orange' },
-			{ name: 'Spring', id: '1', color: 'orange' },
-			{ name: 'SpringCloud', id: '1', color: 'orange' },
-			{ name: 'Linux', id: '1', color: 'orange' },
-			{ name: '计算机网络', id: '1', color: 'orange' },
-			{ name: '算法', id: '1', color: 'orange' },
-			{ name: '面试', id: '1', color: 'orange' },
-			{ name: '架构', id: '1', color: 'orange' },
-			{ name: '数据库', id: '1', color: 'orange' },
-		]
+const hotTag = ref();
+const hotTopic = ref();
+const getHotBlogTag = async () => {
+	const { data: res } = await http.get('/blog/hot/tag')
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
 	}
+	hotTag.value = res.data.tags
+}
+
+
+const getHotBlogTopic = async () => {
+	const { data: res } = await http.get('/blog/hot/topic')
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+
+	hotTopic.value = res.data.topic
+	// console.log(res);
+}
+
+const getBlogTags = async () => {
+	const { data: res } = await http.get('/blog/tag/all')
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	allTagList.value = res.data.all
+	// console.log(res);
+}
+
+const hotTagColors = reactive(['magenta', 'red', 'volcano',
+	'orange', 'gold', 'yellow', 'lime',
+	'green', 'cyan', 'blue', 'geekblue',
+	'purple', 'red', 'yellow', 'magenta',
+	'volcano', 'cyan', 'geekblue']);
+
+const colors = reactive([
+	{ border: '#2d8cf0', backGround: '#9dcbfb', tag: 'blue' },
+	{ border: '#19be6b', backGround: '#a6ecc9', tag: 'green' },
+	{ border: '#ff9900', backGround: '#fcd69d', tag: 'orange' }
 ])
 
-const searchInAllTag = (tagFarther, name) => {
+const allTagList = ref(null)
+
+const selectTag = (tagFarther, name) => {
 	console.log(tagFarther, name)
 }
 
 
 onMounted(() => {
+	getBlogTags()
+	getHotBlogTopic()
+	getHotBlogTag()
 	// 页面刷新时处理左侧标签列表
 	initBlogClassList()
 })
+
+
 
 </script>
 
@@ -377,7 +362,7 @@ onMounted(() => {
 
 				.row-right-hot-tag {
 					width: 100%;
-					height: 300px;
+					// height: 300px;
 					border-radius: 15px;
 				}
 

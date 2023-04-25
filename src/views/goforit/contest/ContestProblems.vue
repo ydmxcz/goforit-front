@@ -1,5 +1,4 @@
 <template>
-
     <Table :columns="columns" :data="data">
         <template #title="{ row }">
             <div style="float: left;" class="problem-title" @click="gotoProblem(row)">{{ row.title }}</div>
@@ -12,10 +11,28 @@
 </template>
     
 <script setup name="ContestProblems">
-import { reactive } from 'vue';
-import { useRouter } from 'vue-router';
-const router = useRouter()
+import { onMounted, reactive } from 'vue';
+import { useRoute } from 'vue-router';
+import http from '../../../plugin/axios';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import msg from '../../../common/msg';
+const route = useRoute()
 
+const getContestProblems = async () => {
+    // console.log(route.params.id);
+    const { data: res } = await http.post("/contest/problems", { contestId: BigNumber(2) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res);
+    // contestInstructionText.value = res.data.instruction
+}
+
+
+onMounted(() => {
+    getContestProblems()
+})
 
 const columns = reactive([
     {

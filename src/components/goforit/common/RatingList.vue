@@ -26,15 +26,15 @@
 <script setup>
 import { reactive } from 'vue'
 const rratingData = reactive([
-    { idx: 1, username: 'aaaaa', rating: 1999 },
-    { idx: 2, username: 'aaaaa', rating: 1999 },
-    { idx: 3, username: 'aaaaa', rating: 1999 },
-    { idx: 4, username: 'aaaaa', rating: 1999 },
-    { idx: 5, username: 'aaaaa', rating: 1999 },
-    { idx: 6, username: 'aaaaa', rating: 1999 },
-    { idx: 7, username: 'aaaaa', rating: 1999 },
-    { idx: 8, username: 'aaaaa', rating: 1999 },
-    { idx: 9, username: 'aaaaa', rating: 1999 },
+    { idx: 1, username: 'edmund', rating: 1999 },
+    { idx: 2, username: 'asdasd', rating: 1899 },
+    { idx: 3, username: 'frgrr', rating: 1799 },
+    { idx: 4, username: 'vfdvdc', rating: 1699 },
+    { idx: 5, username: 'eftrg', rating: 1599 },
+    { idx: 6, username: 'qwdsg', rating: 1499 },
+    { idx: 7, username: 'xvxmkmg', rating: 1399 },
+    { idx: 8, username: 'efdk', rating: 1299 },
+    { idx: 9, username: 'okwef', rating: 1199 },
 ])
 
 </script>

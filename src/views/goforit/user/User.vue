@@ -102,14 +102,14 @@
 						<Card style="width: 100%;red;height: 100%;border-radius: 10px;">
 							<Row :wrap="false">
 								<Col flex="200px">
-								<Circle :size="200" :trail-width="4" :stroke-width="5" :percent="75"
-									stroke-linecap="square" stroke-color="#43a3fb">
+								<Circle :size="200" :trail-width="4" :stroke-width="5" :percent="((303 / 900) * 100).toFixed(2)" stroke-linecap="square"
+									stroke-color="#43a3fb">
 									<div class="demo-Circle-custom">
-										<h1>42,001,776</h1>
-										<p>消费人群规模</p>
+										<h1>303</h1>
+										<p>完成题目数量</p>
 										<span>
-											总占人数
-											<i>75%</i>
+											占总数
+											<i>{{ ((303 / 900) * 100).toFixed(2) }}%</i>
 										</span>
 									</div>
 								</Circle>
@@ -121,33 +121,36 @@
 									<Space :wrap="false">
 										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
 										<span>
-											<span style="font-size: 16px;">33</span>
-											<span style="font-size: 12px;color: #b3b3b6;">1234</span>
+											<span style="font-size: 16px;">203</span>
+											<span style="font-size: 12px;color: #b3b3b6;">500</span>
 										</span>
-										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 84.3%</span>
+										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
+											((203 / 500) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="50" stroke-color="#19be6b"
-										:stroke-width="20" text-inside status="active" />
+									<Progress style="width: 200px;" :percent="((203 / 500) * 100).toFixed(2)"
+										stroke-color="#19be6b" :stroke-width="20" text-inside status="active" />
 									<Space :wrap="false">
 										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
 										<span>
-											<span style="font-size: 16px;">33</span>
-											<span style="font-size: 12px;color: #b3b3b6;">1234</span>
+											<span style="font-size: 16px;">50</span>
+											<span style="font-size: 12px;color: #b3b3b6;">200</span>
 										</span>
-										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 84.3%</span>
+										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
+											((50 / 200) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="25" stroke-color="#ff9900"
-										:stroke-width="20" text-inside status="active" />
+									<Progress style="width: 200px;" :percent="((50 / 200) * 100).toFixed(2)"
+										stroke-color="#ff9900" :stroke-width="20" text-inside status="active" />
 									<Space :wrap="false">
 										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
 										<span>
-											<span style="font-size: 16px;">33</span>
-											<span style="font-size: 12px;color: #b3b3b6;">1234</span>
+											<span style="font-size: 16px;">50</span>
+											<span style="font-size: 12px;color: #b3b3b6;">200</span>
 										</span>
-										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 84.3%</span>
+										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
+											((50 / 200) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="25" stroke-color="#ed4014"
-										:stroke-width="20" text-inside status="active" />
+									<Progress style="width: 200px;" :percent="((50 / 200) * 100).toFixed(2)"
+										stroke-color="#ed4014" :stroke-width="20" text-inside status="active" />
 								</Space>
 								</Col>
 							</Row>
@@ -164,8 +167,7 @@
 					</Row>
 					<Card class="middle-right">
 						<div style="padding-left: 5px; width: 100%;padding: 10px;height: 50px;">
-							<span
-								style="font-size:18px;float: left;height: 100%;align-items: center;display: flex;">过去一年做过
+							<span style="font-size:18px;float: left;height: 100%;align-items: center;display: flex;">过去一年做过
 								5 道题</span>
 							<span
 								style="font-size:12px;float: right;height: 100%;align-items: center;display: flex;">累计提交天数:10
@@ -178,8 +180,7 @@
 					</Card>
 					<Card class="middle-right">
 						<Space style="width: 100%;">
-							<div ref="mentListDom" v-for="(item, idx) in menuListData"
-								@click="handleUserInfoPageClick(idx)"
+							<div ref="mentListDom" v-for="(item, idx) in menuListData" @click="handleUserInfoPageClick(idx)"
 								style="display: flex;align-items: center;justify-content: center;padding: 10px 20px;font-size: 14px;color: #262626;">
 								<Icon :type="item.icon" style="margin-right: 3px;" />{{ item.name }}
 							</div>

@@ -119,7 +119,7 @@
 	<!-- <LoginDialog :flag="loginDialogShow" @on-login="onSuccessLogin"></LoginDialog> -->
 </template>
 
-<script setup name="Contest">
+<script setup name="Contest" >
 import { ref, reactive, onMounted } from 'vue';
 import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';

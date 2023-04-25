@@ -356,7 +356,7 @@
 					<Col span="15">
 					<span v-if="formItem.isRating">
 						不计Rating范围：Rating >
-						<InputNumber :max="10000" :min="1500" :step="1" v-model="formItem.ratingTop" />
+						<InputNumber :step="1" v-model="formItem.ratingTop" />
 					</span>
 					</Col>
 				</Row>
@@ -558,6 +558,7 @@ const showContestDetialInfo = ref(false)
 const showContestDetialInfoModal = (row) => {
 	showContestDetialInfo.value = true
 	formItem.value = row
+	console.log(row);
 }
 
 const showEditContestInfo = ref(false)

@@ -1,5 +1,13 @@
 <template>
-    <Card style="border-radius: 15px;">
+    <!-- <div style="width: 100%;height: 150px;display: flex;justify-content: center;align-items: center;"> -->
+    <Space direction="vertical" style="width: 100%;" align="center">
+        <img :src="topicDetial.img" style="width: 100px;height: 100px;">
+        <div style="font-size: 16px;font-weight: bolder;margin: 0px 10px;">{{ topicDetial.topicName }}</div>
+        <span>
+            <Icon type="ios-bonfire" /> {{ topicDetial.hot || 0 }}
+        </span>
+    </Space>
+    <Card style="border-radius: 10px;margin-top: 20px;">
         <Space direction="vertical" style="width: 100%;">
             <BlogListItem v-for="item in blogList" :blog-id="item.id" :author-name="item.authorName"
                 :avatar="item.authorAvatar" :create-time="new Date(Number((item.createTime / 1e6)))" :title="item.title"
@@ -14,16 +22,48 @@
 
         </Space>
     </Card>
+    <!-- </div> -->
 </template>
-
-<script setup name="AllBlogs">
-
-import { ref, reactive, onMounted } from 'vue'
+<script setup name='BlogTopic'>
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router';
-import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
+import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
+
 const router = useRouter()
+const topicDetial = ref({});
+const tagMap = new Map();
+const blogList = ref([]);
+
+const getTopicDetial = async () => {
+    const { data: res } = await http.post('/blog/topic/detial', { topic: Number(router.currentRoute.value.params.id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    topicDetial.value = res.data
+}
+
+const initFunc = () => {
+    getTopicDetial()
+    getBlogList()
+}
+
+
+onMounted(() => {
+    initFunc()
+})
+
+// 动态设置编辑器高度
+watch(() => router.currentRoute.value.params.id, (newValue, oldValue) => {
+    if (newValue) {
+        tagMap.clear()
+        blogList.value = []
+        initFunc()
+    }
+})
+
 
 const pageInfo = reactive({
     total: 0,
@@ -53,12 +93,8 @@ const toDetialPage = (blogId) => {
     router.push('/blog/article/' + String(blogId))
 }
 
-onMounted(() => {
-    getBlogList()
-})
 
-const tagMap = new Map();
-const blogList = ref([]);
+
 const getBlogList = async () => {
     const { data: res } = await http.post('/blog/select', {
         currPage: pageInfo.currPage,
@@ -79,7 +115,5 @@ const getBlogList = async () => {
     console.log(tagMap);
     console.log(blogList);
 }
-
 </script>
-
-<style scoped lang="less"></style>
+<style scoped lang='less'></style>

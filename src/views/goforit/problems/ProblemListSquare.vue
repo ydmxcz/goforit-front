@@ -29,7 +29,7 @@
         <ProblemListItem v-for="item in data.problemList" :name="item.name" :problem-list-id="item.id"
             :creator="item.creator" :activation="item.activation" :avatar="item.avatar" :collection-num="item.collectionNum"
             :instruction="item.instruction" :is-collection="item.isCollection" :problem-num="item.problemNum"
-            :update-time="item.lastUpdateTime" :tag-list="data.problemListTagMap.get(item.id)"></ProblemListItem>
+            :update-time="item.lastUpdateTime" :tag-list="data.problemListTagMap.get(String(item.id))"></ProblemListItem>
         <Space direction="vertical" type="flex" align="center">
             <Page :total="data.pageInfo.total" :page-size="data.pageInfo.pageSize" show-elevator show-sizer show-total
                 :page-size-opts="[10, 15, 20]" :model-value="data.pageInfo.currPage" @on-change="changePage"
@@ -310,10 +310,10 @@ const getProblemList = async () => {
         })
     })
     res.data.tags.forEach((item) => {
-        if (!data.problemListTagMap.has(item.problemlistId)) {
-            data.problemListTagMap.set(item.problemlistId, [item])
+        if (!data.problemListTagMap.has(String(item.problemlistId))) {
+            data.problemListTagMap.set(String(item.problemlistId), [item])
         } else {
-            data.problemListTagMap.get(item.problemlistId).push(item)
+            data.problemListTagMap.get(String(item.problemlistId)).push(item)
         }
     })
     data.pageInfo.total = res.data.total
