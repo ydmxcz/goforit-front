@@ -26,11 +26,17 @@
                         <Icon type="md-eye" style="margin-right: 5px;" /> {{ props.viewNum }}
                     </span>
                     <span style="color: #8a919f;">
-                        <Icon type="ios-thumbs-up" style="margin-right: 5px;" @click="handleThumbBlog" />{{ props.thumbsNum
-                        }}
+                        <Icon type="ios-thumbs-up" v-if="isThumbsUp" style="margin-right: 5px;color: #2d8cf0;"
+                            @click="handleThumbBlog" />
+                        <Icon type="ios-thumbs-up" v-else style="margin-right: 5px;" @click="handleThumbBlog" />
+                        {{ thumbsUpNum }}
                     </span>
+
                     <span style="color: #8a919f;">
-                        <Icon type="md-star" style="margin-right: 5px;" @click="handleCollectBlog" />{{ props.collectNum }}
+                        <Icon type="md-star" v-if="isCollect" style="margin-right: 5px;color: #ff9900;"
+                            @click="handleCollectBlog" />
+                        <Icon type="md-star" v-else style="margin-right: 5px;" @click="handleCollectBlog" />
+                        {{ collectNum }}
                     </span>
                     <span style="color: #8a919f;">
                         <Icon type="ios-text" style="margin-right: 5px;" />{{ props.commentNum }}
@@ -59,11 +65,13 @@
 <script setup name="BlogListItem">
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import { ref, reactive, onMounted } from 'vue'
-const emits = defineEmits(['thumb', 'toDetialPage', 'collect']);
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+const emits = defineEmits(['toDetialPage']);
 
 const props = defineProps({
     blogId: {
-        type: Number ,
+        type: Number,
     },
     authorName: {
         type: String,
@@ -80,43 +88,89 @@ const props = defineProps({
     }, abstract: {
         type: String,
         default: '两千字Go编程规范，没有规矩不成方圆，团队开两千字Go编程规范，没有规矩不成方圆，团队开两千字Go编程规范，没有规矩不成方圆，团队开两千字Go编程规范，没有规矩不成方圆，团队开',
-    }, thumbsNum: {
+    }, thumbsUpNum: {
         type: Number,
-        default: 666,
+        default: 0,
     }, viewNum: {
         type: Number,
-        default: 777,
+        default: 0,
     }, collectNum: {
         type: Number,
-        default: 888,
+        default: 0,
     }, commentNum: {
         type: Number,
-        default: 999,
+        default: 0,
     }, cover: {
         type: String,
         default: ''
     }, avatar: {
         type: String,
         default: 'https://dev-file.iviewui.com/userinfoPDvn9gKWYihR24SpgC319vXY8qniCqj4/avatar'
+    }, isThumbsUp: {
+        type: Boolean,
+        default: false
+    }, isCollect: {
+        type: Boolean,
+        default: false
+    }, userId: {
+        type: BigNumber,
+    }, facoritesId: {
+        type: Number,
+        default: 0
     }
 })
+const isThumbsUp = ref(props.isThumbsUp);
+const isCollect = ref(props.isCollect);
+const collectNum = ref(props.collectNum);
+const thumbsUpNum = ref(props.thumbsUpNum);
 
 onMounted(() => {
     // console.log(props);
 })
 
 
+
+
 const handleToDetialPage = () => {
     emits('toDetialPage', props.blogId)
 }
 
-const handleThumbBlog = () => {
-    emits('thumb', props.blogId)
+const handleThumbBlog = async () => {
+    let param = {
+        id: props.blogId,
+        thumbed: isThumbsUp.value,
+        userId: props.userId
+    }
+    console.log(param);
+    const { data: res } = await http.post('/blog/thumbsup', param)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    isThumbsUp.value = !isThumbsUp.value
+    thumbsUpNum.value += (isThumbsUp.value ? 1 : -1)
+
+    // emits('thumbsUp', props.blogId,props.isThumbsUp)
 }
 
-const handleCollectBlog = () => {
-    emits('collect', props.blogId)
+
+
+const handleCollectBlog = async () => {
+    let param = {
+        blogId: props.blogId,
+        userId: props.userId,
+        isCollect: isCollect.value
+    }
+    // console.log(param);
+    const { data: res } = await http.post('/blog/collect', param)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    isCollect.value = !isCollect.value
+    collectNum.value += isCollect.value ? 1 : -1
 }
+
 
 const handelReport = () => {
     console.log(props.blogId);

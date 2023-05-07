@@ -16,7 +16,7 @@
     </Card>
 </template>
 
-<script setup name="AllBlogs">
+<script setup name="GroupDiscussion">
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router';

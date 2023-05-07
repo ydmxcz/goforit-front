@@ -1,41 +1,33 @@
 <template>
-    <Row :wrap="false" style="width:100%">
-        <Col flex="auto">
-        </Col>
-        <Col flex="1000px">
-        <Card style="border-radius: 10px;margin-top: 20px;margin-bottom: 20px;">
-            <Space type="flex" direction="vertical">
-                <Input search enter-button placeholder="请输入比赛名称 / 比赛ID进行搜索" />
-                <div style="width: 100%;">
-                    <div v-if="cascaderList.length == 0" style="width: 100%;height: 120px;">
-                        <Spin fix></Spin>
-                    </div>
-                    <Space v-else direction="vertical">
-                        <CascaderTagSelect title-lv1="方向" title-lv2="分类" :data-list="cascaderList"
-                            @on-lv2-change="handleLv2Change" @on-lv1-change="handleLv1Change">
-                        </CascaderTagSelect>
-                        <TagSelectSignle title="状态" :data-list="contestStatusTagList" @on-change="handleTagClick">
-                        </TagSelectSignle>
-                    </Space>
+    <Card style="border-radius: 10px;margin-top: 20px;margin-bottom: 20px;">
+        <Space type="flex" direction="vertical">
+            <Input search enter-button placeholder="请输入比赛名称 / 比赛ID进行搜索" />
+            <div style="width: 100%;">
+                <div v-if="cascaderList.length == 0" style="width: 100%;height: 120px;">
+                    <Spin fix></Spin>
                 </div>
-                <ContestList v-for="item in contestList" :contest-id="item.id" :name="item.title" :is-original="true"
-                    :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime" :sign-up-end="item.signUpEndTime"
-                    :contest-start="item.startTime" :contest-end="item.endTime"
-                    :length-time="(item.endTime - item.startTime) / 3600000" :sponsor="item.sponsorName"
-                    :number="item.signUpNum || 0" :max-rating="item.ratingTop" @on-sign-up="toContestDetialPage"
-                    @to-detial-page="toContestDetialPage" />
-
-                <Space direction="vertical" type="flex" align="center">
-                    <Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
-                        :page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
-                        @on-page-size-change="changePageSize" />
+                <Space v-else direction="vertical">
+                    <CascaderTagSelect title-lv1="方向" title-lv2="分类" :data-list="cascaderList"
+                        @on-lv2-change="handleLv2Change" @on-lv1-change="handleLv1Change">
+                    </CascaderTagSelect>
+                    <TagSelectSignle title="状态" :data-list="contestStatusTagList" @on-change="handleTagClick">
+                    </TagSelectSignle>
                 </Space>
+            </div>
+            <ContestList v-for="item in contestList" :contest-id="item.id" :name="item.title" :is-original="true"
+                :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime" :sign-up-end="item.signUpEndTime"
+                :contest-start="item.startTime" :contest-end="item.endTime"
+                :length-time="(item.endTime - item.startTime) / 3600000" :sponsor="item.sponsorName"
+                :number="item.signUpNum || 0" :max-rating="item.ratingTop" @on-sign-up="toContestDetialPage"
+                @to-detial-page="toContestDetialPage" />
+
+            <Space direction="vertical" type="flex" align="center">
+                <Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
+                    :page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
+                    @on-page-size-change="changePageSize" />
             </Space>
-        </Card>
-        </Col>
-        <Col flex="auto">
-        </Col>
-    </Row>
+        </Space>
+    </Card>
 </template>
 
 <script setup name="AllContest">

@@ -291,12 +291,15 @@
                         <Col flex="auto" style="padding-left: 10px;">
                         <Space direction="vertical">
                             <span style="font-size: 16px;color: #515767;">{{ blogInfo.infos.authorName }}</span>
-                            <span style="font-size: 12px;color: #515767;">前端技术布道</span>
+                            <span style="font-size: 12px;color: #515767;">{{ authorSimplyInfo.instruction }}</span>
                         </Space>
                         </Col>
                     </Row>
-                    <Button style="width: 100%;" type="primary">
+                    <Button style="width: 100%;" type="primary" v-if="!authorSimplyInfo.followTime" @click="followAuthor">
                         <Icon type="md-add" /><span style="margin-left: 5px;">关注</span>
+                    </Button>
+                    <Button style="width: 100%;background-color: #5cadff;color: #fff;" v-else @click="followAuthor">
+                        <Icon type="md-checkmark" /><span style="margin-left: 5px;">已关注</span>
                     </Button>
                     <Divider style="margin-top: 5px;margin-bottom: 5px;" />
                     <Space>
@@ -304,14 +307,14 @@
                             <Icon type="ios-thumbs-up" color="#7bb9ff" />
                         </div>
                         <span>获得点赞</span>
-                        <span>{{ blogInfo.infos.thumbsNum || 0 }}</span>
+                        <span>{{ authorSimplyInfo.thumbsUpTotalNum || 0 }}</span>
                     </Space>
                     <Space>
                         <div class="elem-center userinfo-card-icon">
                             <Icon type="md-text" color="#7bb9ff" />
                         </div>
                         <span>文章被阅读</span>
-                        <span>{{ blogInfo.infos.viewNum }}</span>
+                        <span>{{ authorSimplyInfo.viewTotalNum || 0 }}</span>
                     </Space>
                 </Space>
             </Card>
@@ -380,11 +383,27 @@ const getBlogDetial = async () => {
         return
     }
     blogInfo.value = res.data
+    console.log(blogInfo.value);
     getBlogCommentInfo(blogId)
     getBlogTopicDetial(blogInfo.value.infos.topic)
-    console.log(blogInfo.value);
+    getAuthorBlogInfo(blogInfo.value.infos.author)
 }
 
+
+const followAuthor = async () => {
+    let p = {
+        userId: BigNumber(store.getters.userInfo.id),
+        followed: BigNumber(blogInfo.value.infos.author),
+        isFollowed: (authorSimplyInfo.value.followTime || 0) > 0
+    }
+    const { data: res } = await http.post('/user/follow', p)
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res);
+    authorSimplyInfo.value.followTime = authorSimplyInfo.value.followTime > 0 ? 0 : 1
+}
 
 const getBlogTopicDetial = async (topicId) => {
     if (!topicId) {
@@ -400,13 +419,26 @@ const getBlogTopicDetial = async (topicId) => {
     // console.log(topicInfo.value);
 }
 
-const getAuthorBlogInfo = async () => {
-    const { data: res } = await http.post('/blog/detial', { blogId: BigNumber(id) })
+// 
+const authorSimplyInfo = ref({
+    instruction: "你好hhhhhhh",
+    thumbsUpTotalNum: 1,
+    userName: "edmund",
+    viewTotalNum: 429,
+    followTime: 0
+});
+
+const getAuthorBlogInfo = async (authorId) => {
+    const { data: res } = await http.post('/blog/author/simply/info', {
+        userId: BigNumber(store.getters.userInfo.id),
+        author: BigNumber(authorId)
+    })
     if (res.code != 200) {
         msg.err(res.msg)
         return
     }
-    authorInfo.value = res.data
+    authorSimplyInfo.value = res.data
+    console.log(authorSimplyInfo.value);
 }
 
 const commentMap = new Map()
@@ -437,6 +469,10 @@ const getBlogCommentInfo = async (id) => {
         msg.err(res.msg)
         return
     }
+    // console.log('comment',res);
+    if (!res.data.comments) {
+        return
+    }
     res.data.comments.forEach((item) => {
         item.showComment = false
         commentMap.set(item.id || 0, item)
@@ -450,7 +486,6 @@ const getBlogCommentInfo = async (id) => {
             commentMap.get(item.root).children.push(item)
         }
     })
-    console.log(commentInfo.value);
 }
 
 

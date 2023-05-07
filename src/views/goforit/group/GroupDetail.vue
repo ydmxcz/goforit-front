@@ -219,9 +219,10 @@ const avatorList = reactive({
 });
 const mentListDom = ref([])
 const menuListData = ref([
-    { name: '训练任务', path: '/group/' + groupInfo.id + '/train', icon: 'ios-podium' },
-    { name: '团队比赛', path: '/group/' + groupInfo.id + '/contest', icon: 'md-paper' },
-    { name: '团队成员', path: '/group/' + groupInfo.id + '/numbers', icon: 'md-book' },
+    { name: '分享&讨论', path: '/group/' + groupInfo.id + '/discussion', icon: 'ios-podium' },
+    { name: '训练', path: '/group/' + groupInfo.id + '/train', icon: 'ios-podium' },
+    { name: '比赛', path: '/group/' + groupInfo.id + '/contest', icon: 'md-paper' },
+    { name: '成员', path: '/group/' + groupInfo.id + '/numbers', icon: 'md-book' },
 ])
 
 const handleUserInfoPageClick = (idx) => {

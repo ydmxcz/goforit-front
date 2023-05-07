@@ -126,6 +126,7 @@ const store = useStore()
 const blogClassList = reactive([
 	{ name: '最新', to: '/blog/all', icon: 'md-pulse' },
 	{ name: '热门', to: '/blog/hot', icon: 'md-thermometer' },
+	{ name: '收藏', to: '/blog/collect', icon: 'md-thermometer' },
 	{ name: '关注', to: '/blog/subscription', icon: 'md-star' },
 	{ name: '分区', to: '/blog/all-topic', icon: 'ios-options' },
 ])

@@ -22,6 +22,7 @@ import BlogSearchResult from '../views/goforit/blog/BlogSearchResult.vue'
 import BlogArticle from '../views/goforit/blog/BlogArticle.vue'
 import BlogAllTopic from '../views/goforit/blog/BlogAllTopic.vue'
 import BlogTopic from '../views/goforit/blog/BlogTopic.vue'
+import BlogCollect from '../views/goforit/blog/BlogCollect.vue'
 import Course from '../views/goforit/course/Course.vue'
 import CourseDetial from '../views/goforit/course/CourseDetial.vue'
 import CourseDetialInstruction from '../views/goforit/course/CourseDetialInstruction.vue'
@@ -53,6 +54,7 @@ import Group from '../views/goforit/group/Group.vue'
 import GroupTrain from '../views/goforit/group/GroupTrain.vue'
 import GroupContest from '../views/goforit/group/GroupContest.vue'
 import GroupNumbers from '../views/goforit/group/GroupNumbers.vue'
+import GroupDiscussion from '../views/goforit/group/GroupDiscussion.vue'
 import GroupDetail from '../views/goforit/group/GroupDetail.vue'
 import Profile from '../views/goforit/profile/Profile.vue'
 import ProfileCollection from '../views/goforit/profile/ProfileCollection.vue'
@@ -97,6 +99,7 @@ const routes = [
 				path: "/blog", name: "Blog", component: Blog, redirect: { name: 'AllBlogs' }, meta: { title: '博客' },
 				children: [
 					{ path: "all", name: "AllBlogs", component: AllBlogs, meta: { title: '最新' }, },
+					{ path: "collect", name: "BlogCollect", component: BlogCollect, meta: { title: '收藏' }, },
 					{ path: "subscription", name: "SubscriptionBlogs", component: SubscriptionBlogs, meta: { title: '关注' }, },
 					{ path: "hot", name: "HotBlogs", component: HotBlogs, meta: { title: '热门' }, },
 					{ path: "search/:key", name: "BlogSearchResult", component: BlogSearchResult, meta: { title: '搜索结果' }, },
@@ -164,6 +167,7 @@ const routes = [
 					{ path: "train", name: "GroupTrain", component: GroupTrain, meta: { title: '训练' } },
 					{ path: "contest", name: "GroupContest", component: GroupContest, meta: { title: '比赛' } },
 					{ path: "numbers", name: "GroupNumbers", component: GroupNumbers, meta: { title: '成员' } },
+					{ path: "discussion", name: "GroupDiscussion", component: GroupDiscussion, meta: { title: '成员' } },
 
 				]
 			},
