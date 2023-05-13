@@ -341,7 +341,7 @@
     </Row>
 </template>
 
-<script setup name="BlogArticle">
+<script setup name="GroupDiscussionDetial">
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex';
 import http from '../../../plugin/axios';
@@ -352,7 +352,7 @@ import utils from '../../../common/utils';
 
 
 const router = useRouter()
-const blogId = router.currentRoute.value.params.id
+const blogId = router.currentRoute.value.params.did
 const store = useStore()
 const blogInfo = ref({
     infos: {

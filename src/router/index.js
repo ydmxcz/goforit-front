@@ -36,6 +36,7 @@ import ContestIllustration from '../views/goforit/contest/ContestIllustration.vu
 import ContestProblems from '../views/goforit/contest/ContestProblems.vue'
 import ContestSubmit from '../views/goforit/contest/ContestSubmit.vue'
 import ContestRanking from '../views/goforit/contest/ContestRanking.vue'
+
 import MarkDownEditer from '../views/goforit/blog/MarkDownEditer.vue'
 import Login from '../views/goforit/test/Login.vue'
 import User from '../views/goforit/user/User.vue'
@@ -56,6 +57,9 @@ import GroupContest from '../views/goforit/group/GroupContest.vue'
 import GroupNumbers from '../views/goforit/group/GroupNumbers.vue'
 import GroupDiscussion from '../views/goforit/group/GroupDiscussion.vue'
 import GroupDetail from '../views/goforit/group/GroupDetail.vue'
+import GroupShareEditer from '../views/goforit/group/GroupShareEditer.vue'
+import GroupDiscussionDetial from '../views/goforit/group/GroupDiscussionDetial.vue'
+
 import Profile from '../views/goforit/profile/Profile.vue'
 import ProfileCollection from '../views/goforit/profile/ProfileCollection.vue'
 import ProfileSolution from '../views/goforit/profile/ProfileSolution.vue'
@@ -149,6 +153,7 @@ const routes = [
 			{ path: "/problem/:id", name: "Problem", component: Problem, meta: { title: '题目' } },
 			// markdown编辑页面
 			{ path: "/mdedit/:userid", name: "MarkDownEditer", component: MarkDownEditer },
+			{ path: "/group-share/editer/:userid", name: "GroupShareEditer", component: GroupShareEditer },
 			{ path: "/login", name: "Login", component: Login },
 			{
 				path: "/msg", name: "Message", component: Message, meta: { title: '消息中心' }, redirect: { name: "MsgSystem" },
@@ -162,12 +167,13 @@ const routes = [
 			},
 			{ path: "/group", name: "Group", component: Group, meta: { title: '团队' } },
 			{
-				path: "/group/:id", name: "GroupDetail", component: GroupDetail, meta: { title: '团队详情' }, redirect: { name: 'GroupTrain' },
+				path: "/group/:id", name: "GroupDetail", component: GroupDetail, meta: { title: '团队详情' }, redirect: { name: 'GroupDiscussion' },
 				children: [
 					{ path: "train", name: "GroupTrain", component: GroupTrain, meta: { title: '训练' } },
 					{ path: "contest", name: "GroupContest", component: GroupContest, meta: { title: '比赛' } },
 					{ path: "numbers", name: "GroupNumbers", component: GroupNumbers, meta: { title: '成员' } },
 					{ path: "discussion", name: "GroupDiscussion", component: GroupDiscussion, meta: { title: '成员' } },
+					{ path: "discussion/:did", name: "GroupDiscussionDetial", component: GroupDiscussionDetial, meta: { title: '成员' } },
 
 				]
 			},

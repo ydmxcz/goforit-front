@@ -48,8 +48,8 @@
                         <Icon style="margin-right: 5px;" type="md-bonfire" size="20" />活跃度</Col>
                     </Row>
                     <Row :wrap="false" style="text-align: center;font-size: 12px;">
-                        <Col flex="12">9</Col>
-                        <Col flex="12">6</Col>
+                        <Col flex="12">{{ groupInfo.number }}</Col>
+                        <Col flex="12">{{ groupInfo.activation }}</Col>
                     </Row>
                     <Divider class="left-divider" />
 
@@ -138,18 +138,22 @@
 <script setup name="GroupDetail">
 import { ref, reactive, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 const router = useRouter()
 
 const groupInfo = reactive({
     groupname: 'EdmundShelby',
     instruction: '你好hhhhhhhhhhh',
-    id: '12345678912341',
+    id: null,
     number: 999,
-    active: 666,
+    activation: 666,
     public: 0,
     status: 0,
 })
+
 
 const avatorList = reactive({
     excessStyle: {
@@ -219,10 +223,10 @@ const avatorList = reactive({
 });
 const mentListDom = ref([])
 const menuListData = ref([
-    { name: '分享&讨论', path: '/group/' + groupInfo.id + '/discussion', icon: 'ios-podium' },
-    { name: '训练', path: '/group/' + groupInfo.id + '/train', icon: 'ios-podium' },
-    { name: '比赛', path: '/group/' + groupInfo.id + '/contest', icon: 'md-paper' },
-    { name: '成员', path: '/group/' + groupInfo.id + '/numbers', icon: 'md-book' },
+    { name: '分享&讨论', path: '/group/' + router.currentRoute.value.params.id + '/discussion', icon: 'ios-podium' },
+    { name: '训练', path: '/group/' + router.currentRoute.value.params.id + '/train', icon: 'ios-podium' },
+    { name: '比赛', path: '/group/' + router.currentRoute.value.params.id + '/contest', icon: 'md-paper' },
+    { name: '成员', path: '/group/' + router.currentRoute.value.params.id + '/numbers', icon: 'md-book' },
 ])
 
 const handleUserInfoPageClick = (idx) => {
@@ -257,10 +261,46 @@ watch(
 );
 
 onMounted(() => {
+    // console.log(router.currentRoute.value.params.id);
+    getGroupDetialInfo()
+    getGroupNumberAvatarList()
     nextTick(() => {
         updateByPath(router.currentRoute.value.fullPath)
     })
 })
+
+const getGroupNumberAvatarList = async () => {
+    const { data: res } = await http.post('/group/number/avatars',{
+        groupId:BigNumber(router.currentRoute.value.params.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log('wsx',res);
+    avatorList.list = res.data.list
+}
+
+
+const getGroupDetialInfo = async () => {
+    const { data: res } = await http.post('/group/detial',{
+        groupId:BigNumber(router.currentRoute.value.params.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    groupInfo.id = res.data.id
+    groupInfo.groupname = res.data.name
+    groupInfo.status = res.data.public
+    groupInfo.instruction = res.data.instruction
+    groupInfo.activation = res.data.activation || 0
+    groupInfo.number = res.data.number || 0
+    
+    // console.log(res);
+}
+
+
 
 </script>
 
