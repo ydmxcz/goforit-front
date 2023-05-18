@@ -88,7 +88,7 @@ const clickLogin = () => {
 const onSuccessLogin = async (loginData) => {
 	const { data: res } = await http.post('/user/login', loginData)
 	if (res.code != 200) {
-		msg.err(res.msg)
+		msg.err('密码错误')
 		return
 	} else {
 		msg.ok("登录成功，欢迎！")
