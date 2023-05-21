@@ -14,7 +14,7 @@
 					<Col flex="auto">
 					<Space direction="vertical" style="width: 100%;">
 						<Space :wrap="false" class="problemlist-base-top" split>
-							<span style="font-size:20px;height: 20px;">{{ problemlistInfo.name }}</span>
+							<span style="font-size:20px;height: 20px;">{{ problemlistInfo.title }}</span>
 							<!-- <span style="font-size:14px;">ID:{{ problemlistInfo.id }}</span> -->
 						</Space>
 						<Space>
@@ -24,7 +24,7 @@
 							</span>
 							<span style="font-size: 14px;">
 								<Icon type="md-person" style="margin-right: 10px;" size="18" />
-								创建者：{{ problemlistInfo.creator }}
+								创建者：{{ problemlistInfo.userName }}
 							</span>
 						</Space>
 						<Ellipsis :text="problemlistInfo.instruction" :lines="2" tooltip />
@@ -32,24 +32,24 @@
 							<Col flex="auto">
 							<Space wrap>
 								<Icon type="ios-pricetags" /><span>题目标签：</span>
-								<Tag color="blue" v-for="name in problemlistInfo.tags"> {{ name }}</Tag>
+								<Tag color="blue" v-for="item in problemlistInfo.tags"> {{ item.name }}</Tag>
 							</Space>
 							</Col>
 							<Col flex="300px">
-							<Button v-if="problemlistInfo.public == 2" style="float: right;" shape="circle"
-								type="primary" icon="md-checkmark" disabled>已购买</Button>
+							<!-- <Button v-if="problemlistInfo.public == 2" style="float: right;" shape="circle" type="primary"
+								icon="md-checkmark" disabled>已购买</Button> -->
 							<!-- 用户已收藏此题单 -->
-							<Button v-else-if="problemlistInfo.status == 1" style="float: right;" shape="circle"
-								type="error" icon="md-close">取消收藏</Button>
+							<Button v-if="problemlistInfo.status" style="float: right;" shape="circle" type="error"
+								icon="md-close" @click="collectProblemlist">取消收藏</Button>
 							<!-- 用户未收藏此题单 -->
-							<Button v-else-if="problemlistInfo.public == 1 && problemlistInfo.status == 0"
-								style="float: right;" shape="circle" type="primary" icon="md-add">收藏</Button>
+							<!-- <Button v-else-if="problemlistInfo.public == 1 && problemlistInfo.status == 0"
+								style="float: right;" shape="circle" type="primary" icon="md-add">收藏</Button> -->
 							<!-- 此题单不对用户公开收藏 -->
 							<Button v-else style="float: right;" shape="circle" type="primary" icon="md-add"
-								disabled>收藏</Button>
+								@click="collectProblemlist">收藏</Button>
 							<!-- 用户必须收藏之后才可以随即开始 -->
-							<Button v-if="problemlistInfo.status == 1" style="float: right;margin-right: 20px;"
-								shape="circle" type="success" icon="md-sync">随机开始</Button>
+							<Button v-if="problemlistInfo.status" style="float: right;margin-right: 20px;" shape="circle"
+								type="success" icon="md-sync" @click="radomPratice">随机开始</Button>
 							</Col>
 						</Row>
 
@@ -72,7 +72,7 @@
 							<Col flex="12">{{ problemlistInfo.collections }}</Col>
 							<Col flex="12">{{ problemlistInfo.activation }}</Col>
 						</Row>
-						<Divider class="left-divider" />
+						<Divider class="left-divider" v-if="problemlistInfo.deadline != ''" />
 						<div v-if="problemlistInfo.deadline != ''" class="left-title">
 							<h3>截止时间</h3>
 						</div>
@@ -94,8 +94,8 @@
 								</span>/
 								<span style="color: #2db7f5;">{{ problemlistInfo.total }}</span>
 							</span>
-							<Progress :percent="45" :stroke-width="20" status="active" style="width: 100%;"
-								text-inside />
+							<Progress :percent="((problemlistInfo.finish) / (problemlistInfo.total || 1)).toFixed(0)"
+								:stroke-width="20" status="active" style="width: 100%;" text-inside />
 						</Space>
 					</Space>
 				</Card>
@@ -103,7 +103,7 @@
 				</Col>
 				<Col flex="auto">
 				<Card class="middle-right" style="border-radius: 15px;">
-					<ProblemTable :algorithm-tag-list="algorithmTagList"></ProblemTable>
+					<ProblemlistProblemTable></ProblemlistProblemTable>
 				</Card>
 				</Col>
 			</Row>
@@ -114,30 +114,36 @@
 	</Row>
 </template>
 <script setup name="ProblemListDetail">
-import { ref, reactive, onMounted, watch, nextTick } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import ProblemTable from '../../../components/goforit/problem/ProblemTable.vue';
+import ProblemlistProblemTable from '../../../components/goforit/problem/ProblemlistProblemTable.vue';
+import { useStore } from 'vuex';
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 const router = useRouter()
+const store = useStore()
 
 const problemlistInfo = reactive({
-	name: 'GoForIt热题 HOT 100',
+	title: 'GoForIt热题 HOT 100',
 	avator: '',
-	creator: 'edmund',
+	userName: 'edmund',
+	creator: 12345,
 	id: '12345678912341',
 	instruction: '精选 100 道GoForIt上最热门的题目，适合初识算法与数据结构的新手和想要在短时间内高效提升的人，熟练掌握这 100 道题，你就已经具备了在代码世界通行的基本能力。',
-	number: 999,
-	active: 666,
+	problemNum: 999,
 	// public 为 1时表示公开可供用户收藏的题单， 0时是团队发起的训练， 2 表示已购买的题单
 	public: 2,
-	status: 1,
-	deadline: '2022-02-03',
-	tags: ['二分查找', '排序', '高精度'],
-	finish: 72,
-	total: 100,
+	status: false,
+	deadline: '',
+	tags: [{ id: 1, name: '二分查找' }, { id: 2, name: '排序' }, { id: 3, name: '高精度' }],
+	finish: 0,
+	total: 0,
 	collections: 9,
 	activation: 7,
 })
+
 const issubmitAble = ref(true)
 const deadlineTime = ref(new Date('2023-06-16'))
 const algorithmTagList = ref(['二分查找', '排序', '高精度', '前缀和', '位运算',
@@ -150,6 +156,97 @@ const handleEnd = () => {
 	}
 }
 
+
+const collectProblemlist = async () => {
+	const { data: res } = await http.post('/problemlist/collect', {
+		problemlistId: BigNumber(router.currentRoute.value.params.id),
+		userId: BigNumber(store.getters.userInfo.id)
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	problemlistInfo.status = !problemlistInfo.status
+}
+
+const isCollectProblemlist = async () => {
+	const { data: res } = await http.post('/problemlist/is/collected', {
+		problemlistId: BigNumber(router.currentRoute.value.params.id),
+		userId: BigNumber(store.getters.userInfo.id)
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	problemlistInfo.status = Boolean(res.data.status || false)
+}
+
+const radomPratice = async () => {
+	const { data: res } = await http.post('/problemlist/all/problem', {
+		problemlistId: BigNumber(router.currentRoute.value.params.id)
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	console.log(res);
+	let routeUrl = router.resolve({
+		path: "/practice/" + res.data.problemlist[Math.floor(Math.random() * res.data.problemlist.length)].id,
+		// query: { id: id }
+	});
+	window.open(routeUrl.href, '_blank');
+}
+
+
+const getProblemlistDetial = async () => {
+	const { data: res } = await http.post('/problemlist/detial', {
+		problemlistId: BigNumber(router.currentRoute.value.params.id)
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	console.log('problemlist detial', res);
+	problemlistInfo.tags = res.data.tags
+	problemlistInfo.activation = res.data.info.activation || 0
+	problemlistInfo.collections = res.data.info.collections || 0
+	problemlistInfo.title = res.data.info.title || ''
+	problemlistInfo.avator = res.data.info.avator || ''
+	problemlistInfo.creator = res.data.info.creator || 0
+	problemlistInfo.userName = res.data.info.userName || ''
+	problemlistInfo.instruction = res.data.info.instruction || ''
+	problemlistInfo.problemNum = res.data.info.problemNum || 0
+}
+
+
+const getUserProblemlistFinishCount = async () => {
+
+	const { data: res } = await http.post('/problemlist/user/finish/count', {
+		problemlistId: BigNumber(router.currentRoute.value.params.id),
+		userId: BigNumber(store.getters.userInfo.id)
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	try {
+		problemlistInfo.finish = res.data.finish || 0
+	} catch (e) {
+		problemlistInfo.finish = 0
+	}
+	try {
+		problemlistInfo.total = res.data.total || 0
+	} catch (e) {
+		problemlistInfo.total = 0
+	}
+	console.log('userInfo', res);
+}
+
+onMounted(() => {
+	isCollectProblemlist()
+	getProblemlistDetial()
+	getUserProblemlistFinishCount()
+})
 
 </script>
 

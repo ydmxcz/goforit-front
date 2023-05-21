@@ -16,7 +16,7 @@
 							<span style="font-size:14px;">ID:{{ userInfo.id }}</span>
 						</Space>
 						<div class="user-info-bot">
-							<div style="float: left;font-size: 16px;">全站排名：9999</div>
+							<div style="float: left;font-size: 16px;">全站排名：1</div>
 							<Button style="float: right;" shape="circle" type="primary" icon="md-add">关注</Button>
 						</div>
 					</Space>
@@ -102,14 +102,16 @@
 						<Card style="width: 100%;red;height: 100%;border-radius: 10px;">
 							<Row :wrap="false">
 								<Col flex="200px">
-								<Circle :size="200" :trail-width="4" :stroke-width="5" :percent="((303 / 900) * 100).toFixed(2)" stroke-linecap="square"
+								<Circle :size="200" :trail-width="4" :stroke-width="5"
+									:percent="(((data.problemData.simple + data.problemData.middle + data.problemData.difficult) / data.problemData.total) * 100).toFixed(2)" stroke-linecap="square"
 									stroke-color="#43a3fb">
 									<div class="demo-Circle-custom">
-										<h1>303</h1>
+										<h1>{{ data.problemData.simple + data.problemData.middle + data.problemData.difficult }}</h1>
 										<p>完成题目数量</p>
 										<span>
 											占总数
-											<i>{{ ((303 / 900) * 100).toFixed(2) }}%</i>
+											<i>{{ (((data.problemData.simple + data.problemData.middle + data.problemData.difficult) / data.problemData.total) * 100).toFixed(2)
+											}}%</i>
 										</span>
 									</div>
 								</Circle>
@@ -121,35 +123,35 @@
 									<Space :wrap="false">
 										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
 										<span>
-											<span style="font-size: 16px;">203</span>
-											<span style="font-size: 12px;color: #b3b3b6;">500</span>
+											<span style="font-size: 16px;">{{ data.problemData.simple }}</span>
+											<span style="font-size: 12px;color: #b3b3b6;">{{ data.problemData.simpleTotal }}</span>
 										</span>
 										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
-											((203 / 500) * 100).toFixed(2) }}%</span>
+											((data.problemData.simple / data.problemData.simpleTotal) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="((203 / 500) * 100).toFixed(2)"
+									<Progress style="width: 200px;" :percent="((data.problemData.simple / data.problemData.simpleTotal) * 100).toFixed(2)"
 										stroke-color="#19be6b" :stroke-width="20" text-inside status="active" />
 									<Space :wrap="false">
-										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
+										<span style="font-size: 12px;color: #b3b3b6;">中等</span>
 										<span>
-											<span style="font-size: 16px;">50</span>
-											<span style="font-size: 12px;color: #b3b3b6;">200</span>
+											<span style="font-size: 16px;">{{ data.problemData.middle }}</span>
+											<span style="font-size: 12px;color: #b3b3b6;">{{ data.problemData.middleTotal }}</span>
 										</span>
 										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
-											((50 / 200) * 100).toFixed(2) }}%</span>
+											((data.problemData.middle / data.problemData.middleTotal) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="((50 / 200) * 100).toFixed(2)"
+									<Progress style="width: 200px;" :percent="((data.problemData.middle / data.problemData.middleTotal) * 100).toFixed(2) "
 										stroke-color="#ff9900" :stroke-width="20" text-inside status="active" />
 									<Space :wrap="false">
-										<span style="font-size: 12px;color: #b3b3b6;">简单</span>
+										<span style="font-size: 12px;color: #b3b3b6;">困难</span>
 										<span>
-											<span style="font-size: 16px;">50</span>
-											<span style="font-size: 12px;color: #b3b3b6;">200</span>
+											<span style="font-size: 16px;">{{ data.problemData.difficult }}</span>
+											<span style="font-size: 12px;color: #b3b3b6;">{{ data.problemData.difficultTotal }}</span>
 										</span>
 										<span style="font-size: 12px;color: #b3b3b6;margin-left: 20px;">已完成 {{
-											((50 / 200) * 100).toFixed(2) }}%</span>
+											((data.problemData.difficult / data.problemData.difficultTotal) * 100).toFixed(2) }}%</span>
 									</Space>
-									<Progress style="width: 200px;" :percent="((50 / 200) * 100).toFixed(2)"
+									<Progress style="width: 200px;" :percent="((data.problemData.difficult / data.problemData.difficultTotal) * 100).toFixed(2) "
 										stroke-color="#ed4014" :stroke-width="20" text-inside status="active" />
 								</Space>
 								</Col>
@@ -169,9 +171,9 @@
 						<div style="padding-left: 5px; width: 100%;padding: 10px;height: 50px;">
 							<span style="font-size:18px;float: left;height: 100%;align-items: center;display: flex;">过去一年做过
 								5 道题</span>
-							<span
+							<!-- <span
 								style="font-size:12px;float: right;height: 100%;align-items: center;display: flex;">累计提交天数:10
-								连续提交:2</span>
+								连续提交:2</span> -->
 						</div>
 						<div style="width: 100%;">
 							<calendar-heatmap end-date="2023-02-02" :values="timeValue" :locale="calendarHeatLocale"
@@ -204,8 +206,13 @@
 // 热力图插件	
 import { ref, reactive, onMounted, watch, nextTick, inject } from 'vue';
 import { useRouter } from 'vue-router';
-
 import { CalendarHeatmap } from "vue3-calendar-heatmap";
+import { useStore } from 'vuex';
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+
+const store = useStore()
 
 let echarts = inject("echarts"); // 主要
 
@@ -227,6 +234,52 @@ const menuListData = ref([
 	{ name: '题解', path: '/user/' + userInfo.id + '/solution', icon: 'md-school' },
 	{ name: '博客', path: '/user/' + userInfo.id + '/blog', icon: 'md-book' },
 ])
+
+const data = reactive({
+	problemData: {
+		simple: 0,
+		simpleTotal: 0,
+		simplePercent: 0,
+		middle: 0,
+		middleTotal: 0,
+		middlePercent: 0,
+		difficult: 0,
+		difficultTotal: 0,
+		difficultPercent: 0,
+		total: 0,
+	},
+	circleData: {
+		simple: 0,
+		middle: 0,
+		difficult: 0
+	}
+})
+
+const getPraticeData = async () => {
+	const { data: res } = await http.post('/problem/user/finish/count', { userId: BigNumber(store.getters.userInfo.id) })
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	console.log(res);
+	data.problemData.simple = res.data.finishEasy || 0
+	data.problemData.middle = res.data.finishMedium || 0
+	data.problemData.hard = res.data.finishHard || 0
+	data.problemData.simpleTotal = res.data.totalEasy || 0
+	data.problemData.middleTotal = res.data.totalMedium || 0
+	data.problemData.difficultTotal = res.data.totalHard || 0
+	data.problemData.total = res.data.totalEasy + res.data.totalMedium + res.data.totalHard
+	data.problemData.simplePercent = Math.round(((data.problemData.simple / data.problemData.simpleTotal) * 100) * 100) / 100
+	data.problemData.middlePercent = Math.round(((data.problemData.middle / data.problemData.middleTotal) * 100) * 100) / 100
+	data.problemData.difficultPercent = Math.round(((data.problemData.difficult / data.problemData.difficultTotal) * 100) * 100) / 100
+	data.circleData.difficult = data.problemData.difficult / data.problemData.total
+	data.circleData.middle = data.problemData.middle / data.problemData.total + data.circleData.difficult
+	data.circleData.simple = data.problemData.simple / data.problemData.total + data.circleData.middle
+	data.circleData.difficult = Math.round((data.circleData.difficult * 100) * 100) / 100
+	data.circleData.middle = Math.round((data.circleData.middle * 100) * 100) / 100
+	data.circleData.simple = Math.round((data.circleData.simple * 100) * 100) / 100
+
+}
 
 const handleUserInfoPageClick = (idx) => {
 	if (mentListDom.value[idx].id == 'menu-item-active') {
@@ -295,6 +348,7 @@ onMounted(() => {
 	})
 	// 绘制折线图
 	changetype()
+	getPraticeData()
 })
 
 const timeValue = ref([

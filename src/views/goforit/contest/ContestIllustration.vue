@@ -22,13 +22,14 @@ const getCOntestInstruction = async () => {
         msg.err(res.msg)
         return
     }
+    console.log(res);
     contestInstructionText.value = res.data.instruction
 }
 
 
 onMounted(() => {
     // params.value = 
-    // getCOntestInstruction()
+    getCOntestInstruction()
     // console.log(route.params.id)
 })
 

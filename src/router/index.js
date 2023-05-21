@@ -82,6 +82,7 @@ import ContestManage from '../views/admin/contest/ContestManage.vue'
 import ProblemLibManage from '../views/admin/problems/ProblemLibManage.vue'
 import ProblemSolutionManage from '../views/admin/problems/ProblemSolutionManage.vue'
 import ProblemCaseManage from '../views/admin/problems/ProblemCaseManage.vue'
+import BlogManage from '../views/admin/blog/BlogManage.vue'
 import AdminLogin from '../views/admin/AdminLogin/AdminLogin.vue'
 
 
@@ -228,6 +229,7 @@ const routes = [
 			{ path: "problemSolution", name: "ProblemSolutionManage", component: ProblemSolutionManage, meta: { title: '题解管理' } },
 			{ path: "contest", name: "ContestManage", component: ContestManage, meta: { title: '竞赛列表' } },
 			{ path: "problemCase", name: "ProblemCaseManage", component: ProblemCaseManage, meta: { title: '题目样例' } },
+			{ path: "blog", name: "BlogManage", component: BlogManage, meta: { title: '博客管理' } },
 		]
 	},
 	{

@@ -8,7 +8,7 @@
 				<Button type="primary" @click="handleModalOpen">
 					<Icon type="md-add" style="margin-right: 5px;" />创建题单
 				</Button>
-				<Checkbox v-model="data.justMyOwn">只看我创建的</Checkbox>
+				<!-- <Checkbox v-model="data.justMyOwn">只看我创建的</Checkbox> -->
 
 				<Poptip trigger="hover" placement="right" width="500" title="活跃度计算方式">
 					<span class="active-detail">
@@ -115,7 +115,10 @@ import ProblemListItem from '../../../components/goforit/problem/ProblemListItem
 import http from '../../../plugin/axios'
 import time from '../../../common/utils'
 import msg from '../../../common/msg'
+import { useStore } from 'vuex';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
+const store = useStore()
 
 const router = useRouter()
 
@@ -241,10 +244,8 @@ const handleModalOpen = () => {
 }
 
 const getProblemList = async () => {
-	const { data: res } = await http.post('/problemlist/all', {
-		currPage: data.pageInfo.currPage,
-		pageSize: data.pageInfo.pageSize,
-		sortBy: data.selectMode
+	const { data: res } = await http.post('/problemlist/user/collection', {
+		userId :BigNumber(store.getters.userInfo.id)
 	})
 	if (res.code != 200) {
 		msg.err(res.msg)

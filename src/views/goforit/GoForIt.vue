@@ -104,7 +104,7 @@ const menuList = ref([
 	{ path: "/contest", name: "Contest", title: '竞赛', },
 	{ path: "/group", name: "Group", title: '小组', },
 	{ path: "/blog", name: "Blog", title: '博客', },
-	{ path: "/courses", name: "Course", title: '课程', },
+	// { path: "/courses", name: "Course", title: '课程', },
 ])
 
 const userInfo = ref({})

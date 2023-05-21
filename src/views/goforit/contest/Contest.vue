@@ -21,17 +21,17 @@
 			<!-- main-area顶部用户信息区域，包含用户头像和比赛数据区域 -->
 			<Card class="userinfo-area">
 				<div class="avatar_box">
-					<img src="../../../assets/E2.png" alt="" />
+					<img :src="store.getters.userInfo.avatar" alt="" />
 				</div>
 				<Space type="flex" direction="vertical" class="userinfo-data" align="center">
-					<span style="font-size: 30px;">EdmundShelby</span>
-					<span style="font-size: 16px;">清华大学</span>
-					<Row class="userinfo-data-row">
+					<span style="font-size: 30px;">{{ store.getters.userInfo.userName }}</span>
+					<span style="font-size: 16px;">{{ store.getters.userInfo.school }}</span>
+					<!-- <Row class="userinfo-data-row">
 						<div style="margin-right: 20px;">总分:--</div>
 						<div style="margin-right: 20px;">全国排名: -- </div>
 						<div style="margin-right: 20px;">山东省排名: -- </div>
 						<div style="margin-right: 20px;">校内排名: --</div>
-					</Row>
+					</Row> -->
 				</Space>
 
 			</Card>
@@ -128,8 +128,9 @@ import CascaderTagSelect from '../../../components/common/CascaderTagSelect.vue'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex';
 const router = useRouter()
-
+const store = useStore()
 const contestStatusTagList = ref([
 	{ label: '全部', value: 0 },
 	{ label: '未开始', value: 1 },

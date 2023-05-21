@@ -97,10 +97,10 @@
                         }}</span>
                         <Progress :percent="data.problemData.simplePercent" :stroke-width="20" status="active" text-inside
                             stroke-color="#19be6b" />
-                        <span> 中等 :<span style="color: #ff9900;">360</span> / 5000</span>
+                        <span> 中等 :<span style="color: #ff9900;">{{ data.problemData.middle }}</span> / {{ data.problemData.middleTotal }}</span>
                         <Progress :percent="data.problemData.middlePercent" :stroke-width="20" status="active" text-inside
                             stroke-color="#ff9900" />
-                        <span> 困难 :<span style="color: ##ed4014;">60</span> / 200</span>
+                        <span> 困难 :<span style="color: ##ed4014;">{{ data.problemData.difficult }}</span> / {{ data.problemData.difficultTotal }}</span>
                         <Progress :percent="data.problemData.difficultPercent" :stroke-width="20" status="active"
                             text-inside stroke-color="#ed4014" />
 
@@ -120,9 +120,13 @@ import ContestListItem from '../../../components/goforit/contest/ContestListItem
 import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
 import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import { useRouter } from 'vue-router';
+import http from '../../../plugin/axios';
+import msg from '../../../common/msg';
+import { useStore } from 'vuex';
 const router = useRouter()
-
+const store = useStore()
 const circleCfg = reactive({
     size: 150,
     frontSize: 16,
@@ -150,33 +154,34 @@ const data = reactive({
 
 
 onMounted(() => {
-    // 模拟延时
-    setTimeout(() => {
-        data.problemData = {
-            simple: 320,
-            simpleTotal: 500,
-            middle: 200,
-            middleTotal: 240,
-            difficult: 50,
-            difficultTotal: 60,
-            total: 800,
-            simplePercent: 0,
-            middlePercent: 0,
-            difficultPercent: 0,
-        };
-
-        data.problemData.simplePercent = Math.round(((data.problemData.simple / data.problemData.simpleTotal) * 100) * 100) / 100
-        data.problemData.middlePercent = Math.round(((data.problemData.middle / data.problemData.middleTotal) * 100) * 100) / 100
-        data.problemData.difficultPercent = Math.round(((data.problemData.difficult / data.problemData.difficultTotal) * 100) * 100) / 100
-        data.circleData.difficult = data.problemData.difficult / data.problemData.total
-        data.circleData.middle = data.problemData.middle / data.problemData.total + data.circleData.difficult
-        data.circleData.simple = data.problemData.simple / data.problemData.total + data.circleData.middle
-        data.circleData.difficult = Math.round((data.circleData.difficult * 100) * 100) / 100
-        data.circleData.middle = Math.round((data.circleData.middle * 100) * 100) / 100
-        data.circleData.simple = Math.round((data.circleData.simple * 100) * 100) / 100
-
-    }, 1000);
+    getPraticeData()
 })
+
+const getPraticeData = async () => {
+    const { data: res } = await http.post('/problem/user/finish/count', { userId: BigNumber(store.getters.userInfo.id) })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    } 
+    console.log(res);
+    data.problemData.simple = res.data.finishEasy || 0
+    data.problemData.middle = res.data.finishMedium || 0
+    data.problemData.hard = res.data.finishHard || 0
+    data.problemData.simpleTotal = res.data.totalEasy || 0
+    data.problemData.middleTotal = res.data.totalMedium || 0
+    data.problemData.difficultTotal = res.data.totalHard || 0
+    data.problemData.total = res.data.totalEasy + res.data.totalMedium + res.data.totalHard
+    data.problemData.simplePercent = Math.round(((data.problemData.simple / data.problemData.simpleTotal) * 100) * 100) / 100
+    data.problemData.middlePercent = Math.round(((data.problemData.middle / data.problemData.middleTotal) * 100) * 100) / 100
+    data.problemData.difficultPercent = Math.round(((data.problemData.difficult / data.problemData.difficultTotal) * 100) * 100) / 100
+    data.circleData.difficult = data.problemData.difficult / data.problemData.total
+    data.circleData.middle = data.problemData.middle / data.problemData.total + data.circleData.difficult
+    data.circleData.simple = data.problemData.simple / data.problemData.total + data.circleData.middle
+    data.circleData.difficult = Math.round((data.circleData.difficult * 100) * 100) / 100
+    data.circleData.middle = Math.round((data.circleData.middle * 100) * 100) / 100
+    data.circleData.simple = Math.round((data.circleData.simple * 100) * 100) / 100
+
+}
 
 
 const listData = reactive([
