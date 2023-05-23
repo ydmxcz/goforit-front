@@ -81,6 +81,7 @@ const store = useStore()
 const rootPage = ref()
 const loginDialogShow = ref(false)
 
+
 const clickLogin = () => {
 	loginDialogShow.value = !loginDialogShow.value
 }
@@ -90,7 +91,7 @@ const onSuccessLogin = async (loginData) => {
 	const { data: res } = await http.post('/user/login', loginData)
 	console.log(res);
 	if (res.code != 200) {
-		msg.err('密码错误：',res.msg)
+		msg.err('密码错误：', res.msg)
 		return
 	} else {
 		msg.ok("登录成功，欢迎！")
@@ -180,6 +181,7 @@ onMounted(() => {
 	userInfo.value = store.getters.userInfo
 	checkLogin($router.currentRoute.value.path)
 	updateMenuActive($router.currentRoute.value.path)
+
 });
 
 watch(
@@ -189,6 +191,10 @@ watch(
 		// console.log(newPath)
 		if (newPath == undefined) {
 			return
+		}
+		if (store.getters.userInfo.id == -1) {
+			//console.log('sb');
+			loginDialogShow.value = true
 		}
 		checkLogin(newPath)
 		updateMenuActive(newPath)
