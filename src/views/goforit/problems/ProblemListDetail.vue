@@ -94,7 +94,7 @@
 								</span>/
 								<span style="color: #2db7f5;">{{ problemlistInfo.total }}</span>
 							</span>
-							<Progress :percent="((problemlistInfo.finish) / (problemlistInfo.total || 1)).toFixed(0)"
+							<Progress :percent="(((problemlistInfo.finish) / (problemlistInfo.total || 1))*100).toFixed(0)"
 								:stroke-width="20" status="active" style="width: 100%;" text-inside />
 						</Space>
 					</Space>
@@ -103,6 +103,7 @@
 				</Col>
 				<Col flex="auto">
 				<Card class="middle-right" style="border-radius: 15px;">
+					
 					<ProblemlistProblemTable></ProblemlistProblemTable>
 				</Card>
 				</Col>
@@ -158,6 +159,10 @@ const handleEnd = () => {
 
 
 const collectProblemlist = async () => {
+	if (String(store.getters.userInfo.id) == String(problemlistInfo.creator)) {
+        msg.err('自己创建的题单无法取消收藏')
+		return
+    }
 	const { data: res } = await http.post('/problemlist/collect', {
 		problemlistId: BigNumber(router.currentRoute.value.params.id),
 		userId: BigNumber(store.getters.userInfo.id)
@@ -243,6 +248,7 @@ const getUserProblemlistFinishCount = async () => {
 }
 
 onMounted(() => {
+
 	isCollectProblemlist()
 	getProblemlistDetial()
 	getUserProblemlistFinishCount()

@@ -16,7 +16,6 @@
                     <span v-else class="match-status  match-end-tag">比赛结束</span>
                 </Space>
                 <span>
-
                     <Icon type="md-time" /> 报名时间： {{ time.formatDate(new Date(props.signUpStart)) }} 至 {{
                         time.formatDate(new Date(props.signUpEnd)) }}
                 </span>
@@ -41,7 +40,8 @@
             </Col>
             <Col class="element-center" flex="200px" style="min-width: 100px;text-align: center;">
             <Space v-if="contestStatus == 1" direction="vertical">
-                <Button type="primary" shape="circle" @click="handlesignUpClick">报名</Button>
+                <span style="color:#4ea3fa;font-weight: bolder;font-size: 20px;">正在报名</span>
+                <!-- <Button type="primary" shape="circle" @click="handlesignUpClick">报名</Button> -->
                 <!-- 动态倒计时 -->
                 <div class="platform-countdown ">
                     距比赛开始<br>

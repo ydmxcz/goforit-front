@@ -39,21 +39,21 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const leftItems = ref([
-    {
-        children: [
-            // { name: '收藏夹', path: '/profile/collection', icon: 'md-star' },
-            { name: '我的题解', path: '/profile/solution', icon: 'md-star' },
-            { name: '我的博客', path: '/profile/blog', icon: 'md-star' },
-            { name: '做题分析', path: '/profile/process', icon: 'md-star' },
-        ]
-    },
-    {
-        children: [
-            { name: '积分', path: '/profile/points', icon: 'md-star' },
-            { name: '优惠券', path: '/profile/coupons', icon: 'md-star' },
-            { name: '订单', path: '/profile/order', icon: 'md-star' },
-        ]
-    },
+    // {
+    //     children: [
+    //         { name: '收藏夹', path: '/profile/collection', icon: 'md-star' },
+    //         { name: '我的题解', path: '/profile/solution', icon: 'md-star' },
+    //         { name: '我的博客', path: '/profile/blog', icon: 'md-star' },
+    //         { name: '做题分析', path: '/profile/process', icon: 'md-star' },
+    //     ]
+    // },
+    // {
+    //     children: [
+    //         { name: '积分', path: '/profile/points', icon: 'md-star' },
+    //         { name: '优惠券', path: '/profile/coupons', icon: 'md-star' },
+    //         { name: '订单', path: '/profile/order', icon: 'md-star' },
+    //     ]
+    // },
     {
         children: [
             { name: '个人资料', path: '/profile/info', icon: 'md-star' },

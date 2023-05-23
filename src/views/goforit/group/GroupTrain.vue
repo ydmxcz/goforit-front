@@ -1,27 +1,28 @@
 <template>
-    <Card>
+    <Card v-if="groupisJoin">
         <Space direction="vertical" style="width: 100%;">
             <Space :wrap="false" style="width: 100%;">
                 <span style="font-size: 16px;">搜索训练：</span>
-                <Input search enter-button placeholder="输入题单ID / 训练名称" style="width: 300px;" />
+                <Input search enter-button placeholder="输入训练ID / 训练名称" style="width: 300px;" />
                 <Button type="primary" @click="handleModalOpen">
                     <Icon type="md-add" style="margin-right: 5px;" />创建训练
                 </Button>
-                <span style="margin-left: 10px;">排序方式:</span>
+                <!-- <span style="margin-left: 10px;">排序方式:</span>
                 <Select v-model="data.selectMode" style="width:120px" @on-change="handleSelectModeChange">
                     <Option v-for="item in data.selectModeList" :value="item.value" :key="item.value">{{ item.label }}
                     </Option>
-                </Select>
+                </Select> -->
                 <Poptip trigger="hover" placement="right" width="500" title="活跃度计算方式">
                     <span class="active-detail">
                         <Icon type="ios-help-circle" />活跃度计算方式
                     </span>
                     <template #content>
                         <div>
-                            1.举办一次比赛、发起一次训练任务、发起一个讨论：活跃度+10<br>
-                            2.对于一场比赛：未开始的比赛的活跃度报名人数X1；当比赛开始后活跃度为实际参赛人数X1。<br>
+                            1.发起一次训练任务、发起一个讨论：活跃度+5<br>
+                            2.举办一次比赛：活跃度+10<br>
+                            <!-- 2.对于一场比赛：未开始的比赛的活跃度报名人数X1；当比赛开始后活跃度为实际参赛人数X1。<br>
                             3.对于一次训练任务：用户参与训练，每完成一道题活跃度+1。<br>
-                            3.对于一次讨论：用户每一条评论以及回复，活跃度+1。<br>
+                            3.对于一次讨论：用户每一条评论以及回复，活跃度+1。<br> -->
                         </div>
                         <!-- <Space direction="vertical" style="display: flex;">
                                     </Space> -->
@@ -40,18 +41,27 @@
             </Space>
             <Modal v-model="data.showCreatProblemList" title="创建训练" :closable="false" :mask-closable="false">
                 <Form :model="data.modalFormInput" label-position="right" :label-width="100" :rules="ruleValidate">
-                    <FormItem label="题单名称" prop="title">
+                    <FormItem label="训练名称" prop="title">
                         <Input v-model="data.modalFormInput.title"></Input>
                     </FormItem>
-                    <FormItem label="是否公开">
+                    <!-- <FormItem label="是否公开">
                         <Select v-model="data.modalFormInput.publicMode" style="width:120px">
                             <Option v-for="item in data.modalFormInput.publicSelect" :value="item.value" :key="item.value">
                                 {{
                                     item.label }}
                             </Option>
                         </Select>
+                    </FormItem> -->
+                    <FormItem label="截止时间">
+                        <DatePicker type="datetime" format="yyyy-MM-dd HH:mm" v-model="data.modalFormInput.deadline" placeholder="选择截止时间" style="width: 200px" />
+                        <!-- <Select v-model="data.modalFormInput.deadline" style="width:120px">
+                            <Option v-for="item in data.modalFormInput.publicSelect" :value="item.value" :key="item.value">
+                                {{
+                                    item.label }}
+                            </Option>
+                        </Select> -->
                     </FormItem>
-                    <FormItem label="题目标签">
+                    <FormItem label="训练标签">
                         <Select class="sb-select" :placeholder="data.selectorPlaceholder" style="width:160px"
                             not-found-text="">
                             <div style="width: 500px; padding: 0px 20px 20px 20px;" class="all-tag">
@@ -88,7 +98,6 @@
                         </Select>
                     </FormItem>
 
-
                     <FormItem label="已选标签" v-if="data.modalFormInput.selectedTagList.length !== 0">
                         <Space wrap style="width: 100%;">
                             <Button shape="circle" @click="clearSelectedTag">
@@ -100,7 +109,7 @@
                                     item.name }}</Tag>
                         </Space>
                     </FormItem>
-                    <FormItem label="题单介绍">
+                    <FormItem label="训练介绍">
                         <Input v-model="data.modalFormInput.instruction" type="textarea" maxlength="100" :rows="3"
                             show-word-limit placeholder="输入题单介绍...." />
                     </FormItem>
@@ -116,6 +125,12 @@
             </Modal>
         </Space>
     </Card>
+    <div v-if="!groupisJoin" style="width: 100%;height:500px">
+        <Space style="display: flex;align-items: center;justify-content: center;" direction="vertical" align="center">
+            <img style="height: 200px;width: 200px;" src="https://file.iviewui.com/iview-pro/icon-500-color.svg" alt="">
+            <span style="font-size: 20px;">没有加入小组，暂时无法查看训练</span>
+        </Space>
+    </div>
 </template>
 
 <script setup name="GroupTrain">
@@ -130,7 +145,7 @@ import time from '../../../common/utils'
 
 const router = useRouter()
 const store = useStore()
-
+const groupisJoin = ref(false);
 const data = reactive({
     pageInfo: {
         currPage: 1,
@@ -149,6 +164,7 @@ const data = reactive({
         search: [],
         selectedTagList: [],
         searchKey: '',
+        deadline:0,
         selectedTagMap: new Map(),
         publicMode: 1,
         publicSelect: [
@@ -178,9 +194,25 @@ const getTagList = async () => {
     data.tagList = res.data.tagList
 }
 
-onMounted(() => {
+
+const isJoin = async () => {
+    const { data: res } = await http.post('/group/is/join',{
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        userId:BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    groupisJoin.value = res.data != null
+    // data.tagList = res.data.tagList
     getTagList()
     getProblemList()
+}
+
+
+onMounted(() => {
+    isJoin()
 })
 
 const changePage = (page) => {
@@ -220,7 +252,8 @@ const clearCreateProblemListFormInput = () => {
         search: [],
         selectedTagList: [],
         searchKey: '',
-        selectedTagMap: new Map()
+        selectedTagMap: new Map(),
+        deadline:0
     }
 }
 
@@ -266,33 +299,39 @@ const createProblemListOk = async () => {
         msg.err('题单至少有一个标签')
         return
     }
+    if(data.modalFormInput.deadline == 0) {
+        msg.err('请选择截止时间')
+        return
+    }
     let d = {
         title: data.modalFormInput.title,
         tags: tagIds,
         instruction: data.modalFormInput.instruction,
         public: data.modalFormInput.publicMode,
-        creator: BigNumber(store.getters.userInfo.id)
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        deadline:new Date(data.modalFormInput.deadline).getTime()
     }
 
     console.log("simple data:", d)
-    const { data: res } = await http.post('/problemlist/add', d)
+    const { data: res } = await http.post('/group/train/add', d)
     if (res.code != 200) {
         msg.err(res.msg)
         return
     } else {
         msg.ok('题单创建成功')
     }
-    data.showCreatProblemList = false
-    clearCreateProblemListFormInput()
-    getProblemList()
+    // data.showCreatProblemList = false
+    // clearCreateProblemListFormInput()
+    // getProblemList()
 }
 
 
 const getProblemList = async () => {
-    const { data: res } = await http.post('/problemlist/all', {
+    console.log(router.currentRoute.value.params.id);
+    const { data: res } = await http.post('/group/train/list', {
         currPage: data.pageInfo.currPage,
         pageSize: data.pageInfo.pageSize,
-        sortBy: data.selectMode
+        groupId: BigNumber(router.currentRoute.value.params.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)
@@ -300,7 +339,7 @@ const getProblemList = async () => {
     }
     data.problemList = []
     data.problemListTagMap = new Map()
-    res.data.problemlists.forEach((item) => {
+    res.data.trainlist.forEach((item) => {
         data.problemList.push({
             name: item.title,
             id: item.id || 0,
@@ -316,12 +355,13 @@ const getProblemList = async () => {
         })
     })
     res.data.tags.forEach((item) => {
-        if (!data.problemListTagMap.has(String(item.problemlistId))) {
-            data.problemListTagMap.set(String(item.problemlistId), [item])
+        if (!data.problemListTagMap.has(String(item.trainId))) {
+            data.problemListTagMap.set(String(item.trainId), [item])
         } else {
-            data.problemListTagMap.get(String(item.problemlistId)).push(item)
+            data.problemListTagMap.get(String(item.trainId)).push(item)
         }
     })
+    console.log('aass',data.problemListTagMap);
     data.pageInfo.total = res.data.total
 }
 

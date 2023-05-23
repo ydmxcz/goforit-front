@@ -125,10 +125,10 @@
 				</FormItem>
 			</Space>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="其他语言时间限制(ns)：" prop="email" :label-width="180">
+				<FormItem label="其他语言时间限制(ns)："  :label-width="180">
 					<Input v-model="problemInfo.timeLimit"></Input>
 				</FormItem>
-				<FormItem label="其他语言内存限制(b)：" prop="email" :label-width="180">
+				<FormItem label="其他语言内存限制(b)：" :label-width="180">
 					<Input v-model="problemInfo.memoryLimit"></Input>
 				</FormItem>
 			</Space>
@@ -211,10 +211,10 @@
 				</FormItem>
 			</Space>
 			<Space :size="40" style="width: 100%;" :wrap="false">
-				<FormItem label="其他语言时间限制(ns)：" prop="email" :label-width="180">
+				<FormItem label="其他语言时间限制(ns)："  :label-width="180">
 					<Input v-model="problemInfo.timeLimit"></Input>
 				</FormItem>
-				<FormItem label="其他语言内存限制(b)：" prop="email" :label-width="180">
+				<FormItem label="其他语言内存限制(b)：" :label-width="180">
 					<Input v-model="problemInfo.memoryLimit"></Input>
 				</FormItem>
 			</Space>

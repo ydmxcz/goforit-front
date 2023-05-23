@@ -100,10 +100,11 @@ const toDetialPage = (blogId) => {
 
 
 const getBlogList = async () => {
-    const { data: res } = await http.post('/blog/select', {
+    const { data: res } = await http.post('/blog/select/by/topic', {
         currPage: pageInfo.currPage,
         pageSize: pageInfo.pageSize,
-        userId: BigNumber(store.getters.userInfo.id)
+        userId: BigNumber(store.getters.userInfo.id),
+        topic: Number(router.currentRoute.value.params.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)

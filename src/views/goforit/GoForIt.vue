@@ -86,9 +86,11 @@ const clickLogin = () => {
 }
 // 登录成功回调函数，清除根节点的样式
 const onSuccessLogin = async (loginData) => {
+	console.log(loginData);
 	const { data: res } = await http.post('/user/login', loginData)
+	console.log(res);
 	if (res.code != 200) {
-		msg.err('密码错误')
+		msg.err('密码错误：',res.msg)
 		return
 	} else {
 		msg.ok("登录成功，欢迎！")

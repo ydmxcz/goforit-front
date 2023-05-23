@@ -88,8 +88,8 @@ const menuList = reactive([
         icon: 'ios-navigate', name: '1', title: '题库管理', path: '',
         children: [
             { icon: '', name: '1-1', title: '题目列表', path: '/problem', children: null },
-            { icon: '', name: '1-2', title: '题解管理', path: '/problemSolution', children: null },
-            { icon: '', name: '1-3', title: '题目样例', path: '/problemCase', children: null },
+            // { icon: '', name: '1-2', title: '题解管理', path: '/problemSolution', children: null },
+            // { icon: '', name: '1-3', title: '题目样例', path: '/problemCase', children: null },
 
         ]
     },

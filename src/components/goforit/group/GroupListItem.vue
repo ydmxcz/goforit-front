@@ -10,12 +10,12 @@
                 <h3 class="group-name" @click="router.push('/group/' + groupInfo.id)">{{ groupInfo.name }}</h3>
                 </Col>
                 <Col flex="70px">
-                <Button v-if="groupInfo.status == 1" style="margin-right: 20px;" type="primary" ghost shape="circle"
+                <!-- <Button v-if="groupInfo.status == 1" style="margin-right: 20px;" type="primary" ghost shape="circle"
                     @click="addGroup" icon="md-add">加入</Button>
                 <Button v-else-if="groupInfo.status == 0" style="margin-right: 20px;" type="error" ghost shape="circle"
                     @click="addGroup" icon="md-add">申请加入</Button>
                 <Button v-else style="margin-right: 20px;" disabled type="success" ghost shape="circle"
-                    icon="md-add">加入</Button>
+                    icon="md-add">加入</Button> -->
                 </Col>
             </Row>
             <div class="group-detail">

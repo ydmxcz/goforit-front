@@ -20,20 +20,33 @@
                     <Tag color="gold" v-else-if="item.isAdmin">管理员</Tag>
                     <Tag color="blue" v-else>成员</Tag>
                 </Space>
-                <Poptip style="float: right;margin-right: 20px;" trigger="hover" content="点击进入个人主页">
-                    <Button shape="circle" type="primary">
-                        <Icon type="md-trash" />
-                    </Button>
+
+                <Poptip style="float: right;margin-right: 20px;" trigger="hover" content="点击处理申请信息">
+                    <Space :wrap="false">
+                        <Button shape="circle" type="primary" @click="processApply(item.id, 1)">
+                            同意
+                        </Button>
+                        <Button shape="circle" type="error" @click="processApply(item.id, 2)">
+                            拒绝
+                        </Button>
+                    </Space>
                 </Poptip>
             </div>
             </Col>
         </Row>
     </div>
-    <Space direction="vertical" type="flex" align="center" style="margin-top: 30px;margin-bottom: 20px;">
+    <Space v-if="datalist.length != 0" direction="vertical" type="flex" align="center"
+        style="margin-top: 30px;margin-bottom: 20px;">
         <Page :total="100" :page-size="10" show-elevator show-sizer show-total />
     </Space>
+    <div v-if="datalist.length == 0" style="width: 100%;height:500px">
+        <Space style="display: flex;align-items: center;justify-content: center;" direction="vertical" align="center">
+            <img style="height: 200px;width: 200px;" src="https://file.iviewui.com/iview-pro/icon-500-color.svg" alt="">
+            <span style="font-size: 20px;">暂无申请信息</span>
+        </Space>
+    </div>
 </template>
-<script setup name="GroupNumbers">
+<script setup name="GroupJoinApplyList">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
 import http from '../../../plugin/axios';
@@ -43,19 +56,35 @@ import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 const router = useRouter()
 const groupCreator = ref(BigNumber("1203535601064739007"));
 const getMemberList = async () => {
-    const { data: res } = await http.post('/group/number/list', {
+    const { data: res } = await http.post('/group/join/apply/list', {
         groupId: BigNumber(router.currentRoute.value.params.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)
         return
     }
-    console.log(res);
-    groupCreator.value = res.data.creator
-    datalist.value = res.data.numbers
+    if (res.data) {
+        datalist.value = res.data.items
+    } 
 }
 
-onMounted(()=>{
+const processApply = async (id, operator) => {
+    const { data: res } = await http.post('/group/join/apply/process', {
+        operator: Number(operator),
+        id: Number(id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    msg.ok('处理成功')
+    getMemberList()
+    // console.log(res);
+    // groupCreator.value = res.data.creator
+    // datalist.value = res.data.numbers
+}
+
+onMounted(() => {
     getMemberList()
 })
 

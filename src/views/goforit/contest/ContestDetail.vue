@@ -13,8 +13,8 @@
                             <Tag color="success">原创</Tag>
                             <span class="tag-rating" data-title="Rating赛奖品更加丰厚"
                                 data-tips-index="1"><i>¥</i>&nbsp;<span>Rated</span></span>
-                            <span class="match-status  match-signup">报名中</span>
-                            <span class="match-status  match-end-tag">比赛结束</span>
+                            <span class="match-status  match-signup" v-if="data.info.startTime > now ">报名中</span>
+                            <span class="match-status  match-end-tag" v-if="data.info.endTime < now">比赛结束</span>
 
                         </Space>
                         </Col>
@@ -50,11 +50,8 @@
             </Col>
             <Col flex="14" style="min-width: 1000px;">
             <Space direction="vertical" style="width: 100%;margin-bottom: 20px;">
-                <Menu v-if="data.status == 1" mode="horizontal" active-name="比赛说明" @on-select="handleMenuItemSelect">
-                    <MenuItem v-for="item in mentItemList" :name="item.name"> {{ item.name }} </MenuItem>
-                </Menu>
                 <!-- v-if="data.status != 0" -->
-                <div class="count-down" v-else-if="data.status == 0">
+                <div class="count-down" v-if="dateInfo.hour > -1">
                     <Space align="center" direction="vertical" type="flex">
                         <span>距离比赛开始还有</span>
                         <Space :wrap="false">
@@ -75,9 +72,13 @@
                                 <span class="count-down-card-unit elem-center">秒</span>
                             </div>
                         </Space>
-                        <Button type="success" class="sign-up-btn">点此报名</Button>
+                        <Button type="success" v-if="!data.status" class="sign-up-btn" @click="signUpContest">点此报名</Button>
+                        <Button type="success" v-else  class="sign-up-btn" @click="signUpContest">已报名</Button>
                     </Space>
                 </div>
+                <Menu mode="horizontal" active-name="比赛说明" @on-select="handleMenuItemSelect">
+                    <MenuItem v-for="item in mentItemList" :name="item.name"> {{ item.name }} </MenuItem>
+                </Menu>
                 <RouterView />
             </Space>
             </Col>
@@ -95,13 +96,15 @@ import { Message } from 'view-ui-plus'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import time from '../../../common/utils';
-
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import { useStore } from 'vuex';
+const store = useStore()
 const router = useRouter()
 // const route = useRoute()
-
+const now = new Date().getTime();
 const data = reactive({
     // 0代表比赛未开始，1代表比赛正在进行，2代表比赛已结束
-    status: 0,
+    status: false,
     id: router.currentRoute.value.params.id,
     info: {}
 })
@@ -117,12 +120,81 @@ const pushTo = (path) => {
     router.push('/contest/detail/' + data.id + path)
 }
 
+const signUpContest = async () => {
+    if (data.status == false) {
+        const { data: res } = await http.post("/contest/signup", {
+            contestId: BigNumber(data.id),
+            userId: BigNumber(store.getters.userInfo.id)
+        })
+        console.log('111',res);
+        if (res.code != 200) {
+            msg.err(res.msg)
+            return
+        }
+    } else {
+        const { data: res } = await http.post("/contest/cancel/signup", {
+            contestId: BigNumber(data.id),
+            userId: BigNumber(store.getters.userInfo.id)
+        })
+        console.log('2222',res);
+        if (res.code != 200) {
+            msg.err(res.msg)
+            return
+        }
+    }
+    data.status = !data.status
+}
+
+const userAccess = async () => {
+    const { data: res } = await http.post("/contest/access", {
+        contestId: BigNumber(data.id),
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res.data);
+    // if(res.data && res.data.status) {
+    //     data.status = true
+    // } else {
+    //     data.status = false
+    // }
+    return res.data.status
+}
+
+const isSignUp = async () => {
+    const { data: res } = await http.post("/contest/is/signup", {
+        contestId: BigNumber(data.id),
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(res.data);
+    if(res.data && res.data.isSignUp) {
+        data.status = true
+    } else {
+        data.status = false
+    }
+    console.log(data.status);
+}
+
 const handleMenuItemSelect = (name) => {
-    if (name != mentItemList.value[0].name && data.status == 0) {
-        Message.error({
-            background: true,
-            content: '请等待比赛开始'
-        });
+    // if (name != mentItemList.value[0].name ) {
+    //     Message.error({
+    //         background: true,
+    //         content: '未报名比赛'
+    //     });
+    //     return
+    // }
+    if (dateInfo.hour > -1) {
+        msg.err("请等待比赛开始")
+        return
+    }
+    if(!userAccess()) {
+        msg.err('未报名比赛')
         return
     }
     mentItemList.value.forEach((item) => {
@@ -149,7 +221,10 @@ const getContestDetialAndCheckRouter = async () => {
         }
         setInterval(() => { computeTime() }, 1000)
     } else {
-        data.status = 1
+        dateInfo.hour = -1
+        dateInfo.minute = -1
+        dateInfo.day = -1
+        dateInfo.second = -1
     }
     // console.log();
 }
@@ -181,6 +256,7 @@ const computeTime = () => {
 
 onMounted(() => {
     // printTime()
+    isSignUp()
     getContestDetialAndCheckRouter()
     // after init data
     // if (data.status) {

@@ -42,19 +42,28 @@
                 <Card class="content-card" style="width:100%;margin-top: 20px;">
                     <Space direction="vertical" style="width: 100%;">
                         <h3 class="ptb-10">最近比赛</h3>
-
-                        <ContestList v-for="item in competitionItem" :name="item.name" :is-original="item.isOriginal"
+                        <ContestList v-for="item in competitionItem" :contest-id="item.id" :name="item.title"
+								:is-original="true" :is-rated="item.ratingTop != -1" :sign-up-start="item.signUpStartTime"
+								:sign-up-end="item.signUpEndTime" :contest-start="item.startTime"
+								:contest-end="item.endTime" :length-time="(item.endTime - item.startTime) / 3600000"
+								:sponsor="item.sponsorName" :number="item.signUpNum || 0" :max-rating="item.ratingTop"
+								@on-sign-up="handleOnSignUp" @to-detial-page="handleOnSignUp" />
+                        <!-- <ContestList v-for="item in competitionItem" :name="item.name" :is-original="item.isOriginal"
                             :is-rated="item.isRated" :sign-up-start="item.signUpStart" :sign-up-end="item.competitionEnd"
                             :contest-start="item.competitionStart" :contest-end="item.competitionEnd"
                             :length-time="item.lengthTime" :sponsor="item.sponsor" :number="item.number"
-                            :status="item.status" :max-rating="item.maxRating" />
+                            :status="item.status" :max-rating="item.maxRating" /> -->
                     </Space>
                 </Card>
 
                 <Card class="content-card" style="width:100%;" :padding="20">
                     <Space direction="vertical" style="width: 100%;">
-                        <h3 class="ptb-10">热门博客</h3>
-                        <BlogListItem v-for="item in 5" @click="router.push('/blog/article/123')" />
+                        <h3 class="ptb-10">最新博客</h3>
+                        <BlogListItem v-for="item in blogList" :blog-id="item.id" :author-name="item.authorName"
+                :avatar="item.authorAvatar" :create-time="new Date(Number((item.createTime / 1e6)))" :title="item.title"
+                :tags="tagMap.get(item.id)" :abstract="item.abstract" :thumbs-up-num="item.thumbsUpNum || 0"
+                :view-num="item.viewNum || 0" :comment-num="item.commentNum || 0" :collect-num="item.collectNum || 0"
+                :is-collect="item.isCollect > 0" :is-thumbs-up="item.isThumbsUp > 0" @to-detial-page="toDetialPage" :user-id="BigNumber(store.getters.userInfo.id)"/>
                     </Space>
                 </Card>
             </Space>
@@ -116,15 +125,15 @@
 </template>
 <script setup name='Home'>
 import { ref, reactive, onMounted } from 'vue';
-import ContestListItem from '../../../components/goforit/contest/ContestListItem.vue'
 import ContestList from '../../../components/goforit/contest/ContestList.vue'
 import RatingList from '../../../components/goforit/common/RatingList.vue';
-import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 import { useRouter } from 'vue-router';
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useStore } from 'vuex';
+import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
+
 const router = useRouter()
 const store = useStore()
 const circleCfg = reactive({
@@ -152,10 +161,108 @@ const data = reactive({
     }
 })
 
-
+const tagMap = new Map();
+const blogList = ref([]);
 onMounted(() => {
     getPraticeData()
+    getContestList()
+    getBlogList()
 })
+
+const toDetialPage = (blogId) => {
+    router.push('/blog/article/' + String(blogId))
+}
+
+const competitionItem = ref([])
+const pageInfo = reactive({
+    total: 0,
+    pageSize: 10,
+    currPage: 1,
+});
+
+
+const getBlogList = async () => {
+    const { data: res } = await http.post('/blog/select', {
+        currPage: pageInfo.currPage,
+        pageSize: pageInfo.pageSize,
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    blogList.value = res.data.infos
+    res.data.blogTags.forEach((item) => {
+        if (!tagMap.has(item.blogId)) {
+            tagMap.set(item.blogId, [item])
+        } else {
+            tagMap.get(item.blogId).push(item)
+        }
+    })
+    blogList.value.length = 5
+}
+
+const handleThumbBlog = async (blogId, isThumbsUp) => {
+    console.log(blogId, isThumbsUp);
+    const { data: res } = await http.post('/blog/thumbsup', {
+        id: blogId,
+        thumbed: isThumbsUp,
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    for (let index = 0; index < blogList.value.length; index++) {
+        const element = blogList.value[index];
+        if (element.id == blogId) {
+            element.isThumbsUp = isThumbsUp ? 0 : blogId
+            if(!element.thumbsUpNum) {
+                element.thumbsUpNum = 0
+            }
+            element.thumbsUpNum = (isThumbsUp?element.thumbsUpNum-1:element.thumbsUpNum+1)
+            break;
+        }
+    }
+
+}
+const getContestList = async () => {
+	let d = {
+		tagId: 0,
+		status: 0
+	}
+	console.log(d);
+	const { data: res } = await http.post('/contest/with/status', d)
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}
+	try {
+        res.data.finished.forEach((item=>{
+            competitionItem.value.push(item)
+        }))
+
+	} catch (e) {
+	}
+	// try {
+    //     res.data.inProcess.forEach((item=>{
+    //         competitionItem.value.push(item)
+    //     }))
+    //     // competitionItem.value.push(res.data.inProcess)
+
+
+	// } catch (e) {
+	// }
+	// try {
+    //     res.data.notStarted.forEach((item=>{
+    //         competitionItem.value.push(item)
+    //     }))
+    //     // competitionItem.value.push(res.data.notStarted)
+	// } catch (e) {
+	// }
+    competitionItem.value.length = 5
+    // console.log(competitionItem.value);
+}
 
 const getPraticeData = async () => {
     const { data: res } = await http.post('/problem/user/finish/count', { userId: BigNumber(store.getters.userInfo.id) })
@@ -205,47 +312,6 @@ const listData = reactive([
     }
 ])
 
-
-const competitionItem = reactive([{
-    name: '2023牛客寒假算法基础集训营1',
-    isOriginal: true,
-    isRated: true,
-    signUpStart: '2022-11-10 10:00',
-    signUpEnd: '2023-01-30 18:00',
-    competitionStart: '2023-02-01 13:00',
-    competitionEnd: '2023-02-01 18:00',
-    lengthTime: 666,
-    sponsor: 'nowcoder.com',
-    number: 999999,
-    status: true,
-    // maxRating:2199,
-}, {
-    name: '2023牛客寒假算法基础集训营2',
-    isOriginal: true,
-    isRated: true,
-    signUpStart: '2022-11-10 10:00',
-    signUpEnd: '2023-01-30 18:00',
-    competitionStart: '2023-02-01 13:00',
-    competitionEnd: '2023-02-01 18:00',
-    lengthTime: 5,
-    sponsor: 'nowcoder.com',
-    number: 999999,
-    status: true,
-    maxRating: 2199,
-}, {
-    name: '2023牛客寒假算法基础集训营3',
-    isOriginal: true,
-    isRated: true,
-    signUpStart: '2022-11-10 10:00',
-    signUpEnd: '2023-01-30 18:00',
-    competitionStart: '2023-02-01 13:00',
-    competitionEnd: '2023-02-01 18:00',
-    lengthTime: 5,
-    sponsor: 'nowcoder.com',
-    number: 999999,
-    status: true,
-    maxRating: 2199,
-}])
 
 
 // it is sorted list

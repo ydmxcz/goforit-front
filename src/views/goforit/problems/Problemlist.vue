@@ -4,7 +4,7 @@
 			<!-- <Page :total="100" :page-size="10" show-elevator show-sizer show-total /> -->
 			<Space :wrap="false" style="width: 100%;">
 				<span style="font-size: 16px;">搜索题单：</span>
-				<Input search enter-button placeholder="输入题单ID / 题单名称" style="width: 300px;" />
+				<Input search enter-button placeholder="输入题单名称" style="width: 300px;" v-model="problemInput" @on-search="searchProblemByInput"/>
 				<Button type="primary" @click="handleModalOpen">
 					<Icon type="md-add" style="margin-right: 5px;" />创建题单
 				</Button>
@@ -121,7 +121,7 @@ import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 const store = useStore()
 
 const router = useRouter()
-
+const problemInput = ref();
 
 const data = reactive({
 	pageInfo: {
@@ -149,6 +149,19 @@ onMounted(() => {
 	getProblemList()
 
 })
+
+const searchProblemByInput = async () => {
+	console.log('asdasd');
+	const { data: res } = await http.get('/problem/search/by/input',{
+		input:problemInput
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}	
+	console.log(res);
+}
+
 
 const changePage = (page) => {
 	data.pageInfo.currPage = page

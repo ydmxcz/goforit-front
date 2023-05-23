@@ -3,13 +3,12 @@
         <v-md-preview :text="data.content"></v-md-preview>
     </div>
 </template>
-<script setup name='PracticeProblemContent'>
+<script setup name='DoContestProblemContent'>
 
 import {ref,reactive,onMounted} from 'vue'
 import { useRouter } from 'vue-router';
 import msg from '../../../../common/msg';
 import http from '../../../../plugin/axios';
-import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 const router = useRouter();
 
@@ -18,14 +17,9 @@ const data = reactive({
     id: router.currentRoute.value.params.id,
 })
 
-const problemId = ref(router.currentRoute.value.params.problemId);
-const contestId = ref(router.currentRoute.value.params.contestId);
 
 const selectProblemContent = async () => {
-	const { data: res } = await http.post('/contest/problem/content' ,{
-        contestId:BigNumber(contestId.value),
-        problemId:BigNumber(problemId.value)
-    })
+	const { data: res } = await http.get('/problem/content?id=' + data.id)
 	console.log(res);
     if (res.code != 200) {
         msg.err(res.msg)
@@ -35,7 +29,7 @@ const selectProblemContent = async () => {
 }
 
 onMounted(()=>{
-    // console.log(data.id);
+    console.log(data.id);
     selectProblemContent()
 })
 

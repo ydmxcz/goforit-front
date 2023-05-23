@@ -7,11 +7,11 @@
 			</Space>
 			<Table stripe :columns="tableColumns" :data="contestList">
 				<template #status="{ row }">
-					<Tag color="blue" v-if="row.startTime > new Date().getTime()">未开始</Tag>
+					<Tag color="blue" v-if="now <= row.startTime">未开始</Tag>
 					<Tag color="blue"
-						v-else-if="row.startTime > new Date().getTime() && row.endTime < new Date().getTime()">进行中</Tag>
-					<Tag color="blue" v-else-if="row.endTime < new Date().getTime()">已结束</Tag>
-					<Tag color="red" v-else>状态错误</Tag>
+						v-else-if="row.startTime > now && now < row.endTime">进行中</Tag>
+					<Tag color="blue" v-else-if="Number(row.endTime) <= Number(now)">已结束</Tag>
+					<Tag color="red" v-else>{{ row.startTime }}</Tag>
 
 				</template>
 				<template #contestType="{ row }">
@@ -52,7 +52,7 @@
 			</Space>
 		</Space>
 	</Card>
-	<Modal v-model="showContestDetialInfo" title="查看比赛详细信息" scrollable width="600px" :mask-closable="false"
+	<Modal v-model="showContestDetialInfo" title="查看比赛详细信息" scrollable width="800px" :mask-closable="false"
 		:closable="false" style="top: 30px;">
 
 		<Form :model="formItem" :label-width="120">
@@ -126,8 +126,8 @@
 
 			</FormItem>
 			<FormItem label="比赛介绍">
-				<span>{{ formItem.description }}</span>
-
+				<v-md-preview :text="formItem.description"></v-md-preview>
+				<!-- <span>{{ formItem.description }}</span> -->
 			</FormItem>
 		</Form>
 		<template #footer>
@@ -245,8 +245,12 @@
 				</Row>
 			</FormItem>
 			<FormItem label="比赛介绍">
-				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
-					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input>
+				<v-md-editor class="md-editor" v-model="formItem.description" height="300px" mode="edit"
+					placeholder="输入题目信息，点击编辑器右上角可以全屏显示编辑器"
+					left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
+				
+				<!-- <Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
+					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input> -->
 			</FormItem>
 		</Form>
 		<template #footer>
@@ -258,7 +262,7 @@
 			</div>
 		</template>
 	</Modal>
-	<Modal v-model="showCreateContestInfo" title="创建新比赛" scrollable width="600px" :mask-closable="false" :closable="false"
+	<Modal v-model="showCreateContestInfo" title="创建新比赛" scrollable width="800px" :mask-closable="false" :closable="false"
 		style="top: 30px;">
 
 		<Form :model="formItem" :label-width="120">
@@ -362,8 +366,11 @@
 				</Row>
 			</FormItem>
 			<FormItem label="比赛介绍">
-				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
-					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input>
+				<v-md-editor class="md-editor" v-model="formItem.description" height="300px" mode="edit"
+					placeholder="输入题目信息，点击编辑器右上角可以全屏显示编辑器"
+					left-toolbar="undo redo clear | emoji h bold italic strikethrough quote | ul ol table hr | link image code "></v-md-editor>
+				<!-- <Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
+					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input> -->
 			</FormItem>
 		</Form>
 		<div>
@@ -442,6 +449,8 @@ const pageInfo = reactive({
 	pageSize: 15,
 	total: 100
 })
+
+const now = new Date().getTime()
 
 const userInfo = ref(store.getters.userInfo)
 

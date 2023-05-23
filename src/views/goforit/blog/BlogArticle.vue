@@ -318,13 +318,12 @@
                     </Space>
                 </Space>
             </Card>
-            <Card class="right-side-hot-article-card">
+            <!-- <Card class="right-side-hot-article-card">
                 <Space direction="vertical" style="width: 100%;">
                     <div class="card-title">
                         相关文章</div>
                     <div v-for="item in ['深入了解现代网络浏览器（第 1 部分）', '3Ds MAX 软件介绍', 'AE软件介绍', 'TKinter美化库——tkkbootstrap', '超详细anaconda安装教程（Mac，Windows，Linux版本）']"
                         class="hot-article-list-item">
-                        <!-- 后期加hover伪类 border-bottom: 1px solid  #ddd; -->
                         <span>
                             {{ item }}
                             <Icon type="ios-eye" /> 11049
@@ -332,7 +331,7 @@
                     </div>
 
                 </Space>
-            </Card>
+            </Card> -->
             </Col>
         </Row>
         </Col>

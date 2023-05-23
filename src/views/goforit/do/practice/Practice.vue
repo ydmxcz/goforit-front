@@ -490,7 +490,7 @@ const createProblemListOk = async () => {
         creator: BigNumber(store.getters.userInfo.id)
     }
 
-    console.log("simple data:", d)
+    // console.log("simple data:", d)
     const { data: res } = await http.post('/problemlist/add', d)
     if (res.code != 200) {
         msg.err(res.msg)

@@ -93,8 +93,9 @@ import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useStore } from 'vuex';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import { useRouter } from 'vue-router';
 const store = useStore()
-
+const router = useRouter()
 
 const data = reactive({
 	problemMdText: ``,
@@ -149,7 +150,8 @@ const createBlogOk = async () => {
 		content: data.problemMdText,
 		abstract: data.formItem.abstract,
 		topicId: Number(data.formItem.topicId),
-		tagIds: ids
+		tagIds: ids,
+		groupId:BigNumber(router.currentRoute.value.params.groupId)
 	}
 	if (!d.topicId) {
 		msg.err("请选择博客分区")

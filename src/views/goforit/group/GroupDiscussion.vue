@@ -2,13 +2,13 @@
     <Card style="border-radius: 15px;">
         <Space :wrap="false" style="width: 100%;">
             <span style="font-size: 16px;">搜索分享或讨论：</span>
-            <Input search enter-button  style="width: 300px;" />
-            <Button type="primary" @click="router.push('/group-share/editer/'+store.getters.userInfo.id)">
+            <Input search enter-button style="width: 300px;" />
+            <Button type="primary" @click="createDiscussion">
                 <Icon type="md-add" style="margin-right: 5px;" />创建分享&讨论
             </Button>
 
         </Space>
-        <Space direction="vertical" style="width: 100%;">
+        <Space v-if="blogList.length != 0" direction="vertical" style="width: 100%;">
             <BlogListItem v-for="item in blogList" :blog-id="item.id" :author-name="item.authorName"
                 :avatar="item.authorAvatar" :create-time="new Date(Number((item.createTime / 1e6)))" :title="item.title"
                 :tags="tagMap.get(item.id)" :abstract="item.abstract" :thumbs-up-num="item.thumbsUpNum || 0"
@@ -22,6 +22,12 @@
             </Space>
 
         </Space>
+        <div v-else style="width: 100%;height:300px;margin-top: 20px;">
+            <Space style="display: flex;align-items: center;justify-content: center;" direction="vertical" align="center">
+                <img style="height: 200px;width: 200px;" src="https://file.iviewui.com/iview-pro/icon-500-color.svg" alt="">
+                <span style="font-size: 20px;">暂无小组讨论</span>
+            </Space>
+        </div>
     </Card>
 </template>
 
@@ -33,6 +39,7 @@ import BlogListItem from '../../../components/goforit/blog/BlogListItem.vue';
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useStore } from 'vuex';
+import { formToJSON } from 'axios';
 
 const router = useRouter()
 const store = useStore()
@@ -54,6 +61,36 @@ const handlePageChange = (page) => {
     pageInfo.currPage = page
     getBlogList()
 }
+
+const isJoin = async () => {
+    const { data: res } = await http.post('/group/is/join', {
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+
+    if (!res.data) {
+        return false
+    }
+    console.log('aaa', res.data.status);
+    return res.data.status
+}
+
+
+const createDiscussion = () => {
+    let o = isJoin()
+    console.log('ssss',o);
+    if (o) {
+        router.push('/group-share/'+ store.getters.userInfo.id+'/editer/'+router.currentRoute.value.params.id )
+    } else {
+        msg.err('您未加入小组，不能组内分享')
+    }
+
+}
+
 
 const handleCollectBlog = (blogId) => {
     console.log(blogId);
@@ -98,8 +135,8 @@ const getBlogList = async () => {
     const { data: res } = await http.post('/group/discussion/select', {
         currPage: pageInfo.currPage,
         pageSize: pageInfo.pageSize,
-        groupId:BigNumber(router.currentRoute.value.params.id),
-        userId:BigNumber(store.getters.userInfo.id)
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        userId: BigNumber(store.getters.userInfo.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)

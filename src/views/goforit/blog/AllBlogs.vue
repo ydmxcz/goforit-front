@@ -51,7 +51,6 @@ const handleCollectBlog = (blogId) => {
 }
 
 const handleThumbBlog = async (blogId, isThumbsUp) => {
-    console.log(blogId, isThumbsUp);
     const { data: res } = await http.post('/blog/thumbsup', {
         id: blogId,
         thumbed: isThumbsUp,

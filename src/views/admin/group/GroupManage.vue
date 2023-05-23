@@ -2,20 +2,19 @@
 	<Card style="width:100%;height: 100%;">
 		<Space style="width: 100%;" direction="vertical">
 			<Space>
-				<Input search enter-button="搜索" placeholder="输入比赛名称...." />
-				<Button type="primary" icon="md-add" @click="showAddUserInfoModal">创建比赛</Button>
+				<Button type="primary" icon="md-add" @click="showAddUserInfoModal">创建小组</Button>
 			</Space>
-			<Table stripe :columns="columns" :data="userList">
-				<template #status="{ row }">
+			<Table stripe :columns="columns" :data="groupList">
+				<!-- <template #status="{ row }">
 					<Select v-model="row.status" style="width:100px">
 						<Option v-for="item in statusSlelectList" :value="item.value" :key="item.value">{{ item.label }}
 						</Option>
 					</Select>
-					<!-- <strong v-if="row.status == 1" style="color: greenyellow;">正常</strong>
-					<strong v-else style="color: red;">封禁</strong> -->
-				</template>
-				<template #createTime="{ row }">
-					<Time :time="(row.createTime / 1000) / 1000" type="datetime" />
+					<strong v-if="row.status == 1" style="color: greenyellow;">正常</strong>
+					<strong v-else style="color: red;">封禁</strong>
+				</template> -->
+				<template #create_time="{ row }">
+					<Time :time="(row.create_time / 1000) / 1000" type="datetime" />
 				</template>
 				<template #operation="{ row }">
 					<Poptip trigger="hover" content="查看详细信息">
@@ -153,111 +152,24 @@
 		style="top: 30px;">
 
 		<Form :model="formItem" :label-width="120">
-			<FormItem label="比赛标题">
-				<img :src="fierserver.address+'/goforit/static/imgs/039faf3b085ba837cebe1c12c2451b36_1678106110489.png'">
+			<FormItem label="小组名称">
+				<Input v-model="formItem.name"></Input>
 			</FormItem>
-			<FormItem label="比赛类型">
-				<Row>
-					<Col span="6">
-					<Select v-model="formItem.contestSelectValue" @on-change="handleSelectContestType">
-						<Option v-for="item in contestTagList" :value="item.name" :key="item.id">{{ item.name }}</Option>
-					</Select>
-					</Col>
-					<Col span="4" style="text-align: center">比赛分类</Col>
-					<Col span="10">
-					<Select v-model="formItem.contestSelectSubValue" @on-change="handleSelectContestTag">
-						<Option v-for="item in formItem.subTagList" :value="item.name" :key="item.id">{{ item.name }}
-						</Option>
-					</Select>
-					</Col>
-				</Row>
-
+			<FormItem label="小组介绍">
+				<Input v-model="formItem.instruction"></Input>
 			</FormItem>
-			<FormItem label="举办方类型">
-				<Switch size="large" v-model="formItem.sponsorType">
-					<template #open>
-						<span>个人</span>
-					</template>
-					<template #close>
-						<span>小组</span>
-					</template>
-				</Switch>
+			<FormItem label="小组长ID">
+				<Input v-model="formItem.creator"></Input>
 			</FormItem>
-			<FormItem label="举办方ID">
-				<Input v-model="formItem.sponsorId"></Input>
-			</FormItem>
-			<FormItem label="是否公开">
-				<Row>
-					<Col span="4">
-					<Switch size="large" v-model="formItem.public">
-						<template #open>
-							<span>公开</span>
-						</template>
-						<template #close>
-							<span>私有</span>
-						</template>
-					</Switch>
-					</Col>
-					<Col span="4" style="text-align: center">比赛密码</Col>
-					<Col span="15">
-					<Input v-model="formItem.pwd" :disabled="formItem.public" password type="password"></Input>
-					</Col>
-				</Row>
-			</FormItem>
-			<FormItem label="报名起止时间">
-				<DatePicker type="datetimerange" confirm v-model="formItem.signUpTime" placeholder="选择比赛报名的起止时间"
-					style="width: 100%" @on-ok="handleSignUpTimeSelectOK" />
-			</FormItem>
-			<FormItem label="比赛起止时间">
-				<DatePicker type="datetimerange" confirm v-model="formItem.contestTime" placeholder="选择比赛的起止时间"
-					style="width: 100%" @on-ok="handleContestTimeSelectOK" />
-			</FormItem>
-			<FormItem label="是否开启封榜">
-				<Row>
-					<Col span="4">
-					<Switch size="large" v-model="formItem.sealRank">
-						<template #open>
-							<span>开启</span>
-						</template>
-						<template #close>
-							<span>关闭</span>
-						</template>
-					</Switch>
-					</Col>
-					<Col span="5" style="text-align: center" v-if="formItem.sealRank">在比赛结束前</Col>
-					<Col span="11" v-if="formItem.sealRank">
-					<InputNumber :max="30" :min="1" :step="1" v-model="formItem.sealRankTime" /> 分钟封榜
-					</Col>
-				</Row>
-			</FormItem>
-			<FormItem label="比赛结束后是否开放榜单">
-				<Switch size="large" v-model="formItem.openRank">
-					<template #open>
-						<span>开放</span>
-					</template>
-					<template #close>
-						<span>封闭</span>
-					</template>
-				</Switch>
-			</FormItem>
-			<FormItem label="不计Rating范围:">
-				<span>Rating > </span>
-				<InputNumber :min="1500" :step="1" v-model="formItem.ratingTop" />
-				<!-- <Input v-model="formItem.ratingTop"></Input> -->
-			</FormItem>
-			<FormItem label="比赛介绍">
-				<Input v-model="formItem.description" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }"
-					placeholder="输入比赛介绍..." maxlength="150" show-word-limit></Input>
-			</FormItem>
+			<template #footer>
+				<div style="width: 100%;height: 40px;">
+					<Space style="float: right;">
+						<Button @click="createContestCancel">取消</Button>
+						<Button type="primary" @click="createContestOK">确定</Button>
+					</Space>
+				</div>
+			</template>
 		</Form>
-		<template #footer>
-			<div style="width: 100%;height: 40px;">
-				<Space style="float: right;">
-					<Button @click="createContestCancel">取消</Button>
-					<Button type="primary" @click="createContestOK">确定</Button>
-				</Space>
-			</div>
-		</template>
 	</Modal>
 </template>
 <script setup name="GroupManage">
@@ -293,77 +205,24 @@ const statusSlelectList = ref([
 
 const columns = ref([
 	{ title: 'ID', key: 'id', width: '200px' },
-	{ title: '比赛标题', key: 'title' },
-	{ title: '举办方ID', key: 'sponsorId' },
-	{ title: '比赛类型', key: 'contestType' },
-	{ title: '比赛状态', slot: 'status', width: '150px' },
-	{ title: '创建时间', key: 'createTime', slot: 'createTime' },
+	{ title: '小组名称', key: 'name' },
+	{ title: '小组长ID', key: 'creator' },
+	{ title: '创建时间', key: 'create_time', slot: 'create_time' },
 	{ title: '操作', slot: 'operation', width: '250px' },
 ]);
 
-const userList = ref([]);
+const groupList = ref([]);
 const formItem = ref({
-	id: '',
-	sponsorId: '',
-	sponsorType: true,
-	title: '',
-	contestType: 1,
-	contestTagId: 0,
-	contestTagName: '',
-	description: '',
-	problemNum: '',
-	source: '',
-	public: true,
-	pwd: '',
-	startTime: 0,
-	endTime: 0,
-	signUpStartTime: 0,
-	signUpEndTime: 0,
-	sealRank: false,
-	sealRankTime: 20,
-	openRank: true,
-	ratingTop: 2199,
-	createTime: '',
-	lastUpdateTime: '',
-	mender: '',
-	signUpTime: [],
-	contestTime: [],
-	contestSelectValue: '',
-	contestSelectSubValue: '',
-	subTagList: []
-
+	name: '',
+	creator: '',
+	instruction: ''
 })
 
 const clearFormItem = () => {
 	formItem.value = {
-		id: '',
-		sponsorId: '',
-		sponsorType: true,
-		title: '',
-		contestType: 1,
-		contestTagId: 0,
-		contestTagName: '',
-		description: '',
-		problemNum: '',
-		source: '',
-		public: true,
-		pwd: '',
-		startTime: 0,
-		endTime: 0,
-		signUpStartTime: 0,
-		signUpEndTime: 0,
-		sealRank: false,
-		sealRankTime: 20,
-		openRank: true,
-		ratingTop: 2199,
-		createTime: '',
-		lastUpdateTime: '',
-		mender: '',
-		signUpTime: [],
-		contestTime: [],
-		contestSelectValue: '',
-		contestSelectSubValue: '',
-		subTagList: []
+		name: '',
+		creator: '',
+		instruction: ''
 	}
 }
 
@@ -423,7 +282,7 @@ const editUserInfoOk = async () => {
 		return
 	}
 	msg.ok({ background: true, content: '修改成功' });
-	getUserList()
+	getGroupList()
 	clearFormItem()
 	showEditUserInfo.value = false
 }
@@ -523,7 +382,7 @@ const createContestOK = async () => {
 		return
 	}
 	msg.ok('添加成功');
-	getUserList()
+	getGroupList()
 	showEditUserInfo.value = false
 	clearFormItem()
 }
@@ -543,17 +402,21 @@ const handleDeleteUser = async (row) => {
 	}
 	msg.ok({ background: true, content: '删除成功' });
 	console.log(data);
-	getUserList()
+	getGroupList()
 }
 
 
-const getUserList = async () => {
-	const { data } = await http.get('/user/list?currPage=' + pageInfo.curr + '&pageSize=' + pageInfo.pageSize)
+const getGroupList = async () => {
+	const { data } = await http.post('/group/list', {
+		currPage: pageInfo.curr,
+		pageSize: pageInfo.pageSize,
+		userId: BigNumber(store.getters.userInfo.id)
+	})
 	if (data.code != 200) {
 		msg.err({ background: true, content: data.msg });
 	}
-	// console.log(data);
-	userList.value = data.data.userlist
+	console.log(data);
+	groupList.value = data.data.infos
 	pageInfo.total = data.data.total
 }
 
@@ -570,7 +433,7 @@ const contestTagList = ref([])
 
 onMounted(() => {
 	console.log("userId", userInfo.value.id);
-	getUserList();
+	getGroupList();
 	getContestTags()
 })
 

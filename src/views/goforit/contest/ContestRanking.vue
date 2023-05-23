@@ -3,13 +3,13 @@
     <div style="width: 100%;">
 
         <Space direction="vertical" style="width: 100%;">
-            <div style="width: 100%;">
+            <!-- <div style="width: 100%;">
                 <Space style="padding-left: 30px;margin-top: 30px;margin-bottom: 30px;" align="center">
                     <Input v-model="searchKey" search enter-button placeholder="输入用户名进行搜索"
                         style="width: 300px;float: left;" @on-search="searchUserSubmit" />
                     <Checkbox style="margin-left: 30px;" v-model="checkboxFlag">只看我的提交</Checkbox>
                 </Space>
-            </div>
+            </div> -->
 
             <Row :wrap="false" style="width: 100%;">
                 <Col flex="320px">
@@ -25,12 +25,13 @@
                                 <div>{{ row.ranking }}</div>
                             </td>
                             <td class="table-cell-base info-cell-bgcolor td-wrap" style="width: 100px; text-align: center;">
-                                <div >{{ row.username }}</div>
+                                <div>{{ row.username }}</div>
                             </td>
                             <td class="table-cell-base info-cell-bgcolor td-wrap" style="width: 100px; text-align: center;">
                                 <div style="color: #32ca99;">{{ row.school }}</div>
                             </td>
-                            <td class="table-cell-base info-cell-bgcolor" style="width: 40px;position: relative;text-align: center;">
+                            <td class="table-cell-base info-cell-bgcolor"
+                                style="width: 40px;position: relative;text-align: center;">
                                 <Space direction="vertical" align="center" type="flex">
                                     <span>{{ row.accept }}</span>
                                     <span v-if="row.accept >= 9" class="plat-label">AK</span>
@@ -48,9 +49,9 @@
                     <thead>
                         <th class="table-cell-base table-cell-data info-cell-bgcolor" v-for="item in dataHeaderList">
                             <Space direction="vertical" :size="0">
-                                {{ item.number }}
-                                <div style="color: #32ca99;">{{ item.accept }}</div>
-                                {{ item.submit }}
+                                {{ item.problemIndex }}
+                                <div style="color: #32ca99;">{{ item.acceptedCount }}</div>
+                                {{ item.submitCount }}
                             </Space>
                         </th>
                     </thead>
@@ -58,12 +59,14 @@
                         <tr v-for="row in dataRowList">
                             <td class="table-cell-base table-cell-data" v-for="cell in row"
                                 :style="{ backgroundColor: getCellColor(cell) }">
-                                <div v-if="cell.acceptTime == 0 && cell.errCount != 0" class="elem-center">
+                                <!-- <div v-if="cell.acceptTime == 0 && cell.errCount != 0" class="elem-center">
                                     (-{{ cell.errCount }})
                                 </div>
                                 <div v-else-if="cell.acceptTime != 0 && cell.errCount != 0" class="elem-center">
-                                    {{ cell.acceptTime }}<br>(-{{ cell.errCount }})
-                                </div>
+                                    {{ cell.acceptTime }}<br>
+                                </div> -->
+                                <div class="elem-center" v-if="cell.acceptTime != 0">{{ cell.acceptTime }}</div>
+                                <div class="elem-center" v-if="cell.errCount != 0">(-{{ cell.errCount }})</div>
                             </td>
                         </tr>
                     </tbody>
@@ -73,8 +76,6 @@
 
         </Space>
     </div>
-
-
 </template>
 
 <script setup name="ContestRanking">
@@ -86,29 +87,84 @@
 // 罚时=（通过前）错误代码提交次数*每次罚时（默认为20分钟）
 // 不算罚时的情况：没有通过的题目、(系统)内部错误、编译错误
 
-import { reactive, ref } from 'vue';
-
-
+import { ref, onMounted, reactive } from 'vue';
+import http from '../../../plugin/axios';
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import msg from '../../../common/msg';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+const store = useStore()
+const router = useRouter()
 const checkboxFlag = ref(false)
 const searchKey = ref('')
 const searchUserSubmit = () => {
 
 }
+
+const userAccess = async () => {
+    const { data: res } = await http.post("/contest/access", {
+        contestId: BigNumber(router.currentRoute.value.params.id),
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    return res.data.status
+}
+
+const getRank = async () => {
+    const { data: res } = await http.post("/contest/rank", {
+        contestId: BigNumber(router.currentRoute.value.params.id),
+        currPage: 1,
+        pageSize: 50
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    // var points = [40, 100, 1, 5, 25, 10];
+    res.data.problemData.sort(function (a, b) { return a.problemIndex - b.problemIndex });
+    dataHeaderList.value = res.data.problemData
+    // dataHeaderList.value.sort()
+    let user = []
+    let ddataRowList = []
+    res.data.rankData.forEach((item, idx) => {
+        user.push({ ranking: idx + 1, username: item.userId, school: '烟台南山学院', accept: item.acceptedCount, penalty: item.penaltyTime })
+        let row = []
+        item.submissionList.forEach((subitem, idx) => {
+            row.push({ acceptTime: subitem.acceptedTime, errCount: subitem.failedCount || 0, first: subitem.firstBlood })
+        })
+        ddataRowList.push(row)
+    });
+    infoRowList.value = user
+    dataRowList.value = ddataRowList
+    // console.log(res);
+}
+
+onMounted(() => {
+    if (!userAccess()) {
+        msg.err('未报名参加比赛,禁止查询相关信息')
+        return
+    }
+    getRank()
+})
+
 const infoHeaderList = ref([
     '名次', '参赛者', '学校', '通过', '罚时',
 ])
 
 const dataHeaderList = ref([
-    { number: 'A', submit: 10234, accept: 1099 },
-    { number: 'B', submit: 10234, accept: 1099 },
-    { number: 'C', submit: 10234, accept: 1099 },
-    { number: 'D', submit: 10234, accept: 1099 },
-    { number: 'E', submit: 10234, accept: 1099 },
-    { number: 'F', submit: 10234, accept: 1099 },
-    { number: 'G', submit: 10234, accept: 1099 },
-    { number: 'H', submit: 10234, accept: 1099 },
-    { number: 'I', submit: 10234, accept: 1099 },
-    { number: 'J', submit: 10234, accept: 1099 },
+    { problemIndex: 'A', submitCount: 10, acceptedCount: 1099 },
+    { problemIndex: 'B', submitCount: 11, acceptedCount: 1099 },
+    { problemIndex: 'C', submitCount: 12, acceptedCount: 1099 },
+    { problemIndex: 'D', submitCount: 46, acceptedCount: 1099 },
+    { problemIndex: 'E', submitCount: 78, acceptedCount: 1099 },
+    { problemIndex: 'F', submitCount: 12, acceptedCount: 1099 },
+    { problemIndex: 'G', submitCount: 32, acceptedCount: 1099 },
+    { problemIndex: 'H', submitCount: 53, acceptedCount: 1099 },
+    { problemIndex: 'I', submitCount: 22, acceptedCount: 1099 },
+    { problemIndex: 'J', submitCount: 54, acceptedCount: 1099 },
 ])
 
 
@@ -159,8 +215,8 @@ const dataRowList = ref([
 ])
 
 const getCellColor = (cell) => {
-    if (cell.acceptTime == 0) {
-        return (cell.errCount != 0) ? '#ffecec' : '#f4f4f4'
+    if (!cell.acceptTime) {
+        return (cell.errCount) ? '#ffecec' : '#f4f4f4'
     } else {
         return cell.first ? '#bfe6de' : '#eff9f7'
     }
@@ -172,7 +228,6 @@ const getCellColor = (cell) => {
 </script>
 
 <style scoped lang="less">
-
 // 这里关于table的CSS不要乱动，很关键，
 // 作用：令表格自适应父组件或页面的宽度
 table {

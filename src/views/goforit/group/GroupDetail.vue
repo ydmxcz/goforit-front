@@ -17,19 +17,23 @@
                         </Space>
                         <div class="group-info-bot">
                             <div style="float: left;">
-                                <Space :wrap="false">
+                                <Space :wrap="false" :size="20">
                                     <span>
                                         <Icon style="margin-right: 5px;" type="md-information-circle" size="20" />
-                                        <span>ID：{{ groupInfo.id }}</span>
+                                        <span>小组ID：{{ groupInfo.id }}</span>
+                                    </span>
+                                    <span>
+                                        <Icon style="margin-right: 5px;" type="md-information-circle" size="20" />
+                                        <span>组长：{{ groupInfo.creator }}</span>
                                     </span>
                                 </Space>
                             </div>
                             <Button v-if="groupInfo.status == 1" style="float: right;" shape="circle" type="error"
-                                icon="md-close">退出团队</Button>
-                            <Button v-else-if="groupInfo.public == 1 && groupInfo.status == 0" style="float: right;"
-                                shape="circle" type="primary" icon="md-add">加入</Button>
-                            <Button v-else-if="groupInfo.public == 0 && groupInfo.status == 0" style="float: right;"
-                                shape="circle" type="primary" icon="md-add">申请加入</Button>
+                                icon="md-close" @click="joinGroup">退出团队</Button>
+                            <Button v-else-if="groupInfo.public == 1 && groupInfo.status != 1" style="float: right;"
+                                shape="circle" type="primary" icon="md-add" @click="joinGroup">加入</Button>
+                            <Button v-else-if="groupInfo.public == 0 && groupInfo.status != 1" style="float: right;"
+                                shape="circle" type="primary" icon="md-add" @click="joinGroup">申请加入</Button>
                             <Button v-else style="float: right;" shape="circle" type="primary" icon="md-add"
                                 disabled>加入</Button>
                         </div>
@@ -48,8 +52,8 @@
                         <Icon style="margin-right: 5px;" type="md-bonfire" size="20" />活跃度</Col>
                     </Row>
                     <Row :wrap="false" style="text-align: center;font-size: 12px;">
-                        <Col flex="12">{{ groupInfo.number }}</Col>
-                        <Col flex="12">{{ groupInfo.activation }}</Col>
+                        <Col flex="12">{{ groupData.number }}</Col>
+                        <Col flex="12">{{ groupData.activation }}</Col>
                     </Row>
                     <Divider class="left-divider" />
 
@@ -68,22 +72,22 @@
                     <Space direction="vertical" :size="20">
                         <Space direction="vertical" :size="2">
                             <span style="font-size: 14px;">
-                                <Icon type="md-eye" style="margin-right: 5px;" color="#2d8cf0" :size="18" />比赛总次数：0
+                                <Icon type="md-eye" style="margin-right: 5px;" color="#2d8cf0" :size="18" />比赛总次数：{{ groupData.contestNumber }}
                             </span>
-                            <span style="padding: 30px;font-size:12px;">近期：0</span>
+                            <!-- <span style="padding: 30px;font-size:12px;">近期：0</span> -->
                         </Space>
                         <Space direction="vertical" :size="3">
                             <span style="font-size: 14px;">
                                 <Icon type="md-thumbs-up" style="margin-right: 5px;" color="#19be6b" :size="18" />
-                                训练总次数：0
+                                训练总次数：{{ groupData.trainNumber }}
                             </span>
-                            <span style="padding: 30px;font-size:12px;">近期：0</span>
+                            <!-- <span style="padding: 30px;font-size:12px;">近期：0</span> -->
                         </Space>
                         <Space direction="vertical" :size="3">
                             <span style="font-size: 14px;">
-                                <Icon type="md-star" style="margin-right: 5px;" color="#ff9900" :size="18" />讨论数量：0
+                                <Icon type="md-star" style="margin-right: 5px;" color="#ff9900" :size="18" />讨论数量：{{ groupData.blogNumber }}
                             </span>
-                            <span style="padding: 30px;font-size:12px;">近期：0</span>
+                            <!-- <span style="padding: 30px;font-size:12px;">近期：0</span> -->
                         </Space>
                     </Space>
                     <Divider class="left-divider" />
@@ -141,7 +145,10 @@ import { useRouter } from 'vue-router';
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
+import { useStore } from 'vuex';
+import { formToJSON } from 'axios';
 
+const store = useStore()
 const router = useRouter()
 
 const groupInfo = reactive({
@@ -152,7 +159,56 @@ const groupInfo = reactive({
     activation: 666,
     public: 0,
     status: 0,
+    creator: ''
 })
+
+const joinGroup = async () => {
+    const { data: res } = await http.post('/group/join', {
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        userId: BigNumber(store.getters.userInfo.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    if (res.data.status == 3) {
+        // 成功退出
+        groupInfo.status == 0
+        msg.ok('退出团队成功')
+    } else if(res.data.status == 1){
+        groupInfo.status == 1
+        msg.ok('加入团队成功')
+    } else if (res.data.status == 2) {
+        msg.ok('申请已发送，请耐心等待')
+    }else {
+        msg.err('系统错误')
+    }
+}
+
+const groupData = reactive({
+    number: 0,
+    activation: 0,
+    trainNumber: 0,
+    contestNumber: 0,
+    blogNumber: 0
+});
+
+const getGroupData = async () => {
+    const { data: res } = await http.post('/group/data', {
+        groupId: BigNumber(router.currentRoute.value.params.id),
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+
+    groupData.number = res.data.number || 0
+    groupData.activation = res.data.activation || 0
+    groupData.trainNumber = res.data.trainNumber || 0
+    groupData.contestNumber = res.data.contestNumber || 0
+    groupData.blogNumber = res.data.blogNumber || 0
+}
+
 
 
 const avatorList = reactive({
@@ -263,6 +319,7 @@ watch(
 onMounted(() => {
     // console.log(router.currentRoute.value.params.id);
     getGroupDetialInfo()
+    getGroupData()
     getGroupNumberAvatarList()
     nextTick(() => {
         updateByPath(router.currentRoute.value.fullPath)
@@ -270,34 +327,55 @@ onMounted(() => {
 })
 
 const getGroupNumberAvatarList = async () => {
-    const { data: res } = await http.post('/group/number/avatars',{
-        groupId:BigNumber(router.currentRoute.value.params.id)
+    const { data: res } = await http.post('/group/number/avatars', {
+        groupId: BigNumber(router.currentRoute.value.params.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)
         return
     }
-    console.log('wsx',res);
+    // console.log('wsx',res);
     avatorList.list = res.data.list
 }
 
 
-const getGroupDetialInfo = async () => {
-    const { data: res } = await http.post('/group/detial',{
-        groupId:BigNumber(router.currentRoute.value.params.id)
+const isJoin = async () => {
+    const { data: res } = await http.post('/group/is/join',{
+        groupId: BigNumber(router.currentRoute.value.params.id),
+        userId:BigNumber(store.getters.userInfo.id)
     })
     if (res.code != 200) {
         msg.err(res.msg)
         return
     }
+    console.log(res);
+    groupInfo.status = (res.data != null) ? 1 : 0
+    // groupisJoin.value = res.data.status
+}
+
+
+const getGroupDetialInfo = async () => {
+    const { data: res } = await http.post('/group/detial', {
+        groupId: BigNumber(router.currentRoute.value.params.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    isJoin()
     groupInfo.id = res.data.id
     groupInfo.groupname = res.data.name
-    groupInfo.status = res.data.public
     groupInfo.instruction = res.data.instruction
     groupInfo.activation = res.data.activation || 0
     groupInfo.number = res.data.number || 0
-    
+    groupInfo.creator = res.data.creator || 0
+    groupInfo.public = res.data.public || 0
     // console.log(res);
+    if (String(groupInfo.creator) == String(store.getters.userInfo.id)) {
+        menuListData.value.push({
+            name: '申请列表', path: '/group/' + router.currentRoute.value.params.id + '/apply', icon: 'md-add'
+        })
+    }
 }
 
 

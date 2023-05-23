@@ -11,6 +11,8 @@ import MyProblemList from '../views/goforit/user/MyProblemList.vue'
 import ProblemList from '../views/goforit/problems/Problemlist.vue'
 import Problem from '../views/goforit/problems/Problem.vue'
 import Practice from '../views/goforit/do/practice/Practice.vue'
+import DoContest from '../views/goforit/do/contest/DoContest.vue'
+import DoContestProblemContent from '../views/goforit/do/contest/DoContestProblemContent.vue'
 import PracticeProblemContent from '../views/goforit/do/practice/PracticeProblemContent.vue'
 import PracticeProblemSubmited from '../views/goforit/do/practice/PracticeProblemSubmited.vue'
 import PracticeProblemSolutions from '../views/goforit/do/practice/PracticeProblemSolutions.vue'
@@ -55,6 +57,7 @@ import Group from '../views/goforit/group/Group.vue'
 import GroupTrain from '../views/goforit/group/GroupTrain.vue'
 import GroupContest from '../views/goforit/group/GroupContest.vue'
 import GroupNumbers from '../views/goforit/group/GroupNumbers.vue'
+import GroupJoinApplyList from '../views/goforit/group/GroupJoinApplyList.vue'
 import GroupDiscussion from '../views/goforit/group/GroupDiscussion.vue'
 import GroupDetail from '../views/goforit/group/GroupDetail.vue'
 import GroupShareEditer from '../views/goforit/group/GroupShareEditer.vue'
@@ -69,7 +72,7 @@ import ProfilePoints from '../views/goforit/profile/ProfilePoints.vue'
 import ProfileCoupons from '../views/goforit/profile/ProfileCoupons.vue'
 import ProfileOrder from '../views/goforit/profile/ProfileOrder.vue'
 import ProfileInfo from '../views/goforit/profile/ProfileInfo.vue'
-import ProfileAccount from '../views/goforit/profile/ProfileCollection.vue'
+import ProfileAccount from '../views/goforit/profile/ProfileAccount.vue'
 
 
 // Admin Page
@@ -84,7 +87,6 @@ import ProblemSolutionManage from '../views/admin/problems/ProblemSolutionManage
 import ProblemCaseManage from '../views/admin/problems/ProblemCaseManage.vue'
 import BlogManage from '../views/admin/blog/BlogManage.vue'
 import AdminLogin from '../views/admin/AdminLogin/AdminLogin.vue'
-
 
 const routes = [
 	{
@@ -154,7 +156,7 @@ const routes = [
 			{ path: "/problem/:id", name: "Problem", component: Problem, meta: { title: '题目' } },
 			// markdown编辑页面
 			{ path: "/mdedit/:userid", name: "MarkDownEditer", component: MarkDownEditer },
-			{ path: "/group-share/editer/:userid", name: "GroupShareEditer", component: GroupShareEditer },
+			{ path: "/group-share/:userid/editer/:groupId", name: "GroupShareEditer", component: GroupShareEditer },
 			{ path: "/login", name: "Login", component: Login },
 			{
 				path: "/msg", name: "Message", component: Message, meta: { title: '消息中心' }, redirect: { name: "MsgSystem" },
@@ -173,8 +175,10 @@ const routes = [
 					{ path: "train", name: "GroupTrain", component: GroupTrain, meta: { title: '训练' } },
 					{ path: "contest", name: "GroupContest", component: GroupContest, meta: { title: '比赛' } },
 					{ path: "numbers", name: "GroupNumbers", component: GroupNumbers, meta: { title: '成员' } },
+					{ path: "apply", name: "GroupJoinApplyList", component: GroupJoinApplyList, meta: { title: '申请列表' } },
 					{ path: "discussion", name: "GroupDiscussion", component: GroupDiscussion, meta: { title: '成员' } },
 					{ path: "discussion/:did", name: "GroupDiscussionDetial", component: GroupDiscussionDetial, meta: { title: '成员' } },
+// GroupJoinApplyList
 
 				]
 			},
@@ -203,6 +207,14 @@ const routes = [
 					{ path: "account", name: "ProfileAccount", component: ProfileAccount, meta: { title: '收藏夹' } },
 				]
 			},
+		]
+	},
+	{
+		path: "/do/contest/:contestId/problem/:problemId/index/:problemIdx", name: "DoContest", component: DoContest, meta: { title: '比赛题目' }, redirect: { name: 'DoContestProblemContent' },
+		children: [
+			{ path: "content", name: "DoContestProblemContent", component: DoContestProblemContent, meta: { title: '比赛题目内容' } },
+			// { path: "submited", name: "PracticeProblemSubmited", component: PracticeProblemSubmited, meta: { title: '练习提交记录' } },
+			// { path: "solutions", name: "PracticeProblemSolutions", component: PracticeProblemSolutions, meta: { title: '练习题解' } },
 		]
 	},
 	{

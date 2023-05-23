@@ -1,7 +1,7 @@
 <template>
     <Card style="border-radius: 10px;margin-top: 20px;margin-bottom: 20px;">
         <Space type="flex" direction="vertical">
-            
+
             <Space style="width: 100%;" :wrap="false">
                 <Input style="width: 400px;" search enter-button placeholder="请输入比赛名称 / 比赛ID进行搜索" />
                 <Button type="primary" icon="md-add">创建比赛</Button>
@@ -23,11 +23,19 @@
                 :number="item.signUpNum || 0" :max-rating="item.ratingTop" @on-sign-up="toContestDetialPage"
                 @to-detial-page="toContestDetialPage" />
 
-            <Space direction="vertical" type="flex" align="center">
+            <Space v-if="contestList.length != 0" direction="vertical" type="flex" align="center">
                 <Page :total="pageInfo.total" :page-size="pageInfo.pageSize" show-elevator show-sizer show-total
                     :page-size-opts="[10, 15, 20]" :model-value="pageInfo.currPage" @on-change="changePage"
                     @on-page-size-change="changePageSize" />
             </Space>
+            <div v-if="contestList.length == 0" style="width: 100%;height:300px">
+                <Space style="display: flex;align-items: center;justify-content: center;" direction="vertical"
+                    align="center">
+                    <img style="height: 200px;width: 200px;" src="https://file.iviewui.com/iview-pro/icon-500-color.svg"
+                        alt="">
+                    <span style="font-size: 20px;">此小组还未创建过比赛</span>
+                </Space>
+            </div>
         </Space>
     </Card>
 </template>
@@ -40,7 +48,7 @@ import CascaderTagSelect from '../../../components/common/CascaderTagSelect.vue'
 import http from '../../../plugin/axios';
 import msg from '../../../common/msg';
 import { useRouter } from 'vue-router'
-
+import BigNumber from '_bignumber.js@9.1.1@bignumber.js';
 
 const router = useRouter()
 const cascaderList = ref([])
@@ -106,13 +114,15 @@ const handleLv2Change = (t) => {
 }
 
 const getContestList = async () => {
-    let d = {
-        currPage: pageInfo.currPage,
-        pageSize: pageInfo.pageSize,
-        tagId: queryContestTagId.value,
-        status: queryContestStatus.value
-    }
-    const { data: res } = await http.post('/contest/all', d)
+    // let d = {
+    //     currPage: pageInfo.currPage,
+    //     pageSize: pageInfo.pageSize,
+    //     tagId: queryContestTagId.value,
+    //     status: queryContestStatus.value
+    // }
+    const { data: res } = await http.post('/contest/select/by/id', {
+        creator: BigNumber(router.currentRoute.value.params.id)
+    })
     if (res.code != 200) {
         msg.err(res.msg)
         return

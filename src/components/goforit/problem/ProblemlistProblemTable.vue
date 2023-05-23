@@ -65,6 +65,21 @@
                     type="border" closable color="primary" @on-close="handleTagRemove">{{ item.name }}</Tag>
             </Space>
         </Row> -->
+        <Button v-if="showAddButton" type="primary" @click="showSearchAndAddProblemModal = true">搜索并添加题目</Button>
+        <Modal v-model="showSearchAndAddProblemModal" scrollable width="600px" :mask-closable="false" :closable="false"
+            style="top: 30px;">
+            <Input search enter-button placeholder="输入题目ID进行搜索" v-model="problemData.input"
+                @on-search="handleGetProblemContent" />
+            <v-md-preview :text="problemData.content"></v-md-preview>
+            <template #footer>
+                <div style="width: 100%;height: 40px;">
+                    <Space style="float: right;">
+                        <Button @click="searchAndAddProblemModalCancel">取消</Button>
+                        <Button type="primary" @click="addProblemToProblemList">添加题目</Button>
+                    </Space>
+                </div>
+            </template>
+        </Modal>
         <!-- 表格 -->
         <Table :columns="problemLibraryHeader" :data="data.problemList" style="margin-bottom: 20px;">
             <template #status="{ row }">
@@ -107,7 +122,7 @@ const router = useRouter();
 
 
 const data = reactive({
-    problemlistId:router.currentRoute.value.params.id,
+    problemlistId: router.currentRoute.value.params.id,
     pageInfo: {
         currPage: 1,
         pageSize: 15,
@@ -138,9 +153,66 @@ const data = reactive({
     userInfo: store.getters.userInfo,
 })
 
+const handleGetProblemContent = async () => {
+    const { data: res } = await http.get('/problem/content?id=' + problemData.input)
+    if (res.code != 200) {
+        msg.err('题目搜索失败')
+        msg.err(res.msg)
+        return
+    }
+    problemData.content = res.data.content
+    problemData.id = Number(problemData.input)
+}
+const problemData = reactive({
+    id: 0,
+    input: '',
+    content: '',
+})
+
+const showSearchAndAddProblemModal = ref(false);
+const showAddButton = ref(false);
+
+const searchAndAddProblemModalCancel = () => {
+    showSearchAndAddProblemModal.value = false
+}
+
+const addProblemToProblemList = async () => {
+    const { data: res } = await http.post('/problemlist/add/problem', {
+        problemlistId: BigNumber(router.currentRoute.value.params.id),
+        problemId: BigNumber(problemData.input),
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    } else {
+        msg.ok('添加题目成功')
+    }
+    // data.showCreatProblemList = false
+    getProblemlistInfo()
+    showSearchAndAddProblemModal.value = false
+    // getProblemlistDetial()
+}
+
+
+
+const getProblemlistDetial = async () => {
+    const { data: res } = await http.post('/problemlist/detial', {
+        problemlistId: BigNumber(router.currentRoute.value.params.id)
+    })
+    if (res.code != 200) {
+        msg.err(res.msg)
+        return
+    }
+    console.log(String(store.getters.userInfo.id), String(res.data.info.creator));
+    if (String(store.getters.userInfo.id) == String(res.data.info.creator)) {
+        showAddButton.value = true
+    }
+}
+
 onMounted(() => {
-    console.log("asds",router.currentRoute.value.params.id);
+    console.log("asds", router.currentRoute.value.params.id);
     getTagList()
+    getProblemlistDetial()
     getProblemlistInfo()
 })
 
@@ -244,7 +316,7 @@ const handleTagSelectClearSearch = () => {
 
 const getProblemlistInfo = async () => {
     const { data: res } = await http.post('/problemlist/all/problem', {
-        problemlistId:BigNumber(data.problemlistId)
+        problemlistId: BigNumber(data.problemlistId)
     })
     if (res.code != 200) {
         msg.err("题库查询失败" + res.msg)

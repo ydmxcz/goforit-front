@@ -72,9 +72,9 @@
 					@click="router.push('/mdedit/' + store.getters.userInfo.id)">
 					写博客
 				</Button>
-				<Button style="background-color: #F56C6C;" class="row-right-top-button">
+				<!-- <Button style="background-color: #F56C6C;" class="row-right-top-button">
 					<Icon type="md-paper" size="16px" /> 我的
-				</Button>
+				</Button> -->
 				<Card class="row-right-search" :shadow="false">
 					<h4>搜索</h4>
 					<Input v-model="blogSearchKey" search enter-button placeholder="搜索博客" @on-search="searchBlog" />
@@ -127,7 +127,7 @@ const blogClassList = reactive([
 	{ name: '最新', to: '/blog/all', icon: 'md-pulse' },
 	{ name: '热门', to: '/blog/hot', icon: 'md-thermometer' },
 	{ name: '收藏', to: '/blog/collect', icon: 'md-thermometer' },
-	{ name: '关注', to: '/blog/subscription', icon: 'md-star' },
+	// { name: '关注', to: '/blog/subscription', icon: 'md-star' },
 	{ name: '分区', to: '/blog/all-topic', icon: 'ios-options' },
 ])
 
@@ -184,18 +184,18 @@ const tagSearchList = ref([])
 const searchTag = () => {
 	console.log(tagSearchKey.value)
 	if (tagSearchKey.value == '') {
-        return
-    }
-    allTagList.forEach((i) => {
-        i.tagList.forEach((item) => {
-            if (item.name.includes(tagSearchKey)) {
-                tagSearchList.push({
-                    id: item.id,
-                    name: item.name
-                })
-            }
-        })
-    })
+		return
+	}
+	allTagList.forEach((i) => {
+		i.tagList.forEach((item) => {
+			if (item.name.includes(tagSearchKey)) {
+				tagSearchList.push({
+					id: item.id,
+					name: item.name
+				})
+			}
+		})
+	})
 }
 
 const handleTagSelectClearSearch = () => {

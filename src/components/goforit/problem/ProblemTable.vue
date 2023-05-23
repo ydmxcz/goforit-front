@@ -3,7 +3,7 @@
         <Space style="width: 100%;" direction="vertical">
             <Space>
                 <span>搜索题目：</span>
-                <Input search enter-button="搜索" placeholder="输入标题或题目内容" style="width: 300px;" />
+                <Input search enter-button="搜索" placeholder="输入标题" style="width: 300px;" v-model="problemInput" @click="searchProblemByInput" />
             </Space>
             <Space>
                 <span>题目筛选：</span>
@@ -140,6 +140,23 @@ onMounted(() => {
     conditionSearchProblem()
 })
 
+const problemInput = ref('');
+const searchProblemByInput = async () => {
+    if(problemInput.value == '') {
+        return
+    }
+	const { data: res } = await http.post('/problem/search/by/input',{
+		input:problemInput.value
+	})
+	if (res.code != 200) {
+		msg.err(res.msg)
+		return
+	}	
+    data.problemList = res.data.problemlist
+    data.pageInfo.total = res.data.total
+	console.log(res);
+}
+
 const handleOpenProblemPage = (id) => {
     let routeUrl = router.resolve({
         path: "/practice/" + id,
@@ -257,7 +274,7 @@ const conditionSearchProblem = async () => {
     }
     data.problemList = res.data.searchResult
     data.pageInfo.total = res.data.total
-    console.log(res.data.searchResult);
+    // console.log(res.data.searchResult);
 }
 
 const problemLibraryHeader = reactive([
